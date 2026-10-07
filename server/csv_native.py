@@ -94,6 +94,6 @@ class NativeSchema:
 def bind_packet(packet, snapshot):
     if packet["declared_schema"]["columns"] != project(snapshot):
         raise ServiceError("native_schema_changed", "Schema no longer matches this review. Reload the native schema and recheck.")
-    return {**packet, "packet_version": 2, "schema_origin": "native_table_schema",
+    return {**packet, "packet_version": 3 if "reporting_policy" in packet else 2, "schema_origin": "native_table_schema",
             "native_schema": snapshot, "native_schema_observed": True,
             "workiva_requests": None, "workiva_request_count_verified": False}

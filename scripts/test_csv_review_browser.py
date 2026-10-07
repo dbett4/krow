@@ -104,6 +104,53 @@ def test_csv_review_browser(csv_url, tmp_path):
         check("document.getElementById('csv').value === '' && document.getElementById('download').disabled")
         run("reload")
         check("document.getElementById('csv').value === '' && document.getElementById('columns').children.length===1")
+        # Context must defeat an arithmetic-only green result, using real controls.
+        for index, name in enumerate(("id", "period", "currency", "unit", "amount")):
+            if index:
+                run("click", "#add")
+            run("fill", f"#columns .column:nth-child({index + 1}) .name", name)
+            if name == "amount":
+                run("select", f"#columns .column:nth-child({index + 1}) .type", "integer")
+        run("click", "#use-context")
+        for selector, value in [("#period-column", "period"), ("#expected-period", "2026-10"),
+                                ("#currency-column", "currency"), ("#expected-currency", "USD"),
+                                ("#unit-column", "unit"), ("#amount-columns", "amount")]:
+            run("fill", selector, value)
+        run("select", "#expected-unit", "cents")
+        run("select", "#accounting-basis", "modified_accrual")
+        source = "id,period,currency,unit,amount\n001,2026-10,USD,cents,1001\n1,2026-10,USD,cents,-2\n"
+        run("fill", "#csv", source)
+        submit()
+        check("document.querySelector('#results code').textContent === '999' && document.querySelector('.context-evidence').textContent.includes('Declared row labels matched')")
+        run("set", "media", "light")
+        run("set", "viewport", "1440", "1100")
+        run("screenshot", str(tmp_path / "context-matched.png"), "--full")
+        context_packet = tmp_path / "context-packet.json"
+        run("download", "#download", str(context_packet))
+        source_path.write_text(source)
+        replay = subprocess.run([sys.executable, str(Path(__file__).resolve().parents[1] / "server/csv_review.py"),
+                                 "--verify-packet", str(context_packet), "--csv", str(source_path)],
+                                capture_output=True, text=True, timeout=5)
+        assert replay.returncode == 0 and json.loads(replay.stdout)["status"] == "reproduced"
+        run("fill", "#csv", source.replace("1,2026-10,USD,cents,-2", "1,2026-09,EUR,units,-2"))
+        check("document.getElementById('download').disabled")
+        submit()
+        check("document.querySelector('.result-title').textContent === 'Reporting context needs review' && document.querySelector('#results code').textContent === '999'")
+        check("['period mismatch', 'currency mismatch', 'unit mismatch', 'Do not use combined totals'].every(text=>document.querySelector('.context-evidence').textContent.includes(text))")
+        check("document.querySelectorAll('.stat strong')[1].textContent === '3'")
+        run("screenshot", str(tmp_path / "context-mismatch.png"), "--full")
+        run("set", "viewport", "390", "1000")
+        run("set", "media", "dark")
+        check("document.documentElement.scrollWidth <= innerWidth")
+        run("screenshot", str(tmp_path / "context-mismatch-narrow-dark.png"), "--full")
+        run("fill", "#csv", source)
+        run("fill", "#unit-column", "")
+        run("select", "#accounting-basis", "unknown")
+        submit()
+        check("document.querySelector('.context-evidence').textContent.includes('Reporting context incomplete') && document.querySelector('.result-title').textContent === 'Reporting context needs review'")
+        run("screenshot", str(tmp_path / "context-incomplete.png"), "--full")
+        run("click", "#clear")
+        check("!document.getElementById('use-context').checked && document.getElementById('period-column').value === '' && document.getElementById('context-fields').disabled")
         assert not run("errors").strip()
     finally:
         run("close")

@@ -60,6 +60,12 @@
     $("schema-status").textContent = schema ? schema.snapshot.binding.table_name + " · Version " + schema.snapshot.binding.version + " · Observed " + new Date(schema.snapshot.observed_at).toLocaleString() + ". Native fields locked; keys remain your explicit policy. Full schema includes managed columns; import mapping is not checked." : "Declared schema. Not native-verified.";
   }
   $("manual-schema").addEventListener("click", () => { invalidate(); nativeMode(null); });
+  function contextMode(enabled) {
+    $("use-context").checked = enabled;
+    $("context-fields").disabled = !enabled;
+    $("context-fields").hidden = !enabled;
+  }
+  $("use-context").addEventListener("change", () => { contextMode($("use-context").checked); invalidate(); });
   $("load-native").addEventListener("click", async () => {
     invalidate("Reading only the configured native sandbox schema…");
     const request = generation, abort = new AbortController(); controller = abort;
@@ -81,9 +87,24 @@
     const result = data.result, host = $("results"); host.replaceChildren();
     host.append(el("p", "3. Review the evidence", "eyebrow"));
     const title = { passed: "Supported checks passed", failed: "Issues need your review", incomplete: "Some checks remain unknown" }[result.screen_status];
-    host.append(el("h2", data.native_schema_observed && result.screen_status === "passed" ? "Supported local checks passed" : title, "result-title"), el("p", data.native_schema_observed ? "Native sandbox schema reread · Local checks, not native import acceptance" : "Caller-supplied schema · Not native-verified"));
+    const context = data.reporting_context, policy = data.reporting_policy;
+    const heading = context && context.status !== "matched" ? "Reporting context needs review" : data.native_schema_observed && result.screen_status === "passed" ? "Supported local checks passed" : title;
+    host.append(el("h2", heading, "result-title"), el("p", data.native_schema_observed ? "Native sandbox schema reread · Local checks, not native import acceptance" : "Caller-supplied schema · Not native-verified"));
+    const contextBox = el("div", undefined, "context-evidence");
+    contextBox.append(el("h3", context ? { matched: "Declared row labels matched", failed: "Reporting policy mismatches", incomplete: "Reporting context incomplete" }[context.status] : "Reporting context not checked"));
+    if (context) {
+      contextBox.append(el("p", policy.expected_period + " · " + policy.expected_currency + " · " + policy.expected_unit + " (unscaled) · Basis: " + policy.accounting_basis.replaceAll("_", " ")),
+        el("p", "Bound amounts: " + policy.amount_columns.join(", ") + ". Arithmetic screen: " + result.screen_status + "."));
+      context.unknowns.forEach((text) => contextBox.append(el("p", text)));
+      context.issues.forEach((issue) => contextBox.append(el("p", issue.code.replaceAll("_", " ") + (issue.row ? " · Record " + issue.row : "") + (issue.column ? " · " + issue.column : ""))));
+      if (context.issues_truncated) contextBox.append(el("p", "Showing first 100 of " + context.issue_count + " reporting issues."));
+      if (context.status !== "matched") contextBox.append(el("strong", "Do not use combined totals for reporting until the context is resolved."));
+      contextBox.append(el("p", context.limitations));
+    } else contextBox.append(el("p", "Totals are arithmetic only. Period, currency, units and accounting basis have not been checked."));
+    contextBox.append(el("small", "Reviewer-declared policy is not independent source verification or accounting approval."));
+    host.append(contextBox);
     const stats = el("div", undefined, "stats");
-    [[result.row_count, "Data records checked"], [result.issue_count, "Issues found"]].forEach(([count, text]) => { const item = el("div", undefined, "stat"); item.append(el("strong", count), el("span", text)); stats.append(item); }); host.append(stats);
+    [[result.row_count, "Data records checked"], [result.issue_count + (context?.issue_count || 0), "Issues found"]].forEach(([count, text]) => { const item = el("div", undefined, "stat"); item.append(el("strong", count), el("span", text)); stats.append(item); }); host.append(stats);
     host.append(el("h3", "Exact totals · Source units"));
     const totals = Object.entries(result.numeric_totals);
     if (!totals.length) host.append(el("p", "No numeric schema columns to total."));
@@ -109,10 +130,11 @@
   $("sample").addEventListener("click", () => {
     invalidate("Fictional example loaded. Check it to find a duplicate key and an invalid amount.");
     nativeMode(null);
+    contextMode(false);
     $("columns").replaceChildren(); column("department", "string", true, true); column("actual", "decimal", true);
     $("csv").value = "department,actual\nFinance,1250.25\nOperations,-50.10\nFinance,invalid\n"; $("file").value = "";
   });
-  $("clear").addEventListener("click", () => { invalidate("Inputs cleared. No review data is retained."); nativeMode(null); $("csv").value = ""; $("file").value = ""; $("columns").replaceChildren(); column().focus(); });
+  $("clear").addEventListener("click", () => { invalidate("Inputs cleared. No review data is retained."); nativeMode(null); contextMode(false); $("context-fields").querySelectorAll("input, textarea").forEach((node) => { node.value = ""; }); $("expected-unit").value = "units"; $("accounting-basis").value = "unknown"; $("csv").value = ""; $("file").value = ""; $("columns").replaceChildren(); column().focus(); });
   $("cancel").addEventListener("click", () => invalidate("Stopped waiting. No result is retained; the bounded local check may finish on the server."));
   $("file").addEventListener("change", async () => {
     invalidate(); const request = generation, file = $("file").files[0]; if (!file) return;
@@ -124,11 +146,17 @@
     event.preventDefault(); invalidate("");
     const rows = [...$("columns").children], columns = nativeSchema ? nativeSchema.columns : rows.map((row) => ({ name: row.querySelector(".name").value, type: row.querySelector(".type").value, required: row.querySelector(".required").checked }));
     const key_columns = rows.filter((row) => row.querySelector(".key").checked).map((row) => row.querySelector(".name").value);
+    const reporting_policy = $("use-context").checked ? {
+      period_column: $("period-column").value, expected_period: $("expected-period").value,
+      currency_column: $("currency-column").value, expected_currency: $("expected-currency").value,
+      unit_column: $("unit-column").value, expected_unit: $("expected-unit").value,
+      amount_columns: $("amount-columns").value.split(/\r?\n/), accounting_basis: $("accounting-basis").value,
+    } : null;
     const request = generation, abort = new AbortController(); controller = abort;
     $("check").disabled = true; $("cancel").hidden = false; $("message").textContent = "Checking every supplied record…";
     const timeout = setTimeout(() => abort.abort(), 10000);
     try {
-      const response = await fetch("/api/review", { method: "POST", headers: { "Content-Type": "application/json", "X-Wingman-Review": "1" }, body: JSON.stringify({ csv_text: $("csv").value, columns, key_columns, ...(nativeSchema ? { native_schema_sha256: nativeSchema.snapshot.schema_sha256 } : {}) }), signal: abort.signal, cache: "no-store" });
+      const response = await fetch("/api/review", { method: "POST", headers: { "Content-Type": "application/json", "X-Wingman-Review": "1" }, body: JSON.stringify({ csv_text: $("csv").value, columns, key_columns, ...(reporting_policy ? { reporting_policy } : {}), ...(nativeSchema ? { native_schema_sha256: nativeSchema.snapshot.schema_sha256 } : {}) }), signal: abort.signal, cache: "no-store" });
       const data = await response.json(); if (request !== generation) return;
       if (!response.ok) {
         const guidance = data.code === "invalid_csv" ? " Check that the header is present and every quoted field is closed. Re-export the CSV and try again." : "";

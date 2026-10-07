@@ -26,12 +26,14 @@ STATIC = {
 
 
 def review(arguments):
-    if not isinstance(arguments, dict) or set(arguments) != {"csv_text", "columns", "key_columns"}:
-        raise ServiceError("invalid_arguments", "Supply CSV text, explicit columns and key columns only.")
-    result = validate_csv_draft(**arguments, max_issues=100)
+    if (not isinstance(arguments, dict)
+            or set(arguments) not in ({"csv_text", "columns", "key_columns"},
+                                     {"csv_text", "columns", "key_columns", "reporting_policy"})):
+        raise ServiceError("invalid_arguments", "Supply CSV text, explicit columns and keys, with optional reporting policy only.")
+    result = validate_csv_draft(**{key: arguments[key] for key in ("csv_text", "columns", "key_columns")}, max_issues=100)
     canonical_schema = json.dumps({"columns": arguments["columns"], "key_columns": arguments["key_columns"]},
                                   sort_keys=True, ensure_ascii=True, separators=(",", ":"))
-    return {
+    packet = {
         "product": "Wingman", "packet_version": 1,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "validator": "lockfield-csv-v0.4.0",
@@ -43,6 +45,13 @@ def review(arguments):
         "period_and_units_verified": False, "workiva_requests": 0,
         "review_state": "unreviewed", "result": result,
     }
+    if "reporting_policy" in arguments:
+        from csv_context import check_context
+        policy = arguments["reporting_policy"]
+        packet.update({"packet_version": 3, "reporting_policy": policy,
+                       "context_validator_sha256": hashlib.sha256((ROOT / "server/csv_context.py").read_bytes()).hexdigest(),
+                       "reporting_context": check_context(arguments["csv_text"], arguments["columns"], policy)})
+    return packet
 
 
 def verify_packet(packet, csv_text):
@@ -58,8 +67,9 @@ def verify_packet(packet, csv_text):
             raise ValueError("Missing timestamp timezone")
     except ValueError:
         raise ServiceError("invalid_packet", "Packet needs an ISO timestamp with timezone.")
-    expected = review({"csv_text": csv_text, **schema})
-    if packet.get("packet_version") == 2 and "native_schema" in packet:
+    expected = review({"csv_text": csv_text, **schema,
+                       **({"reporting_policy": packet["reporting_policy"]} if "reporting_policy" in packet else {})})
+    if packet.get("packet_version") in (2, 3) and "native_schema" in packet:
         from csv_native import bind_packet
         expected = bind_packet(expected, packet.get("native_schema"))
     # Strict JSON comparisons distinguish booleans from numeric zero/one.

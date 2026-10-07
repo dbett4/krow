@@ -53,12 +53,29 @@ def main():
     source.write_text(CSV); saved.write_text(json.dumps(packet, indent=2))
     replay = subprocess.run([sys.executable, str(ROOT / "server/csv_review.py"), "--verify-packet", str(saved), "--csv", str(source)], capture_output=True, text=True, timeout=5)
     assert replay.returncode == 0 and json.loads(replay.stdout)["status"] == "reproduced"
+    policy = {"period_column": "period", "expected_period": "2026-10", "currency_column": "currency",
+              "expected_currency": "USD", "unit_column": "", "expected_unit": "cents",
+              "amount_columns": ["amount_cents"], "accounting_basis": "modified_accrual"}
+    context_packet = post("/api/review", {**review, "reporting_policy": policy})
+    assert context_packet["native_schema_observed"] is True and context_packet["packet_version"] == 3
+    assert context_packet["reporting_context"]["status"] == "incomplete"
+    assert context_packet["reporting_context"]["issue_count"] == 0  # Matching labels, no row-unit column.
+    assert context_packet["period_and_units_verified"] is False
+    mismatch = post("/api/review", {**review, "reporting_policy": policy,
+                                    "csv_text": CSV.replace("1,-2,2026-10,USD", "1,-2,2026-09,EUR")})
+    assert mismatch["reporting_context"]["status"] == "failed"
+    assert {(x["code"], x["row"]) for x in mismatch["reporting_context"]["issues"]} == {("period_mismatch", 3), ("currency_mismatch", 3)}
+    context_path = args.out / "context-packet.json"
+    context_path.write_text(json.dumps(context_packet, indent=2))
+    replay = subprocess.run([sys.executable, str(ROOT / "server/csv_review.py"), "--verify-packet", str(context_path), "--csv", str(source)], capture_output=True, text=True, timeout=5)
+    assert replay.returncode == 0 and json.loads(replay.stdout)["status"] == "reproduced"
     receipt = {"generated_at": datetime.now(timezone.utc).isoformat(), "status": "passed",
                "scope": "exact private synthetic LSL table, schema reads only",
                "schema_sha256": schema["snapshot"]["schema_sha256"],
                "native_binding": schema["snapshot"]["binding"],
                "checks": ["native schema identity/version/columns", "exact integer total", "stale fingerprint rejection",
-                          "extra resource authority refusal", "row/type/key findings", "offline packet reproduction"],
+                          "extra resource authority refusal", "row/type/key findings", "offline packet reproduction",
+                          "native-bound period/currency mismatch", "undeclared row units incomplete", "context packet replay"],
                "native_import_verified": False, "accounting_correctness_verified": False,
                "request_count_verified": False}
     (args.out / "receipt.json").write_text(json.dumps(receipt, indent=2))

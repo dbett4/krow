@@ -77,6 +77,30 @@ python3 scripts/csv_native_acceptance.py --port 8782 --out /private/path/native-
 
 See [native acceptance and restoration receipt](receipts/native-schema-20261007.md).
 
+## Reporting context (optional, explicit)
+
+Enable **Check a declared reporting policy** and bind exact text period/currency
+columns, expected YYYY-MM period, uppercase three-letter currency label, numeric
+amount columns (one exact name per line), unit label and accounting basis. Bind a
+unit column when the source contains one. Supported row-unit labels are `units`,
+`cents`, `thousands`, `millions`; Wingman never derives units from a column name.
+Empty unit binding and unknown accounting basis stay **incomplete**, not matched.
+
+Every supplied row's labels are compared exactly, without trimming, coercion,
+currency conversion or scaling. A wrong period, currency or unit creates separate
+row-level context findings and a needs-review heading even when arithmetic passes.
+Combined issue count includes schema/data and context findings. Exact totals remain
+unscaled arithmetic; mixed labels make them unsuitable for reporting. The monthly
+label check does not implement fiscal calendars, quarter/year-to-date semantics,
+account mapping, sign conventions, FX or accounting-basis correctness.
+
+Version 3 packets retain the explicit policy, context results and context-checker
+build hash and replay them offline, including native-bound packets. A matched policy
+means only that supplied row labels match the declaration. Original source/period/
+unit authority and accounting correctness flags stay unverified; no approval is
+created. Policy edits clear earlier results/download. Clear also clears policy.
+Policy declarations in downloaded evidence can be sensitive.
+
 ## Reproduce a saved packet
 
 Packets include the explicitly declared schema and key policy, so the next reviewer
@@ -143,7 +167,7 @@ See [source inventory, thesis and roadmap](product-development.md).
 ## Verify
 
 ```sh
-python3 -m pytest server/test_csv_checks.py server/test_csv_review.py server/test_csv_native.py -q
+python3 -m pytest server/test_csv_checks.py server/test_csv_review.py server/test_csv_native.py server/test_csv_context.py -q
 AGENT_BROWSER_ENGINE=chrome python3 -m pytest scripts/test_csv_review_browser.py -q
 python3 -m pytest server/ -q
 node extension/content.test.js

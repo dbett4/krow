@@ -62,6 +62,9 @@ Lockfield's sienna logo is not substituted for Wingman's established wing.
   Observation is not native import acceptance; neither mode approves or alters data.
 - Findings, exact valid-value totals, incompleteness and unknowns remain visible.
   A partial total is never labeled a complete column total.
+- Reporting context is optional reviewer-declared policy. Row period/currency/unit
+  mismatches override arithmetic-green UI; absent unit binding or unknown basis
+  stays incomplete. Matching labels is not accounting correctness or approval.
 - Local packet is unreviewed and binds input/schema/validator hashes and UTC time;
   it is neither signed attestation nor native execution proof. Hashes of predictable
   inputs are not anonymization. Column names and totals remain sensitive.
@@ -121,10 +124,18 @@ Native version was not a revision counter; fingerprint also binds updated/schema
 See [native acceptance receipt](receipts/native-schema-20261007.md). This is the
 bounded native observation slice, not complete phase 2/import acceptance or G1–G7.
 
-**Next goal:** explicit reporting period, currency, amount units and accounting
-policy context. Mismatched periods/currencies and undeclared unit policy must not
-inherit arithmetic-green evidence. Preserve unscaled exact totals and distinguish
-declared-policy checks from accounting correctness. Independent G3 labels remain
-a separate gate; durable review and clean-machine proof follow. Dave authorized
-LSL sandbox and local commits only. No push, deployment, merge or change to port
-8770 is authorized. The existing read-only installation is unchanged.
+**Goal 5 implemented:** explicit reporting-period/currency/amount-unit and declared
+accounting-basis context. Wrong-period/mixed-currency/unit labels fail independently
+of exact arithmetic; absent row-unit binding or unknown basis stays incomplete.
+Source units remain unscaled; packet version 3 replays context and native binding.
+797 server tests/13 optional skips, actual native-bound context acceptance and
+Chromium input/export/replay/invalidation plus inspected desktop/narrow-dark states
+passed. See [reporting context receipt](receipts/reporting-context-20261007.md).
+Fiscal-calendar/FX/mapping/basis correctness is not implemented or claimed.
+
+**Next goal:** a repeatable accuracy-evaluation route with explicit label provenance,
+held-out split, per-detector TP/FP/FN and latency. Developer regressions are not
+independent labels; G3 acceptance stays gated. Durable review and clean-machine
+proof follow. Dave authorized LSL sandbox and local commits only. No push,
+deployment, merge or change to port 8770 is authorized. The installed read-only
+service is unchanged.

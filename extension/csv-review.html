@@ -25,6 +25,23 @@
         <div id="columns"></div><button type="button" id="add" class="wm-btn">Add column</button>
         <details><summary>Types, required values and keys</summary><p>Supported types: string, integer, decimal, boolean, date and timestamp. Unknown types stay incomplete. Required means a value cannot be empty. Key columns are compared as exact text; “001” and “1” remain distinct. Select at most eight keys.</p></details>
       </section>
+      <section class="reporting"><h2>Reporting context · Separate from arithmetic</h2>
+        <p class="hint">Without context, totals have no verified period or units. Check exact row labels against your source owner's policy; Wingman never infers currency or converts amounts.</p>
+        <label class="context-toggle"><input type="checkbox" id="use-context"> Check a declared reporting policy</label>
+        <fieldset id="context-fields" disabled hidden><legend>Source-owner policy · Not accounting approval</legend>
+          <div class="context-grid">
+            <div><label for="period-column">Period column</label><input id="period-column" maxlength="128" required placeholder="period"></div>
+            <div><label for="expected-period">Expected period (YYYY-MM)</label><input id="expected-period" required pattern="[0-9]{4}-(0[1-9]|1[0-2])" placeholder="2026-10"></div>
+            <div><label for="currency-column">Currency column</label><input id="currency-column" maxlength="128" required placeholder="currency"></div>
+            <div><label for="expected-currency">Expected currency label</label><input id="expected-currency" required pattern="[A-Z]{3}" maxlength="3" placeholder="USD"></div>
+            <div><label for="unit-column">Unit column (optional)</label><input id="unit-column" maxlength="128" placeholder="unit"></div>
+            <div><label for="expected-unit">Declared amount unit</label><select id="expected-unit"><option value="units">Units</option><option value="cents">Cents</option><option value="thousands">Thousands</option><option value="millions">Millions</option></select></div>
+          </div>
+          <label for="amount-columns">Amount columns · One exact name per line</label><textarea id="amount-columns" required spellcheck="false" placeholder="amount_cents"></textarea>
+          <label for="accounting-basis">Declared accounting basis</label><select id="accounting-basis"><option value="unknown">Unknown / not declared</option><option value="cash">Cash</option><option value="accrual">Accrual</option><option value="modified_accrual">Modified accrual</option></select>
+          <p class="hint">Empty unit column or unknown basis stays incomplete. Basis is recorded, not validated. No fiscal-calendar, FX, account-mapping, sign-convention or accounting-correctness claim.</p>
+        </fieldset>
+      </section>
       <div class="actions"><button type="submit" id="check" class="wm-btn primary">Check CSV</button><button type="button" id="clear" class="wm-btn">Clear inputs</button><button type="button" id="cancel" class="wm-btn" hidden>Stop waiting</button></div>
       <p id="message" role="status" aria-live="polite"></p>
     </form>
