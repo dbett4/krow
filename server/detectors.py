@@ -167,6 +167,11 @@ def detect_blank_linked(cell):
 def detect_broken_ref(cell):
     cv = (cell.get("calculatedValue") or "").strip()
     if cv.upper().startswith(ERROR_PREFIXES):
+        # A complete quoted-literal formula proves text, but only when its
+        # unescaped contents match readback. Unknown/contradictory evidence stays surfaced.
+        literal = re.fullmatch(r'=\s*"((?:[^"]|"")*)"\s*', cell.get("formula") or "")
+        if literal and literal.group(1).replace('""', '"').strip() == cv:
+            return None
         return {
             "kind": "broken-ref",
             "addr": cell["addr"],

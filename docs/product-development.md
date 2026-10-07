@@ -141,8 +141,14 @@ two scoped kinds matched the small sample, not population/independent accuracy.
 803 server tests passed/13 optional skips. See [evaluation guide/results](detector-evaluation.md).
 No independent held-out labels recovered; G3 remains open.
 
-**Next goal:** eliminate the demonstrated explicit-literal false alarm without
-hiding genuine error tokens, then implement durable evidence-bound review decisions.
+**Goal 7 implemented:** eliminated the demonstrated explicit-literal false alarm
+only when complete literal contents match calculated readback. Unknown/nonliteral/
+contradictory evidence and genuine error tokens still surface. 18 focused cases,
+821 server tests/13 optional skips and 64 detector self-checks passed. Unchanged
+calibration labels now score 100% for three scoped kinds, not independent G3 proof.
+
+**Next goal:** durable evidence-bound review decisions; first refresh the private
+CSV bundle so the new native/context runtime is included and fresh extraction works.
 Independent labels and clean-machine proof remain gates. Dave authorized LSL
 sandbox and local commits only. No push, deployment, merge or change to port 8770
 is authorized. The installed read-only service is unchanged.

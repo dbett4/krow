@@ -51,10 +51,28 @@ and user-visible queue grouping are not measured here.
 Observed p50 0.072 ms / p95 0.322 ms per three-cell case; not Workiva latency.
 Excluded five findings in three kinds: accounting-column number (2), prefix
 mismatch (2), degenerate-placeholder formula (1). Literal formula `="#REF!note"`
-is currently reported broken because the detector matches an error-token prefix.
+was reported broken because the detector matched an error-token prefix.
 This is a calibration false alarm, not a measured production false-alarm rate.
 No detector was tuned to conceal it in this measurement milestone.
 
 Evidence: `.amp/in/artifacts/detector-calibration-result.json`. Six scorer/CLI
 regressions verify asymmetric precision vs recall, missed labels, empty samples,
 split leakage, claimed independence and no raw-source disclosure. G3 stays open.
+
+## Follow-up: demonstrated literal-text false alarm
+
+A complete quoted-literal formula now proves intentional text only when its
+unescaped contents match calculated readback. Nonliteral formulas, missing formula
+evidence and contradictory calculated errors still surface. This changes no native
+read/write route or repair capability. Four literal regressions failed before the
+fix, then all 18 literal/error-token/contradiction cases passed. Detector self-checks
+passed 64/64; full server suite passed **821 tests, 13 optional vision skips**.
+
+Same frozen corpus, unchanged labels: each of the three kinds now has 2 TP, 0 FP,
+0 FN and 16 TN. Broken-ref calibration precision improved from 66.7% to 100%, with
+recall staying 100%; p50 0.076 ms / p95 0.235 ms on this run. Sample remains tiny,
+developer-authored and used for tuning; it is explicitly not held-out or G3 proof.
+Other string-producing formulas can remain judgment/false-alarm candidates; no
+general string-result inference was added. Native formula/result acceptance remains
+unverified. Evidence: `error-literal-red.log`, `server-tests-literal.log` and
+`detector-calibration-after-literal.json` under `.amp/in/artifacts/`.
