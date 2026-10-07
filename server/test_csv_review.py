@@ -69,7 +69,10 @@ def test_packet_preserves_exact_evidence_and_unknowns_without_raw_records():
     assert result["native_schema_verified"] is False
     assert result["native_import_verified"] is False
     assert result["accounting_correctness_verified"] is False
-    assert "001" not in json.dumps(packet)
+    # A numeric substring can occur in an unrelated UTC timestamp or hash.
+    private = review({**INPUT, "csv_text": INPUT["csv_text"].replace("001", "private-key-do-not-export")})
+    assert "private-key-do-not-export" not in json.dumps(private)
+    assert "csv_text" not in packet
 
 
 def test_fingerprints_change_for_different_csv_schema_and_key_policy():

@@ -32,9 +32,12 @@ evidence packet. Replay that packet against the original CSV with
 `python3 server/csv_review.py --verify-packet packet.json --csv source.csv`.
 
 This reuses the Lockfield Workiva Plugin's deterministic validator and Wingman's
-existing visual identity. It makes no Workiva requests, stores no uploaded rows,
-and cannot import, repair or approve data. It does not verify a native schema,
-period, units or accounting. It is separate from the installed extension and its
+existing visual identity. Default mode makes no Workiva requests. Optional
+`--sandbox-table` mode reads only an operator-bound private synthetic LSL table
+through the existing `wk` grant; explicit schema loading and fresh readback bind
+metadata to the packet. Neither mode stores uploaded rows or imports, repairs or
+approves data. Native observation is not import, period, unit or accounting
+acceptance. It is separate from the installed extension and its
 read-only backend. See [setup, privacy and verification](docs/csv-review.md) and
 [the source inventory and phased product plan](docs/product-development.md).
 

@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Private loopback CSV review, reusing the Lockfield Workiva Plugin validator.
 
-No credentials, Workiva client, persistence, or outbound requests. This is not the
-extension backend and must not replace the deployed read-only service.
+Default mode has no outbound requests. Optional exact synthetic-table schema reads
+use wk's existing grant, never credentials in this process or Workiva writes.
+This is not the extension backend and must not replace the deployed service.
 """
 import argparse
 from datetime import datetime, timezone
@@ -58,6 +59,9 @@ def verify_packet(packet, csv_text):
     except ValueError:
         raise ServiceError("invalid_packet", "Packet needs an ISO timestamp with timezone.")
     expected = review({"csv_text": csv_text, **schema})
+    if packet.get("packet_version") == 2 and "native_schema" in packet:
+        from csv_native import bind_packet
+        expected = bind_packet(expected, packet.get("native_schema"))
     # Strict JSON comparisons distinguish booleans from numeric zero/one.
     fields = (set(packet) | set(expected)) - {"generated_at"}
     mismatches = sorted(field for field in fields if field not in packet or field not in expected
@@ -114,7 +118,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.local_request():
             return
-        if self.path != "/api/review":
+        if self.path not in {"/api/review", "/api/schema"}:
             self.reply(404, {"error": "Not found."})
             return
         try:
@@ -126,7 +130,25 @@ class Handler(BaseHTTPRequestHandler):
             if len(raw) != length:
                 raise ValueError("Incomplete request")
             arguments = json.loads(raw.decode("utf-8"))
-            packet = review(arguments)
+            if self.path == "/api/schema":
+                if arguments != {} or self.server.native_schema is None:
+                    raise ServiceError("native_not_configured", "No native sandbox binding is configured. Use your declared schema or start with --sandbox-table and the approved LSL read grant.")
+                from csv_native import project
+                snapshot = self.server.native_schema.read()
+                packet = {"snapshot": snapshot, "columns": project(snapshot)}
+            elif isinstance(arguments, dict) and "native_schema_sha256" in arguments:
+                if self.server.native_schema is None:
+                    raise ServiceError("native_not_configured", "No native sandbox binding is configured.")
+                from csv_native import bind_packet
+                arguments = dict(arguments)
+                expected_hash = arguments.pop("native_schema_sha256")
+                packet = review(arguments)  # Reject extra authority before any live read.
+                snapshot = self.server.native_schema.read()
+                if expected_hash != snapshot["schema_sha256"]:
+                    raise ServiceError("native_schema_changed", "The native schema/version changed. Reload it and run a new check; earlier evidence is not current.")
+                packet = bind_packet(packet, snapshot)
+            else:
+                packet = review(arguments)
         except ServiceError as error:
             self.reply(400, {"error": str(error), "code": error.code})
             return
@@ -139,9 +161,12 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", type=int, default=8781)
+    parser.add_argument("--sandbox-table", help="One exact private synthetic Wdata table in the authorized LSL account. Read-only via wk.")
     parser.add_argument("--verify-packet", type=Path, help="Recompute a downloaded JSON packet; does not start a service.")
     parser.add_argument("--csv", type=Path, help="Original UTF-8 CSV for packet replay; explicit local file read.")
     args = parser.parse_args()
+    if args.verify_packet and args.sandbox_table:
+        parser.error("Offline replay does not use a live sandbox binding")
     if bool(args.verify_packet) != bool(args.csv):
         parser.error("--verify-packet and --csv must be supplied together")
     if args.verify_packet:
@@ -159,6 +184,8 @@ def main():
         print(json.dumps(result))
         return 0 if result["status"] == "reproduced" else 1
     server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
+    from csv_native import NativeSchema
+    server.native_schema = NativeSchema(args.sandbox_table) if args.sandbox_table else None
     print(f"Wingman CSV review ready on port {server.server_port}; loopback only, no stored inputs.", flush=True)
     try:
         server.serve_forever()

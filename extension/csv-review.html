@@ -12,7 +12,7 @@
 <body>
 <main>
   <header><img src="icon.png" width="44" height="44" alt=""><div><p class="eyebrow">Wingman / Pre-import review</p><h1>Check a CSV before it reaches Wdata.</h1><p>Find row-level problems. Keep the evidence for your review.</p></div></header>
-  <div class="boundary"><strong>Private local screen · No Workiva connection</strong><p>Your inputs go to this VPS process only when you run a check. They are not saved. A local pass does not verify the native schema, import, period, units or accounting.</p></div>
+  <div class="boundary"><strong id="boundary-title">Private local screen · No Workiva connection</strong><p id="boundary-description">Your inputs go to this VPS process only when you run a check. They are not saved. A local pass does not verify the native schema, import, period, units or accounting.</p></div>
   <div class="workspace">
     <form id="review-form">
       <section><div class="section-title"><h2>1. Supply your CSV</h2><button type="button" id="sample" class="wm-btn">Try a fictional example</button></div>
@@ -21,6 +21,7 @@
         <p class="hint">Up to 256 KiB, 1,000 data records and 64 columns. Blank records are checked, not dropped.</p>
       </section>
       <section><h2>2. Declare the expected schema</h2><p class="hint">Use the exact column order and types from your approved source. Wingman does not infer them from the CSV.</p>
+        <details><summary>Optional native LSL sandbox schema</summary><p>Read only the synthetic table configured by your operator. No CSV is sent to Workiva. The schema and version are reread when you check; changes require reloading. This is not import or accounting acceptance.</p><button type="button" id="load-native" class="wm-btn">Load configured sandbox schema</button><button type="button" id="manual-schema" class="wm-btn" hidden>Use declared schema instead</button><p id="schema-status" role="status" class="hint">Not loaded. The default workflow needs no Workiva grant.</p></details>
         <div id="columns"></div><button type="button" id="add" class="wm-btn">Add column</button>
         <details><summary>Types, required values and keys</summary><p>Supported types: string, integer, decimal, boolean, date and timestamp. Unknown types stay incomplete. Required means a value cannot be empty. Key columns are compared as exact text; “001” and “1” remain distinct. Select at most eight keys.</p></details>
       </section>

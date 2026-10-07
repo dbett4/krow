@@ -1,8 +1,10 @@
-/* No storage, analytics or third-party requests. All supplied text is rendered as text. */
+/* No browser storage, analytics or third-party assets. Native reads are explicit. */
 (function () {
   "use strict";
   const $ = (id) => document.getElementById(id);
   let packet = null, generation = 0, controller = null, serial = 0;
+  let nativeSchema = null;
+  const defaultBoundary = $("boundary-description").textContent;
   const types = ["string", "integer", "decimal", "boolean", "date", "timestamp"];
   function el(tag, text, className) {
     const node = document.createElement(tag);
@@ -36,11 +38,50 @@
     row.append(fields, flags); $("columns").append(row);
     return nameField;
   }
+  function nativeMode(schema) {
+    nativeSchema = schema;
+    $("manual-schema").hidden = !schema;
+    $("add").disabled = !!schema;
+    $("columns").classList.toggle("native-columns", !!schema);
+    [...$("columns").children].forEach((row, index) => {
+      row.querySelector(".native-summary")?.remove();
+      row.querySelector(".required").parentElement.hidden = !!schema;
+      row.querySelector(".key").removeAttribute("aria-label");
+      if (schema) {
+        const item = schema.columns[index], summary = el("div", undefined, "native-summary");
+        summary.append(el("strong", item.name), el("small", item.type + " · " + (item.required === undefined ? "Requiredness unknown" : item.required ? "Required" : "Nullable")));
+        row.querySelector(".key").setAttribute("aria-label", "Key column " + item.name);
+        row.prepend(summary);
+      }
+    });
+    $("columns").querySelectorAll(".name, .type, .required, .remove").forEach((node) => { node.disabled = !!schema; });
+    $("boundary-title").textContent = schema ? "Private sandbox schema · Read-only Workiva metadata" : "Private local screen · No Workiva connection";
+    $("boundary-description").textContent = schema ? "CSV values stay in this VPS process. Only the configured synthetic table schema is read from Workiva. No import, period, units or accounting approval is established." : defaultBoundary;
+    $("schema-status").textContent = schema ? schema.snapshot.binding.table_name + " · Version " + schema.snapshot.binding.version + " · Observed " + new Date(schema.snapshot.observed_at).toLocaleString() + ". Native fields locked; keys remain your explicit policy. Full schema includes managed columns; import mapping is not checked." : "Declared schema. Not native-verified.";
+  }
+  $("manual-schema").addEventListener("click", () => { invalidate(); nativeMode(null); });
+  $("load-native").addEventListener("click", async () => {
+    invalidate("Reading only the configured native sandbox schema…");
+    const request = generation, abort = new AbortController(); controller = abort;
+    $("check").disabled = true; $("cancel").hidden = false;
+    const timeout = setTimeout(() => abort.abort(), 10000);
+    try {
+      const response = await fetch("/api/schema", { method: "POST", headers: { "Content-Type": "application/json", "X-Wingman-Review": "1" }, body: "{}", signal: abort.signal, cache: "no-store" });
+      const data = await response.json(); if (request !== generation) return;
+      if (!response.ok) throw new Error(data.error || "Sandbox schema unavailable.");
+      $("columns").replaceChildren(); data.columns.forEach((item) => column(item.name, item.type, item.required === true));
+      nativeMode(data); $("message").textContent = "Native schema loaded. Supply your CSV and select any explicit key policy, then check.";
+    } catch (error) {
+      if (request === generation) $("message").textContent = error.name === "AbortError" ? "Schema read timed out. Your inputs remain; try reloading the sandbox schema." : (error instanceof TypeError ? "Sandbox service unavailable. Your inputs remain." : error.message);
+    } finally {
+      clearTimeout(timeout); if (request === generation) { controller = null; $("check").disabled = false; $("cancel").hidden = true; }
+    }
+  });
   function render(data) {
     const result = data.result, host = $("results"); host.replaceChildren();
     host.append(el("p", "3. Review the evidence", "eyebrow"));
     const title = { passed: "Supported checks passed", failed: "Issues need your review", incomplete: "Some checks remain unknown" }[result.screen_status];
-    host.append(el("h2", title, "result-title"), el("p", "Caller-supplied schema · Not native-verified"));
+    host.append(el("h2", data.native_schema_observed && result.screen_status === "passed" ? "Supported local checks passed" : title, "result-title"), el("p", data.native_schema_observed ? "Native sandbox schema reread · Local checks, not native import acceptance" : "Caller-supplied schema · Not native-verified"));
     const stats = el("div", undefined, "stats");
     [[result.row_count, "Data records checked"], [result.issue_count, "Issues found"]].forEach(([count, text]) => { const item = el("div", undefined, "stat"); item.append(el("strong", count), el("span", text)); stats.append(item); }); host.append(stats);
     host.append(el("h3", "Exact totals · Source units"));
@@ -67,10 +108,11 @@
   $("review-form").addEventListener("input", () => invalidate());
   $("sample").addEventListener("click", () => {
     invalidate("Fictional example loaded. Check it to find a duplicate key and an invalid amount.");
+    nativeMode(null);
     $("columns").replaceChildren(); column("department", "string", true, true); column("actual", "decimal", true);
     $("csv").value = "department,actual\nFinance,1250.25\nOperations,-50.10\nFinance,invalid\n"; $("file").value = "";
   });
-  $("clear").addEventListener("click", () => { invalidate("Inputs cleared. No review data is retained."); $("csv").value = ""; $("file").value = ""; $("columns").replaceChildren(); column().focus(); });
+  $("clear").addEventListener("click", () => { invalidate("Inputs cleared. No review data is retained."); nativeMode(null); $("csv").value = ""; $("file").value = ""; $("columns").replaceChildren(); column().focus(); });
   $("cancel").addEventListener("click", () => invalidate("Stopped waiting. No result is retained; the bounded local check may finish on the server."));
   $("file").addEventListener("change", async () => {
     invalidate(); const request = generation, file = $("file").files[0]; if (!file) return;
@@ -80,13 +122,13 @@
   });
   $("review-form").addEventListener("submit", async (event) => {
     event.preventDefault(); invalidate("");
-    const rows = [...$("columns").children], columns = rows.map((row) => ({ name: row.querySelector(".name").value, type: row.querySelector(".type").value, required: row.querySelector(".required").checked }));
+    const rows = [...$("columns").children], columns = nativeSchema ? nativeSchema.columns : rows.map((row) => ({ name: row.querySelector(".name").value, type: row.querySelector(".type").value, required: row.querySelector(".required").checked }));
     const key_columns = rows.filter((row) => row.querySelector(".key").checked).map((row) => row.querySelector(".name").value);
     const request = generation, abort = new AbortController(); controller = abort;
     $("check").disabled = true; $("cancel").hidden = false; $("message").textContent = "Checking every supplied record…";
     const timeout = setTimeout(() => abort.abort(), 10000);
     try {
-      const response = await fetch("/api/review", { method: "POST", headers: { "Content-Type": "application/json", "X-Wingman-Review": "1" }, body: JSON.stringify({ csv_text: $("csv").value, columns, key_columns }), signal: abort.signal, cache: "no-store" });
+      const response = await fetch("/api/review", { method: "POST", headers: { "Content-Type": "application/json", "X-Wingman-Review": "1" }, body: JSON.stringify({ csv_text: $("csv").value, columns, key_columns, ...(nativeSchema ? { native_schema_sha256: nativeSchema.snapshot.schema_sha256 } : {}) }), signal: abort.signal, cache: "no-store" });
       const data = await response.json(); if (request !== generation) return;
       if (!response.ok) {
         const guidance = data.code === "invalid_csv" ? " Check that the header is present and every quoted field is closed. Re-export the CSV and try again." : "";

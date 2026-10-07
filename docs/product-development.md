@@ -56,8 +56,10 @@ Lockfield's sienna logo is not substituted for Wingman's established wing.
 ## Trust model
 
 - Existing live deployment stays scoped/read-only. No client files are touched.
-- New CSV review uses caller-supplied schema, not a verified native schema. It
-  makes no Workiva requests and cannot import, approve or alter data.
+- Default CSV review uses caller-supplied schema with no Workiva requests. Optional
+  native mode explicitly reads one configured private synthetic LSL table through
+  the existing wk grant and rereads its schema/timestamp fingerprint on check.
+  Observation is not native import acceptance; neither mode approves or alters data.
 - Findings, exact valid-value totals, incompleteness and unknowns remain visible.
   A partial total is never labeled a complete column total.
 - Local packet is unreviewed and binds input/schema/validator hashes and UTC time;
@@ -110,11 +112,19 @@ CSS/icon, tests and guides. Acceptance is a fresh extraction that serves all ass
 checks an asymmetric decimal input and replays the resulting packet. This is a local
 packaging smoke, not a clean-machine customer pilot or public release.
 
-**Next goal:** native schema-backed review against one approved synthetic Wdata
-table. Fix the workspace/table, read grant, identity and schema evidence contract
-before implementation acceptance. Do not substitute a fixture for native proof or
-silently enable a historical operator grant. Independent G3 labeling remains a
-separate gate. Dave subsequently authorized the LSL sandbox and local milestone
-commits; use only synthetic data and the existing grant. No push, deployment,
-merge or change to port 8770 is authorized. The existing read-only installation
-is unchanged.
+**Goal 4 implemented:** native schema-backed review against one approved private
+synthetic Wdata table. Actual schema reads, asymmetric 999-total/key/type cases,
+metadata change → stale rejection → restore/readback and offline replay passed.
+780 server tests passed with 13 optional vision skips; default Chromium flow and
+native load/keyboard/download/reset plus desktop/narrow-dark inspection passed.
+Native version was not a revision counter; fingerprint also binds updated/schema.
+See [native acceptance receipt](receipts/native-schema-20261007.md). This is the
+bounded native observation slice, not complete phase 2/import acceptance or G1–G7.
+
+**Next goal:** explicit reporting period, currency, amount units and accounting
+policy context. Mismatched periods/currencies and undeclared unit policy must not
+inherit arithmetic-green evidence. Preserve unscaled exact totals and distinguish
+declared-policy checks from accounting correctness. Independent G3 labels remain
+a separate gate; durable review and clean-machine proof follow. Dave authorized
+LSL sandbox and local commits only. No push, deployment, merge or change to port
+8770 is authorized. The existing read-only installation is unchanged.

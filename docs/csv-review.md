@@ -1,7 +1,8 @@
 # Wingman CSV review
 
-This private read-only tool screens a real CSV against a schema you explicitly
-supply. It is not a Workiva upload tool and does not connect to Workiva.
+This private read-only tool screens a real CSV against an explicit schema. Default
+mode does not connect to Workiva. An optional operator-bound LSL sandbox mode reads
+one synthetic table's native schema; neither mode uploads or changes Workiva data.
 
 ## Run and use
 
@@ -11,7 +12,7 @@ From the Wingman checkout on the VPS:
 python3 server/csv_review.py --port 8781
 ```
 
-Python 3.11+; no pip install, credentials or model required. Open
+Default mode: Python 3.11+; no pip install, credentials or model required. Open
 `http://127.0.0.1:8781` in a browser on the VPS. A remote control terminal may use
 its existing verified SSH route: `ssh -N -L 8781:127.0.0.1:8781 davgent`, then open
 that exact loopback address. This forward is transport only; no Mac production
@@ -31,6 +32,50 @@ unauthenticated tool on a public interface or reverse proxy.
    evidence and disables download. Choose **Download review evidence** explicitly
    to retain the JSON packet; it remains unreviewed, not accounting approval.
 6. Clear inputs when finished. Stop with Ctrl+C. Restart forgets all process data.
+
+## Native LSL sandbox schema
+
+Dave authorized the existing LSL sandbox grant, not customer production or broader
+grants. The scoped acceptance table is `0f618794c8374c8fa18f872158f058ed`, named
+`zz Wingman Synthetic CSV Acceptance 20261007`. It contains no imported datasets.
+
+```sh
+python3 server/csv_review.py --port 8782 \
+  --sandbox-table 0f618794c8374c8fa18f872158f058ed
+```
+
+This profile additionally requires the adopted `wk` command and its existing LSL
+read grant on the VPS. Do not copy credentials into Wingman, the browser or a bundle.
+Use exact loopback port 8782 (or an approved SSH forward) as above.
+
+Open **Optional native LSL sandbox schema**, then **Load configured sandbox schema**.
+Wingman proves the account through `wk`, reads only the configured ID, checks its
+native account/table binding and unshared synthetic name, and locks the schema.
+Key policy is still explicit. Each check rereads the schema and compares its full
+fingerprint, native `updated` field and `version`; changed evidence requires reload.
+The native `version` remained 3 across an actual update, so it is **not an optimistic
+concurrency counter**. This workflow enables no Workiva writes.
+
+Wdata supplies four managed columns. This bounded full-schema screen includes them
+in exact header order; it does not infer an import-column mapping or hide them. The
+acceptance CSV has `record_id,amount_cents,period,currency,_tags,_filename,_timestamp,_userid`,
+with the managed fields blank. `mode=required`/`nullable` maps explicitly; unknown
+modes/types remain unsupported. Native `float` is not silently treated as decimal.
+`amount_cents` totals are integer source units, never automatically scaled to dollars.
+
+Native packets use version 2 and retain the observed binding and fingerprint.
+Offline replay checks their internal consistency, not a fresh live schema, authorship
+or native import acceptance. The checker still reports local validation and unknown
+accounting/period/unit authority. **Use declared schema instead** visibly drops native
+binding and clears earlier evidence. No native binding is configured in default mode.
+
+Opt-in acceptance (real local service and native sandbox schema, fictional CSV):
+
+```sh
+python3 scripts/csv_native_acceptance.py --port 8782 --out /private/path/native-proof
+```
+
+See [native acceptance and restoration receipt](receipts/native-schema-20261007.md).
 
 ## Reproduce a saved packet
 
@@ -70,7 +115,8 @@ ten-second deadline keeps your inputs, but no result/download. Stop waiting and
 input changes ignore late replies; they do not cancel a server computation.
 Restart the CSV process and check again; there is no mutation to replay.
 
-The tool makes no outbound or Workiva requests. It does not write uploaded inputs
+Default mode makes no outbound or Workiva requests. Native mode uses `wk` for exact
+schema reads and grant verification only; it sends no CSV to Workiva. It does not write uploaded inputs
 or request logs. It does not use browser local/session storage, analytics or third-
 party assets. Packets include hashes, schema column names, row locations and totals,
 not raw CSV rows. Those fields can still be sensitive; hashes of guessable inputs
@@ -97,7 +143,7 @@ See [source inventory, thesis and roadmap](product-development.md).
 ## Verify
 
 ```sh
-python3 -m pytest server/test_csv_checks.py server/test_csv_review.py -q
+python3 -m pytest server/test_csv_checks.py server/test_csv_review.py server/test_csv_native.py -q
 AGENT_BROWSER_ENGINE=chrome python3 -m pytest scripts/test_csv_review_browser.py -q
 python3 -m pytest server/ -q
 node extension/content.test.js
