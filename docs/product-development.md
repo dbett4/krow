@@ -133,9 +133,16 @@ Chromium input/export/replay/invalidation plus inspected desktop/narrow-dark sta
 passed. See [reporting context receipt](receipts/reporting-context-20261007.md).
 Fiscal-calendar/FX/mapping/basis correctness is not implemented or claimed.
 
-**Next goal:** a repeatable accuracy-evaluation route with explicit label provenance,
-held-out split, per-detector TP/FP/FN and latency. Developer regressions are not
-independent labels; G3 acceptance stays gated. Durable review and clean-machine
-proof follow. Dave authorized LSL sandbox and local commits only. No push,
-deployment, merge or change to port 8770 is authorized. The installed read-only
-service is unchanged.
+**Goal 6 implemented:** repeatable offline detector measurement with explicit label
+provenance/split, TP/FP/FN/TN, precision/recall, false-alarm/missed locations, excluded
+kinds, latency and build/corpus hashes. Six developer-authored cases/18 cells found
+a literal-error-text false alarm: broken-ref precision 66.7%, recall 100%. Other
+two scoped kinds matched the small sample, not population/independent accuracy.
+803 server tests passed/13 optional skips. See [evaluation guide/results](detector-evaluation.md).
+No independent held-out labels recovered; G3 remains open.
+
+**Next goal:** eliminate the demonstrated explicit-literal false alarm without
+hiding genuine error tokens, then implement durable evidence-bound review decisions.
+Independent labels and clean-machine proof remain gates. Dave authorized LSL
+sandbox and local commits only. No push, deployment, merge or change to port 8770
+is authorized. The installed read-only service is unchanged.

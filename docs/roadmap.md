@@ -288,6 +288,12 @@ change accompanies this candidate.
   for tuning. Report per-detector precision/recall, sample counts, false alarms,
   exclusions, elapsed time and API requests through one repeatable command.
 
+October 7 measurement route: [offline evaluator](detector-evaluation.md) now runs
+actual normalized-cell detectors and records explicit label provenance, split,
+counts, errors, exclusions and latency. Included developer calibration is not
+independent/held-out acceptance; G3 remains open. Initial literal-text lookalike
+exposed a broken-ref false alarm rather than manufacturing a green benchmark.
+
 Done when findings and next actions survive blind review, and enabled detectors
 meet thresholds fixed before evaluating the held-out set. Initial product targets:
 **at least 95% precision and 90% recall for each definite-defect detector within

@@ -1,0 +1,65 @@
+{
+  "corpus_version": 1,
+  "label_provenance": {
+    "author": "Wingman implementation session T-01a1181d-9e5f-74a8-89f3-3bad452d8ca6",
+    "method": "Developer-authored fictional observed-error/blank-link/contrast cases and legitimate lookalikes. Calibration only; not independent accounting or native error-type adjudication.",
+    "independent": false
+  },
+  "detector_kinds": ["broken-ref", "blank-linked-cell", "low-contrast"],
+  "cases": [
+    {
+      "id": "error-tokens", "split": "calibration",
+      "cells": [
+        {"addr": "A1", "calculatedValue": "#REF!", "value": "#REF!"},
+        {"addr": "A2", "calculatedValue": "#DIV/0!", "value": "#DIV/0!"},
+        {"addr": "A3", "calculatedValue": "0", "value": "0"}
+      ],
+      "expected": [{"kind": "broken-ref", "addr": "A1"}, {"kind": "broken-ref", "addr": "A2"}]
+    },
+    {
+      "id": "literal-error-lookalikes", "split": "calibration",
+      "cells": [
+        {"addr": "B1", "formula": "=\"#REF!note\"", "calculatedValue": "#REF!note", "value": "#REF!note"},
+        {"addr": "B2", "value": "#REF! documentation"},
+        {"addr": "B3", "formula": "=0", "calculatedValue": "0", "value": "0"}
+      ],
+      "expected": []
+    },
+    {
+      "id": "empty-linked", "split": "calibration",
+      "cells": [
+        {"addr": "C1", "isLinked": true, "value": ""},
+        {"addr": "C2", "isLinked": true, "linkCachedEmpty": true, "value": ""},
+        {"addr": "C3", "isLinked": false, "value": ""}
+      ],
+      "expected": [{"kind": "blank-linked-cell", "addr": "C1"}, {"kind": "blank-linked-cell", "addr": "C2"}]
+    },
+    {
+      "id": "legitimate-linked-zero", "split": "calibration",
+      "cells": [
+        {"addr": "D1", "isLinked": true, "value": "0", "calculatedValue": "0"},
+        {"addr": "D2", "isLinked": true, "value": "Revenue"},
+        {"addr": "D3", "isLinked": false, "linkCachedEmpty": true, "value": ""}
+      ],
+      "expected": []
+    },
+    {
+      "id": "contrast-defaults", "split": "calibration",
+      "cells": [
+        {"addr": "E1", "value": "Revenue", "fontColor": "#FFFFFF", "backgroundColor": "#FFFFFF"},
+        {"addr": "E2", "value": "Expenses", "backgroundColor": "#000000"},
+        {"addr": "E3", "value": "Balance", "fontColor": "#000000", "backgroundColor": "#FFFFFF"}
+      ],
+      "expected": [{"kind": "low-contrast", "addr": "E1"}, {"kind": "low-contrast", "addr": "E2"}]
+    },
+    {
+      "id": "empty-and-readable", "split": "calibration",
+      "cells": [
+        {"addr": "F1", "value": "", "fontColor": "#FFFFFF", "backgroundColor": "#FFFFFF"},
+        {"addr": "F2", "value": "Net assets"},
+        {"addr": "F3", "value": "Restricted", "fontColor": "#FFFFFF", "backgroundColor": "#000000"}
+      ],
+      "expected": []
+    }
+  ]
+}
