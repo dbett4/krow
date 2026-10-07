@@ -147,8 +147,15 @@ contradictory evidence and genuine error tokens still surface. 18 focused cases,
 821 server tests/13 optional skips and 64 detector self-checks passed. Unchanged
 calibration labels now score 100% for three scoped kinds, not independent G3 proof.
 
-**Next goal:** durable evidence-bound review decisions; first refresh the private
-CSV bundle so the new native/context runtime is included and fresh extraction works.
+**Goal 8 implemented:** reproducible allowlisted private CSV packaging now includes
+native/context modules and scoped tests/guides; refuses existing output. Automated
+fresh extraction passes with empty home/minimal environment, no site packages,
+no wk on PATH, all assets, explicit-context 999 total and offline replay. This is
+dependency-isolation proof, not a separate clean-machine reviewer or release gate.
+See [private bundle/onboarding/rollback guide](csv-review.md#private-portable-bundle-and-rollback).
+
+**Next goal:** durable evidence-bound review decisions with explicit acceptance
+reason, restart retention, changed-evidence reopening and partial-scan safeguards.
 Independent labels and clean-machine proof remain gates. Dave authorized LSL
 sandbox and local commits only. No push, deployment, merge or change to port 8770
 is authorized. The installed read-only service is unchanged.

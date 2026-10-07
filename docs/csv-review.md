@@ -33,6 +33,38 @@ unauthenticated tool on a public interface or reverse proxy.
    to retain the JSON packet; it remains unreviewed, not accounting approval.
 6. Clear inputs when finished. Stop with Ctrl+C. Restart forgets all process data.
 
+## Private portable bundle and rollback
+
+From the source checkout, build a **new** private ZIP path in an existing directory:
+
+```sh
+python3 scripts/build_csv_review_bundle.py /private/wingman-csv-review-v3.zip
+python3 -m pytest scripts/test_csv_bundle.py -q
+```
+
+The builder uses a fixed allowlist, reproducible ZIP metadata and refuses overwrite.
+It prints SHA-256; compare the hash through your trusted private handoff channel
+before extraction. This hash is not a signature. No credentials, local configs,
+customer data or installed-service files are included. The bundle contains only
+the CSV runtime/native-schema/context modules, assets, scoped tests and guides,
+not the full inspector or detector evaluator runtime.
+
+Extract into a new private directory on the VPS, then run
+`python3 server/csv_review.py --port 8781` (select a free loopback port).
+Do not replace the port 8770 installation. Default mode needs
+Python 3.11+ only. Native mode separately needs the already authorized wk grant;
+the ZIP does not provision or expand it. Use the fictional example before approved
+source data. Keep an older bundle/service directory unchanged for rollback: stop
+only your new preview, rerun the retained older directory on its private port and
+recheck source inputs. No database migration or Workiva mutation is involved.
+
+The automated smoke uses a fresh extraction, empty home/minimal environment,
+Python `-S` (no site packages) and no wk on PATH. It checks all assets, absent native
+configuration, exact 999 total, reporting policy and offline packet replay. This is
+an isolated dependency/onboarding smoke on this VPS, **not a clean-machine reviewer
+pilot, authenticated hosted product or approved private release**. A new reviewer
+still needs independent timed install/access/recovery and owner acceptance.
+
 ## Native LSL sandbox schema
 
 Dave authorized the existing LSL sandbox grant, not customer production or broader
