@@ -23,6 +23,21 @@ or endorsed by Workiva.
 
 ![Tests](https://github.com/dbett4/wingman/actions/workflows/test.yml/badge.svg)
 
+## Review a real CSV before import
+
+Run `python3 server/csv_review.py` on the VPS and open its private loopback port
+8781. Supply a UTF-8 CSV and an explicit expected schema; review row-level issues,
+exact totals and completeness limits, then explicitly download an unreviewed
+evidence packet. Replay that packet against the original CSV with
+`python3 server/csv_review.py --verify-packet packet.json --csv source.csv`.
+
+This reuses the Lockfield Workiva Plugin's deterministic validator and Wingman's
+existing visual identity. It makes no Workiva requests, stores no uploaded rows,
+and cannot import, repair or approve data. It does not verify a native schema,
+period, units or accounting. It is separate from the installed extension and its
+read-only backend. See [setup, privacy and verification](docs/csv-review.md) and
+[the source inventory and phased product plan](docs/product-development.md).
+
 ## Try it without credentials
 
 ```bash
