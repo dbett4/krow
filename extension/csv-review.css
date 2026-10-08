@@ -35,6 +35,16 @@ legend { color: var(--muted); font-size: 12px; padding: 0 6px; }
 #amount-columns { min-height: 80px; margin-bottom: 12px; }
 .context-evidence { border: 1px solid var(--border-soft); border-radius: 8px; padding: 14px; margin: 16px 0; background: var(--surface2); }
 .context-evidence h3 { margin-top: 0; }
+#review-scope input { margin-bottom: 12px; }
+#load-review { margin-top: 8px; }
+#review-journal:not(:empty) { border: 1px solid var(--border-soft); border-radius: 10px; padding: 20px; overflow-wrap: anywhere; }
+#review-journal > button { margin-top: 16px; }
+.decision-card { border-top: 1px solid var(--border-soft); margin-top: 16px; padding-top: 16px; }
+.decision-card form { margin-top: 14px; }
+.decision-card input:not([type=checkbox]) { margin-bottom: 12px; }
+.decision-reason { min-height: 80px; }
+.decision-state { padding: 8px; background: var(--surface2); border-radius: 6px; font-weight: 600; }
+.decision-card small { color: var(--muted); }
 .actions { display: flex; gap: 8px; flex-wrap: wrap; }
 [hidden] { display: none !important; }
 #message { min-height: 24px; overflow-wrap: anywhere; }

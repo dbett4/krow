@@ -98,7 +98,7 @@ def test_csv_review_browser(csv_url, tmp_path):
             for width in (1440, 390):
                 run("set", "viewport", str(width), "1000")
                 check("document.documentElement.scrollWidth <= innerWidth")
-                check("[...document.querySelectorAll('button')].filter(b=>!b.hidden).every(b=>b.getBoundingClientRect().height>=40)")
+                check("[...document.querySelectorAll('button')].filter(b=>b.checkVisibility()).every(b=>b.getBoundingClientRect().height>=40)")
                 run("screenshot", str(tmp_path / f"csv-{mode}-{width}.png"), "--full")
         run("click", "#clear")
         check("document.getElementById('csv').value === '' && document.getElementById('download').disabled")

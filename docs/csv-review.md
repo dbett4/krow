@@ -31,7 +31,65 @@ unauthenticated tool on a public interface or reverse proxy.
 5. Correct your source outside Wingman and recheck. Any input edit clears earlier
    evidence and disables download. Choose **Download review evidence** explicitly
    to retain the JSON packet; it remains unreviewed, not accounting approval.
-6. Clear inputs when finished. Stop with Ctrl+C. Restart forgets all process data.
+6. Clear inputs when finished. Stop with Ctrl+C. Default mode forgets all review
+   data on restart; the explicitly enabled journal described below persists.
+
+## Durable private review decisions (opt-in)
+
+Create a new owner-only directory on the VPS and explicitly enable a journal:
+
+```sh
+mkdir -m 700 /private/wingman-review
+python3 server/csv_review.py --port 8784 --review-db /private/wingman-review/review.db
+```
+
+Do not reuse an unrelated SQLite database. New journals are mode 600; unsafe paths,
+corrupt files and unrelated databases fail closed without overwriting them.
+Default mode still creates no database. The journal is not a hosted or authenticated
+team database. Local OS users and the operator remain trusted.
+
+Choose **Save this check and its review decisions**, then declare separate workspace,
+file-copy and reporting-period labels. These are not authenticated Workiva IDs.
+Run a fresh check. Each current finding offers **Accept exception** or **Reopen
+exception**, requiring a reviewer label, reason and explicit evidence-only
+confirmation. Reasons must not contain source values. Acceptance does not hide
+findings, change arithmetic, approve accounting or authorize a Workiva write.
+The UI reads back the committed decision; a fresh unchecked confirmation applies
+to the next decision, not the already saved one.
+
+Decisions bind scope, record ordinal/column, finding code, relevant value evidence,
+schema/key/context/checker policy and native binding. Changing relevant evidence
+reopens the affected exception; unrelated values preserve it. Row movement can
+reopen ordinal identities. A complete subsequent check may mark absent findings
+resolved under its **current declared policy**, not prove source correctness.
+Ragged, unknown-type, unusable-header, missing-data or truncated evidence does not
+resolve unvisited findings. Recurrence opens again. Scope/file-copy/period changes
+never inherit acceptance. Confirmations expire after ten minutes or another saved
+check/decision. SQLite transactions serialize competing confirmations; one commits.
+
+**Load saved review** is historical and read-only in the UI. Supply the source and
+run a fresh saved check before deciding. **Download saved review handoff** explicitly
+exports scope, latest source hash/time/coverage, finding hashes/currentness/states
+and the latest 200 decision events with total count/truncation. The original
+arithmetic packet remains separately downloadable and unreviewed. Keep the original
+source and declared policy with their source owner; hashes cannot reconstruct them.
+No raw CSV is stored, but scope/reviewer/reason/location and hashes can be sensitive.
+Reviewer identity, authorship, source authority and approval are not authenticated.
+
+If a confirmation times out or its response is lost, do not blindly confirm again:
+load history and reconcile the finding/revision/reason, then perform a fresh check.
+Storage failure claims no success. Restart retains confirmed history. **Clear inputs**
+does not delete the journal. Retention is indefinite until the operator chooses
+otherwise; no automatic retention policy or secure erasure is claimed.
+
+For backup/recovery, stop only this private preview, copy its database into an
+owner-only backup directory, record a SHA-256, then restart the same retained
+runtime. Verify saved scope/history through the UI. Restore only into a separate
+private directory, compare the hash and test readback before adopting it; never
+overwrite a live journal or foreign database. Keep the previous database/runtime
+unchanged for reversal. Do not delete non-disposable review data without explicit
+owner instruction. This milestone does not include schema migrations or native
+repair execution. Separate reviewer handoff acceptance remains open.
 
 ## Private portable bundle and rollback
 

@@ -154,8 +154,18 @@ no wk on PATH, all assets, explicit-context 999 total and offline replay. This i
 dependency-isolation proof, not a separate clean-machine reviewer or release gate.
 See [private bundle/onboarding/rollback guide](csv-review.md#private-portable-bundle-and-rollback).
 
-**Next goal:** durable evidence-bound review decisions with explicit acceptance
-reason, restart retention, changed-evidence reopening and partial-scan safeguards.
-Independent labels and clean-machine proof remain gates. Dave authorized LSL
+**Goal 9 implemented:** opt-in durable evidence-bound review decisions, explicit
+reason/reviewer/confirmation, restart retention, changed-evidence reopening and
+partial-scan safeguards. Actual SQLite/HTTP/Chromium tests exercise double confirmation
+and a lost response after commit reconciled through read-only history. Acceptance
+never hides findings or grants accounting/native authority. Owner-only storage,
+historical-only handoff, retention/recovery documentation and bundle integration
+are included. Independent second-reviewer handoff remains a G4 gate.
+See [durable review receipt](receipts/durable-review-20261008.md).
+
+**Next goals:** locate genuine independent held-out labels without inventing
+independence; measure isolated onboarding and recovery, retaining the separate
+reviewer/clean-machine gate; investigate native conditional-write safety before
+enabling any action. Independent labels and clean-machine proof remain gates. Dave authorized LSL
 sandbox and local commits only. No push, deployment, merge or change to port 8770
 is authorized. The installed read-only service is unchanged.

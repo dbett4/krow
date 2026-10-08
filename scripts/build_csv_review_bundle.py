@@ -8,6 +8,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 FILES = (
     "server/csv_review.py", "server/csv_checks.py", "server/csv_native.py", "server/csv_context.py",
+    "server/review_decisions.py", "server/test_review_decisions.py", "scripts/test_durable_review_browser.py",
     "server/test_csv_review.py", "server/test_csv_checks.py", "server/test_csv_native.py", "server/test_csv_context.py",
     "extension/csv-review.html", "extension/csv-review.css", "extension/csv-review.js",
     "extension/setup.css", "extension/icons/icon128.png", "scripts/test_csv_review_browser.py",
@@ -15,6 +16,7 @@ FILES = (
     "scripts/build_csv_review_bundle.py", "scripts/test_csv_bundle.py", "docs/detector-evaluation.md",
     "docs/receipts/csv-review-20261007.md", "docs/receipts/native-schema-20261007.md",
     "docs/receipts/reporting-context-20261007.md",
+    "docs/receipts/durable-review-20261008.md",
 )
 
 

@@ -4,6 +4,7 @@
   const $ = (id) => document.getElementById(id);
   let packet = null, generation = 0, controller = null, serial = 0;
   let nativeSchema = null;
+  let savedReview = null;
   const defaultBoundary = $("boundary-description").textContent;
   const types = ["string", "integer", "decimal", "boolean", "date", "timestamp"];
   function el(tag, text, className) {
@@ -17,11 +18,13 @@
     if (controller) controller.abort();
     controller = null;
     packet = null;
+    savedReview = null;
+    $("review-journal").replaceChildren();
     $("download").disabled = true;
     $("check").disabled = false;
     $("cancel").hidden = true;
     $("message").textContent = message || "Inputs changed. Run a new check.";
-    $("results").replaceChildren(el("p", "3. Review the evidence", "eyebrow"), el("h2", "Run a check for these inputs."), el("p", "Earlier evidence is cleared when any input changes. Nothing is saved."));
+    $("results").replaceChildren(el("p", "3. Review the evidence", "eyebrow"), el("h2", "Run a check for these inputs."), el("p", "Earlier arithmetic evidence is cleared when inputs change. Explicitly saved journal entries remain."));
   }
   function column(name = "", kind = "string", required = false, key = false) {
     const row = el("div", undefined, "column"), id = ++serial;
@@ -66,6 +69,68 @@
     $("context-fields").hidden = !enabled;
   }
   $("use-context").addEventListener("change", () => { contextMode($("use-context").checked); invalidate(); });
+  fetch("/api/review-config", { cache: "no-store" }).then((response) => response.json()).then((config) => {
+    $("durable-options").hidden = !config.durable_review_enabled;
+  }).catch(() => { /* Persistence stays unavailable; do not imply it is enabled. */ });
+  function reviewMode(enabled) {
+    $("save-review").checked = enabled;
+    $("review-scope").disabled = !enabled;
+    $("review-scope").hidden = !enabled;
+  }
+  $("save-review").addEventListener("change", () => {
+    reviewMode($("save-review").checked);
+    invalidate();
+  });
+  function reviewScope() {
+    return { workspace: $("scope-workspace").value, file_copy: $("scope-file").value, period: $("scope-period").value };
+  }
+  async function journalRequest(path, body) {
+    const response = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json", "X-Wingman-Review": "1" }, body: JSON.stringify(body), cache: "no-store", signal: AbortSignal.timeout(10000) });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Private journal unavailable.");
+    return data;
+  }
+  function renderJournal(snapshot, actionable = false) {
+    savedReview = snapshot;
+    const host = $("review-journal"); host.replaceChildren(el("h2", "Saved review · Not accounting approval"));
+    host.append(el("p", snapshot.scope.workspace + " / " + snapshot.scope.file_copy + " / " + snapshot.scope.period),
+      el("p", snapshot.observed_at ? "Observed " + new Date(snapshot.observed_at).toLocaleString() + " · " + (snapshot.complete ? "Complete finding coverage" : "Incomplete coverage — unvisited findings stay unresolved") : "No saved check for this scope."));
+    if (!actionable && snapshot.run_id) host.append(el("p", "Historical evidence only. Supply the source and run a fresh saved check before deciding."));
+    snapshot.findings.forEach((finding) => {
+      const card = el("div", undefined, "decision-card"), location = finding.location;
+      card.append(el("strong", location.code.replaceAll("_", " ")), el("p", (location.row ? "Record " + location.row : "Schema") + (location.column ? " · " + location.column : "")), el("p", finding.state.replaceAll("_", " "), "decision-state"));
+      const previous = snapshot.history.find((event) => event.finding === finding.id);
+      if (previous) card.append(el("small", "Last decision: " + previous.decision.replaceAll("_", " ") + " · " + previous.reviewer + " · " + previous.reason));
+      if (actionable && finding.current) {
+        const form = el("form"), label = el("label", "Reviewer label (not authenticated)"), reviewer = el("input"), reasonLabel = el("label", "Reason · Do not include source values"), reason = el("textarea"), confirmLabel = el("label", undefined, "context-toggle"), confirm = el("input");
+        reviewer.id = "reviewer-" + finding.id; reviewer.required = true; reviewer.maxLength = 100; label.htmlFor = reviewer.id;
+        reason.id = "reason-" + finding.id; reason.required = true; reason.maxLength = 1000; reason.className = "decision-reason"; reasonLabel.htmlFor = reason.id;
+        confirm.type = "checkbox"; confirm.required = true; confirmLabel.append(confirm, document.createTextNode("Confirm this decision for this exact evidence only"));
+        const button = el("button", finding.state === "accepted_exception" ? "Reopen exception" : "Accept exception", "wm-btn"); button.type = "submit";
+        form.append(label, reviewer, reasonLabel, reason, confirmLabel, button);
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault(); const request = generation; button.disabled = true;
+          try {
+            const data = await journalRequest("/api/review-decisions", { scope: snapshot.scope, run_id: snapshot.run_id, finding_id: finding.id, revision: finding.revision, evidence_sha256: finding.evidence_sha256, decision: finding.state === "accepted_exception" ? "open" : "accepted_exception", reason: reason.value, reviewer: reviewer.value, confirmed: confirm.checked });
+            if (request !== generation) return;
+            renderJournal(data, true); $("message").textContent = "Decision saved and read back. The finding remains; no accounting approval or Workiva change.";
+          } catch (error) { if (request === generation) { button.disabled = false; $("message").textContent = error.message + " Load saved review before retrying an uncertain confirmation."; } }
+        });
+        card.append(form);
+      }
+      host.append(card);
+    });
+    if (snapshot.run_id) {
+      const download = el("button", "Download saved review handoff", "wm-btn"); download.type = "button";
+      download.addEventListener("click", () => { if (!savedReview) return; const url = URL.createObjectURL(new Blob([JSON.stringify(savedReview, null, 2)], { type: "application/json" })); const link = el("a"); link.href = url; link.download = "wingman-review-handoff.json"; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }); host.append(download);
+    }
+    host.append(el("p", snapshot.limits || "Local declarations only; no approval verified."), el("small", "Reasons and scope labels are retained in your operator's private journal. Clear inputs does not delete it. History preview includes the latest 200 events" + (snapshot.history_truncated ? " of " + snapshot.history_count : "") + "."));
+  }
+  $("load-review").addEventListener("click", async () => {
+    invalidate("Loading historical review metadata only…"); const request = generation;
+    try { const data = await journalRequest("/api/review-history", { scope: reviewScope() }); if (request === generation) { renderJournal(data); $("message").textContent = "Saved review loaded. Run a fresh check before confirming any decision."; } }
+    catch (error) { if (request === generation) $("message").textContent = error.message; }
+  });
   $("load-native").addEventListener("click", async () => {
     invalidate("Reading only the configured native sandbox schema…");
     const request = generation, abort = new AbortController(); controller = abort;
@@ -131,10 +196,11 @@
     invalidate("Fictional example loaded. Check it to find a duplicate key and an invalid amount.");
     nativeMode(null);
     contextMode(false);
+    reviewMode(false);
     $("columns").replaceChildren(); column("department", "string", true, true); column("actual", "decimal", true);
     $("csv").value = "department,actual\nFinance,1250.25\nOperations,-50.10\nFinance,invalid\n"; $("file").value = "";
   });
-  $("clear").addEventListener("click", () => { invalidate("Inputs cleared. No review data is retained."); nativeMode(null); contextMode(false); $("context-fields").querySelectorAll("input, textarea").forEach((node) => { node.value = ""; }); $("expected-unit").value = "units"; $("accounting-basis").value = "unknown"; $("csv").value = ""; $("file").value = ""; $("columns").replaceChildren(); column().focus(); });
+  $("clear").addEventListener("click", () => { invalidate("Inputs cleared. Explicitly saved journal entries remain; raw CSV is not retained."); nativeMode(null); contextMode(false); reviewMode(false); $("review-scope").querySelectorAll("input").forEach((node) => { node.value = ""; }); $("context-fields").querySelectorAll("input, textarea").forEach((node) => { node.value = ""; }); $("expected-unit").value = "units"; $("accounting-basis").value = "unknown"; $("csv").value = ""; $("file").value = ""; $("columns").replaceChildren(); column().focus(); });
   $("cancel").addEventListener("click", () => invalidate("Stopped waiting. No result is retained; the bounded local check may finish on the server."));
   $("file").addEventListener("change", async () => {
     invalidate(); const request = generation, file = $("file").files[0]; if (!file) return;
@@ -156,13 +222,15 @@
     $("check").disabled = true; $("cancel").hidden = false; $("message").textContent = "Checking every supplied record…";
     const timeout = setTimeout(() => abort.abort(), 10000);
     try {
-      const response = await fetch("/api/review", { method: "POST", headers: { "Content-Type": "application/json", "X-Wingman-Review": "1" }, body: JSON.stringify({ csv_text: $("csv").value, columns, key_columns, ...(reporting_policy ? { reporting_policy } : {}), ...(nativeSchema ? { native_schema_sha256: nativeSchema.snapshot.schema_sha256 } : {}) }), signal: abort.signal, cache: "no-store" });
+      const response = await fetch("/api/review", { method: "POST", headers: { "Content-Type": "application/json", "X-Wingman-Review": "1" }, body: JSON.stringify({ csv_text: $("csv").value, columns, key_columns, ...(reporting_policy ? { reporting_policy } : {}), ...(nativeSchema ? { native_schema_sha256: nativeSchema.snapshot.schema_sha256 } : {}), ...($("save-review").checked ? { review_scope: reviewScope() } : {}) }), signal: abort.signal, cache: "no-store" });
       const data = await response.json(); if (request !== generation) return;
       if (!response.ok) {
         const guidance = data.code === "invalid_csv" ? " Check that the header is present and every quoted field is closed. Re-export the CSV and try again." : "";
         throw new Error((data.error || "Review could not be completed.") + guidance);
       }
-      packet = data; render(data); $("download").disabled = false; $("message").textContent = "Check finished. Review its limits before using the results.";
+      packet = data.packet || data; render(packet);
+      if (data.saved_review) renderJournal(data.saved_review, true);
+      $("download").disabled = false; $("message").textContent = "Check finished. Review its limits before using the results.";
     } catch (error) { if (request === generation) $("message").textContent = error.name === "AbortError" ? "Check timed out. Your inputs remain; confirm the service is running and try again." : (error instanceof TypeError ? "Service unavailable. Your inputs remain; restart the private CSV service and try again." : error.message); }
     finally { clearTimeout(timeout); if (request === generation) { controller = null; $("check").disabled = false; $("cancel").hidden = true; } }
   });

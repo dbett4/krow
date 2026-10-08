@@ -12,7 +12,7 @@
 <body>
 <main>
   <header><img src="icon.png" width="44" height="44" alt=""><div><p class="eyebrow">Wingman / Pre-import review</p><h1>Check a CSV before it reaches Wdata.</h1><p>Find row-level problems. Keep the evidence for your review.</p></div></header>
-  <div class="boundary"><strong id="boundary-title">Private local screen · No Workiva connection</strong><p id="boundary-description">Your inputs go to this VPS process only when you run a check. They are not saved. A local pass does not verify the native schema, import, period, units or accounting.</p></div>
+  <div class="boundary"><strong id="boundary-title">Private local screen · No Workiva connection</strong><p id="boundary-description">CSV values go to this VPS process only when you run a check and are not saved. If enabled, the optional private journal saves review metadata only with your explicit choice. A local pass does not verify the native schema, import, period, units or accounting.</p></div>
   <div class="workspace">
     <form id="review-form">
       <section><div class="section-title"><h2>1. Supply your CSV</h2><button type="button" id="sample" class="wm-btn">Try a fictional example</button></div>
@@ -42,10 +42,21 @@
           <p class="hint">Empty unit column or unknown basis stays incomplete. Basis is recorded, not validated. No fiscal-calendar, FX, account-mapping, sign-convention or accounting-correctness claim.</p>
         </fieldset>
       </section>
+      <section id="durable-options" hidden><h2>Private review journal · Optional</h2>
+        <p class="hint">Your operator enabled local storage. Saving retains scope labels, finding locations/hashes and explicit reviewer reasons—not raw CSV. Accepted exceptions remain findings; they never approve accounting or authorize a Workiva write.</p>
+        <label class="context-toggle"><input type="checkbox" id="save-review"> Save this check and its review decisions</label>
+        <fieldset id="review-scope" disabled hidden><legend>Keep workspaces, file copies and periods separate</legend>
+          <label for="scope-workspace">Workspace label</label><input id="scope-workspace" maxlength="128" required>
+          <label for="scope-file">File-copy label</label><input id="scope-file" maxlength="128" required>
+          <label for="scope-period">Reporting-period label</label><input id="scope-period" maxlength="128" required>
+          <button type="button" id="load-review" class="wm-btn">Load saved review for this scope</button>
+          <p class="hint">Labels are your declarations, not authenticated file IDs. Load is historical; run a fresh check before confirming a decision. Clear inputs does not delete the journal.</p>
+        </fieldset>
+      </section>
       <div class="actions"><button type="submit" id="check" class="wm-btn primary">Check CSV</button><button type="button" id="clear" class="wm-btn">Clear inputs</button><button type="button" id="cancel" class="wm-btn" hidden>Stop waiting</button></div>
       <p id="message" role="status" aria-live="polite"></p>
     </form>
-    <aside aria-label="Review evidence"><section id="results" aria-live="polite"><p class="eyebrow">3. Review the evidence</p><h2>Start with a check.</h2><p>Declare your schema, then run the screen. You’ll see affected records, exact numeric totals and checks that remain unknown.</p><p>No data is uploaded to Workiva. Nothing is fixed automatically.</p></section><button type="button" id="download" class="wm-btn" disabled>Download review evidence</button><p class="hint">The JSON packet includes column names, findings and numeric totals, but not raw CSV rows. Treat it as sensitive. Download is explicit; the packet is not approval.</p></aside>
+    <aside aria-label="Review evidence"><section id="results" aria-live="polite"><p class="eyebrow">3. Review the evidence</p><h2>Start with a check.</h2><p>Declare your schema, then run the screen. You’ll see affected records, exact numeric totals and checks that remain unknown.</p><p>No data is uploaded to Workiva. Nothing is fixed automatically.</p></section><button type="button" id="download" class="wm-btn" disabled>Download review evidence</button><p class="hint">The JSON packet includes column names, findings and numeric totals, but not raw CSV rows. Treat it as sensitive. Download is explicit; the packet is not approval.</p><section id="review-journal" aria-live="polite"></section></aside>
   </div>
   <footer>Wingman · Validator reused from Lockfield Workiva Plugin v0.4.0 · Read-only review</footer>
 </main>

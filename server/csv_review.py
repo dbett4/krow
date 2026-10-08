@@ -11,6 +11,7 @@ import hashlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
+import sqlite3
 
 from csv_checks import MAX_CSV_BYTES, ServiceError, validate_csv_draft
 
@@ -119,6 +120,9 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if not self.local_request():
             return
+        if self.path == "/api/review-config":
+            self.reply(200, {"durable_review_enabled": getattr(self.server, "decision_store", None) is not None})
+            return
         if self.path not in STATIC:
             self.reply(404, {"error": "Not found."})
             return
@@ -128,7 +132,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.local_request():
             return
-        if self.path not in {"/api/review", "/api/schema"}:
+        if self.path not in {"/api/review", "/api/schema", "/api/review-history", "/api/review-decisions"}:
             self.reply(404, {"error": "Not found."})
             return
         try:
@@ -140,6 +144,26 @@ class Handler(BaseHTTPRequestHandler):
             if len(raw) != length:
                 raise ValueError("Incomplete request")
             arguments = json.loads(raw.decode("utf-8"))
+            store = getattr(self.server, "decision_store", None)
+            scope = None
+            if self.path in {"/api/review-history", "/api/review-decisions"}:
+                if store is None:
+                    raise ServiceError("review_not_configured", "Durable review is not configured. Default mode saves no review data.")
+                if self.path == "/api/review-history":
+                    if not isinstance(arguments, dict) or set(arguments) != {"scope"}:
+                        raise ServiceError("invalid_review_scope", "Supply the exact declared review scope only.")
+                    packet = store.read(arguments["scope"])
+                else:
+                    packet = store.decide(arguments)
+                self.reply(200, packet)
+                return
+            if self.path == "/api/review" and isinstance(arguments, dict) and "review_scope" in arguments:
+                if store is None:
+                    raise ServiceError("review_not_configured", "Durable review is not configured. Check without saving, or ask the operator to configure a private review database.")
+                from review_decisions import scope_key
+                arguments = dict(arguments)
+                scope = arguments.pop("review_scope")
+                scope_key(scope)
             if self.path == "/api/schema":
                 if arguments != {} or self.server.native_schema is None:
                     raise ServiceError("native_not_configured", "No native sandbox binding is configured. Use your declared schema or start with --sandbox-table and the approved LSL read grant.")
@@ -159,11 +183,16 @@ class Handler(BaseHTTPRequestHandler):
                 packet = bind_packet(packet, snapshot)
             else:
                 packet = review(arguments)
+            if scope is not None:
+                packet = {"packet": packet, "saved_review": store.observe(scope, packet, arguments["csv_text"])}
         except ServiceError as error:
             self.reply(400, {"error": str(error), "code": error.code})
             return
         except (ValueError, UnicodeError, TimeoutError):
             self.reply(400, {"error": "Supply valid UTF-8 JSON with a complete request body."})
+            return
+        except sqlite3.Error:
+            self.reply(503, {"code": "review_store_unavailable", "error": "Private review storage is unavailable or busy. No success is claimed. Reload saved review to reconcile an uncertain response; do not blindly repeat confirmation."})
             return
         self.reply(200, packet)
 
@@ -172,11 +201,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", type=int, default=8781)
     parser.add_argument("--sandbox-table", help="One exact private synthetic Wdata table in the authorized LSL account. Read-only via wk.")
+    parser.add_argument("--review-db", type=Path, help="Opt-in private SQLite decision journal in an existing owner-only directory. No raw CSV retained.")
     parser.add_argument("--verify-packet", type=Path, help="Recompute a downloaded JSON packet; does not start a service.")
     parser.add_argument("--csv", type=Path, help="Original UTF-8 CSV for packet replay; explicit local file read.")
     args = parser.parse_args()
-    if args.verify_packet and args.sandbox_table:
-        parser.error("Offline replay does not use a live sandbox binding")
+    if args.verify_packet and (args.sandbox_table or args.review_db):
+        parser.error("Offline replay does not use a live sandbox binding or decision database")
     if bool(args.verify_packet) != bool(args.csv):
         parser.error("--verify-packet and --csv must be supplied together")
     if args.verify_packet:
@@ -196,6 +226,15 @@ def main():
     server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
     from csv_native import NativeSchema
     server.native_schema = NativeSchema(args.sandbox_table) if args.sandbox_table else None
+    if args.review_db:
+        from review_decisions import DecisionStore
+        try:
+            server.decision_store = DecisionStore(args.review_db)
+        except (OSError, ValueError, sqlite3.Error):
+            server.server_close()
+            parser.error("Review database unavailable. Use an existing private owner-only directory and a regular owner-only database, or omit --review-db. No recovery overwrite is performed.")
+    else:
+        server.decision_store = None
     print(f"Wingman CSV review ready on port {server.server_port}; loopback only, no stored inputs.", flush=True)
     try:
         server.serve_forever()
