@@ -157,6 +157,12 @@ renamed to `KROW_LOCAL_CONFIG` without regenerating the pair. The previous packa
 `extension-before-krow-52f925d`. Chrome must reload the extension once (its old in-memory build uses the
 previous token header and cannot reload itself), then refresh open Workiva tabs.
 
+Brand update, same day: release `3f798e4c37f94d7f82b4d2d45b952cc40c0e2453` (krow avatar icons, brand palette,
+bundled Geist) was verified file by file and adopted as `/opt/krow/current`; the service restarted and the
+checker outcome is unchanged. The Mac extension folder was updated in place and hash-verified, with the pairing
+file intact and the previous package kept as `extension-before-brand-3f798e4`. The single pending extension reload
+now picks up both the rename and the brand.
+
 Rollback: stop and disable `krow-readonly`, enable and start `wingman-readonly` (its release, unit,
 drop-in and `/etc/wingman` files are untouched), restore the Mac folder from `extension-before-krow-52f925d`
 and the `com.wingman.vps-tunnel` launch agent from its backup, then reload the extension.
