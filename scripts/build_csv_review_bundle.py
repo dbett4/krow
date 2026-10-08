@@ -17,6 +17,7 @@ FILES = (
     "docs/receipts/csv-review-20261007.md", "docs/receipts/native-schema-20261007.md",
     "docs/receipts/reporting-context-20261007.md",
     "docs/receipts/durable-review-20261008.md",
+    "docs/receipts/private-readiness-20261008.md",
 )
 
 

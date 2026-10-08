@@ -123,6 +123,30 @@ an isolated dependency/onboarding smoke on this VPS, **not a clean-machine revie
 pilot, authenticated hosted product or approved private release**. A new reviewer
 still needs independent timed install/access/recovery and owner acceptance.
 
+The timed journal smoke also measures extraction → actual inspection, then confirms
+an exception, restarts the extracted runtime, and verifies a separately restored
+owner-only backup. It runs without site packages, credentials or wk on PATH and
+emits `timed-onboarding.json` under pytest's result directory:
+
+```sh
+python3 -m pytest scripts/test_csv_bundle.py -q --basetemp=/private/new-onboarding-proof
+```
+
+Use a **new disposable** basetemp path: pytest may remove an existing directory.
+This measures automated setup, not human onboarding or a native grant. Native access
+without a configured grant fails closed; the smoke never provisions credentials.
+
+For independent private acceptance, give a new reviewer the trusted bundle/hash,
+this guide and a synthetic source, but not developer assistance. Time from extraction
+through inspecting actual records; require ≤10 minutes. Have them explain partial
+totals and non-approval limits, accept/reopen an exception, restart/read saved history,
+reconcile an uncertain confirmation, replay the arithmetic packet, and recover a
+copy of the journal into a separate private directory. Record host/browser/Python,
+candidate hash, start/end times, assistance, failures and recovery outcomes. For
+native acceptance use only the existing authorized LSL synthetic table/grant on the
+VPS; do not copy credentials or use customer data. A reviewer who built this candidate
+cannot supply the independent acceptance. No timed human result is claimed yet.
+
 ## Native LSL sandbox schema
 
 Dave authorized the existing LSL sandbox grant, not customer production or broader

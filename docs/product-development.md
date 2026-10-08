@@ -163,9 +163,20 @@ historical-only handoff, retention/recovery documentation and bundle integration
 are included. Independent second-reviewer handoff remains a G4 gate.
 See [durable review receipt](receipts/durable-review-20261008.md).
 
-**Next goals:** locate genuine independent held-out labels without inventing
-independence; measure isolated onboarding and recovery, retaining the separate
-reviewer/clean-machine gate; investigate native conditional-write safety before
-enabling any action. Independent labels and clean-machine proof remain gates. Dave authorized LSL
+**Goal 10 implemented:** timed isolated extracted-bundle journal onboarding,
+confirmation, process restart and separate backup restoration/readback. Initial
+automated run reached real inspection in 0.341 seconds and completed the recovery
+sequence in 0.593 seconds; no wk, credentials or site packages in that runtime.
+Native apply/import/undo/approve routes remain absent and refused. This is not human
+clean-machine acceptance. The guide specifies the independent ≤10-minute pilot.
+See [readiness evidence and dependencies](receipts/private-readiness-20261008.md).
+
+**Next goals/dependencies:** independent held-out detector labels and unaided
+reviewer/handoff/clean-machine acceptance are not recovered or claimed. Native
+schema is still read-only: live table and endpoint reference were checked, but no
+atomic Wdata precondition/conditional-restoration proof is established. Obtain that
+contract before enabling native actions, or explicitly scope the private release
+read-only. These are real gates, not license to tune developer cases or overwrite
+collaborators. Dave authorized LSL
 sandbox and local commits only. No push, deployment, merge or change to port 8770
 is authorized. The installed read-only service is unchanged.
