@@ -76,3 +76,43 @@ Other string-producing formulas can remain judgment/false-alarm candidates; no
 general string-result inference was added. Native formula/result acceptance remains
 unverified. Evidence: `error-literal-red.log`, `server-tests-literal.log` and
 `detector-calibration-after-literal.json` under `.amp/in/artifacts/`.
+
+## Prospective synthetic holdout process
+
+The unchanged detector build can now be frozen **before new case realizations**
+are generated. This is a temporal input holdout, not independent human labeling,
+unseen defect-family coverage or a customer/native benchmark. The same builder
+authored the protocol; independence and release-acceptance flags remain false.
+
+```sh
+python3 server/synthetic_holdout.py prepare /private/new-wingman-holdout
+python3 server/synthetic_holdout.py run /private/new-wingman-holdout
+```
+
+Commit the protocol before preparing the run. `prepare` creates a new mode-700
+directory, recording exact detector/evaluator/protocol/calibration hashes and the
+fixed ≥95% precision/≥90% recall targets. It creates no corpus and runs no detector.
+`run` verifies the frozen inputs, claims the run once with exclusive file creation,
+then draws a fresh random seed, generates 48 new synthetic mixed cases (624 cells)
+and measures the actual detector. New labels come from a declared observation
+grammar plus separately expressed WCAG sRGB reference—not calibration labels or
+predictions. Both sides of 4.5:1 and randomized chromatic pairs are included.
+
+The private directory retains plan, consumed marker, synthetic corpus and full
+result. Exact calibration cell-pattern reuse is counted independent of addresses;
+shared primitives/families cannot be called novel just because IDs changed.
+Generated formulas/results are fictional observations, not executed Workiva formulas.
+No Workiva calls, credentials or customer data. Report contains provenance,
+counts/errors/exclusions, timing, hashes and seed; no raw cell values/formulas.
+
+Successful, failed and interrupted attempts are **consumed**, not automatically
+retried. Preserve an interrupted directory for reconciliation. A changed build,
+threshold, protocol or calibration invalidates a prepared run. Once results are
+exposed, they may inform calibration fixes but must never be represented as held-out
+evidence for a subsequently tuned build. Prepare a new run after any tuning and
+retain earlier failures. Files/hashes are not signatures; a trusted operator can
+tamper, so this is process integrity under local OS trust, not provenance authentication.
+
+The independent G3 gate still requires a separate labeler/adjudicator and unseen
+negative/positive families. This process makes new frozen-build evidence possible
+now without relabeling the six tuning cases as held-out or claiming independence.
