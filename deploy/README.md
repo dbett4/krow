@@ -136,3 +136,27 @@ missing and write refusals intact). Preserve the inactive root-only credential
 files and prior extension package; do not rotate the pair. Restore the old Chrome
 package and reload it if the UI update fails. Never run the old service with the
 new credential/egress drop-in, since it lacks these read-scope guards.
+
+## Rename cutover, October 8, 2026
+
+The owner approved renaming Wingman to Krow and switching the live service. Release
+`52f925dbf5ab5cfe05e4af756060abe23a5c1f4d` was extracted with `git archive` to
+`/opt/krow/releases/`, all 165 files compared against the commit, and `/opt/krow/current` points to it.
+The existing pair and sandbox credentials were copied unchanged from `/etc/wingman` to `/etc/krow`
+(root, 0600); the sandbox drop-in was carried over with only paths and the extension-ID variable renamed.
+`wingman-readonly.service` is stopped and disabled; `krow-readonly.service` serves 127.0.0.1:8770.
+The checker returned the same redacted outcome before and after, and again after restarting each side:
+connection accepted, read-only, credentials present, read scope valid, account pin present, repairs and
+unauthorized requests rejected, Workiva access not tested.
+
+On the Mac, the launch agent is now `com.krow.vps-tunnel` with identical SSH arguments; the old agent file
+is kept as a backup outside `LaunchAgents`. The installed extension stays in its September folder,
+`~/Library/Application Support/Wingman/extension/`, because an unpacked extension's ID comes from its
+path; its files were replaced with the release package, hash-verified, and the pairing file's global was
+renamed to `KROW_LOCAL_CONFIG` without regenerating the pair. The previous package is preserved as
+`extension-before-krow-52f925d`. Chrome must reload the extension once (its old in-memory build uses the
+previous token header and cannot reload itself), then refresh open Workiva tabs.
+
+Rollback: stop and disable `krow-readonly`, enable and start `wingman-readonly` (its release, unit,
+drop-in and `/etc/wingman` files are untouched), restore the Mac folder from `extension-before-krow-52f925d`
+and the `com.wingman.vps-tunnel` launch agent from its backup, then reload the extension.
