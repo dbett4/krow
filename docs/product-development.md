@@ -171,6 +171,13 @@ Native apply/import/undo/approve routes remain absent and refused. This is not h
 clean-machine acceptance. The guide specifies the independent ≤10-minute pilot.
 See [readiness evidence and dependencies](receipts/private-readiness-20261008.md).
 
+**Goal 11 implemented:** committed prospective synthetic holdout protocol freezes
+build/rules before generating new inputs and consumes each run once. Actual first
+run: 48 cases/624 cells, zero copied tuning labels/exact calibration patterns;
+sample precision/recall 100% for the three scoped kinds. Same builder and familiar
+families, not independent G3 acceptance. Detector files unchanged. 838 server tests
+passed/13 optional skips. See [prospective receipt](receipts/prospective-holdout-20261008.md).
+
 **Next goals/dependencies:** independent held-out detector labels and unaided
 reviewer/handoff/clean-machine acceptance are not recovered or claimed. Native
 schema is still read-only: live table and endpoint reference were checked, but no
