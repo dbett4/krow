@@ -178,6 +178,15 @@ sample precision/recall 100% for the three scoped kinds. Same builder and famili
 families, not independent G3 acceptance. Detector files unchanged. 838 server tests
 passed/13 optional skips. See [prospective receipt](receipts/prospective-holdout-20261008.md).
 
+**Goal 12 implemented:** browser arithmetic-packet handoff imports explicit schema,
+keys and context without manual reconstruction, reproduces through the existing
+offline verifier and distinguishes historical matches from approval/current native
+evidence. Fresh extracted browser rehearsal reached replay in 1.161 seconds and
+real inspection in 1.516 seconds; changed-source rejection, bad journal import,
+explicit local confirmation and restart readback passed with zero Workiva requests.
+Same-builder automation, not independent unaided/clean-machine acceptance.
+See [handoff receipt](receipts/private-handoff-20261008.md).
+
 **Next goals/dependencies:** independent held-out detector labels and unaided
 reviewer/handoff/clean-machine acceptance are not recovered or claimed. Native
 schema is still read-only: live table and endpoint reference were checked, but no

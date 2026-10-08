@@ -132,7 +132,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.local_request():
             return
-        if self.path not in {"/api/review", "/api/schema", "/api/review-history", "/api/review-decisions"}:
+        if self.path not in {"/api/review", "/api/schema", "/api/replay", "/api/review-history", "/api/review-decisions"}:
             self.reply(404, {"error": "Not found."})
             return
         try:
@@ -146,6 +146,11 @@ class Handler(BaseHTTPRequestHandler):
             arguments = json.loads(raw.decode("utf-8"))
             store = getattr(self.server, "decision_store", None)
             scope = None
+            if self.path == "/api/replay":
+                if not isinstance(arguments, dict) or set(arguments) != {"packet", "csv_text"}:
+                    raise ServiceError("invalid_replay", "Supply the imported evidence packet and original CSV only; replay has no storage or native authority.")
+                self.reply(200, verify_packet(arguments["packet"], arguments["csv_text"]))
+                return
             if self.path in {"/api/review-history", "/api/review-decisions"}:
                 if store is None:
                     raise ServiceError("review_not_configured", "Durable review is not configured. Default mode saves no review data.")

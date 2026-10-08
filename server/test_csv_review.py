@@ -170,3 +170,20 @@ def test_replay_cli_returns_machine_status_without_sensitive_values(tmp_path):
     packet.write_text("not-json")
     result = subprocess.run(command, capture_output=True, text=True, timeout=5)
     assert result.returncode == 2 and json.loads(result.stdout)["status"] == "invalid_input"
+
+
+def test_http_replay_reuses_offline_contract_without_import_storage_or_authority(csv_url):
+    packet = review(INPUT)
+    arguments = {"packet": packet, "csv_text": INPUT["csv_text"]}
+    status, headers, raw = request(csv_url, path="/api/replay", body=arguments)
+    assert status == 200 and headers["Cache-Control"] == "no-store"
+    assert json.loads(raw) == verify_packet(packet, INPUT["csv_text"])
+    assert "99.99" not in raw.decode() and "bad" not in raw.decode()
+    changed = {**arguments, "csv_text": INPUT["csv_text"].replace("100.01", "100.03")}
+    assert json.loads(request(csv_url, path="/api/replay", body=changed)[2])["mismatched_fields"] == ["csv_sha256", "result"]
+    approved = copy.deepcopy(packet); approved["review_state"] = "approved"
+    assert "review_state" in json.loads(request(csv_url, path="/api/replay", body={**arguments, "packet": approved})[2])["mismatched_fields"]
+    for extra in ({"review_scope": {}}, {"native_schema_sha256": "anything"}, {"confirmed": True}):
+        assert request(csv_url, path="/api/replay", body={**arguments, **extra})[0] == 400
+    assert request(csv_url, path="/api/replay", body=arguments, headers={"Origin": "https://foreign.invalid"})[0] == 403
+    assert request(csv_url, path="/api/replay", body={**arguments, "packet": {}})[0] == 400

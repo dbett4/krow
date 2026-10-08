@@ -33,6 +33,7 @@ fieldset { min-width: 0; border: 1px solid var(--border-soft); border-radius: 8p
 legend { color: var(--muted); font-size: 12px; padding: 0 6px; }
 .context-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-bottom: 16px; }
 #amount-columns { min-height: 80px; margin-bottom: 12px; }
+#replay-status:not(:empty) { padding: 12px; border: 1px solid var(--border-soft); border-radius: 8px; background: var(--surface2); overflow-wrap: anywhere; }
 .context-evidence { border: 1px solid var(--border-soft); border-radius: 8px; padding: 14px; margin: 16px 0; background: var(--surface2); }
 .context-evidence h3 { margin-top: 0; }
 #review-scope input { margin-bottom: 12px; }

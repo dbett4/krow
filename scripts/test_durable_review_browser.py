@@ -17,11 +17,11 @@ from test_review_decisions import SCOPE, decision
 
 
 @contextmanager
-def service(folder):
+def service(folder, runtime=ROOT, env=None):
     folder.mkdir(mode=0o700, exist_ok=True)
     with (folder / "output.log").open("w+") as log:
-        process = subprocess.Popen([sys.executable, str(ROOT / "server/csv_review.py"), "--port", "0",
-                                    "--review-db", str(folder / "review.db")], stdout=log, stderr=log)
+        process = subprocess.Popen([sys.executable, "-S", str(runtime / "server/csv_review.py"), "--port", "0",
+                                    "--review-db", str(folder / "review.db")], cwd=runtime, env=env, stdout=log, stderr=log)
         try:
             for _ in range(100):
                 log.seek(0); text = log.read()

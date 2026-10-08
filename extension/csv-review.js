@@ -5,6 +5,7 @@
   let packet = null, generation = 0, controller = null, serial = 0;
   let nativeSchema = null;
   let savedReview = null;
+  let importedPacket = null;
   const defaultBoundary = $("boundary-description").textContent;
   const types = ["string", "integer", "decimal", "boolean", "date", "timestamp"];
   function el(tag, text, className) {
@@ -21,6 +22,8 @@
     savedReview = null;
     $("review-journal").replaceChildren();
     $("download").disabled = true;
+    $("replay").disabled = !importedPacket || !$("csv").value;
+    $("replay-status").textContent = "";
     $("check").disabled = false;
     $("cancel").hidden = true;
     $("message").textContent = message || "Inputs changed. Run a new check.";
@@ -69,6 +72,49 @@
     $("context-fields").hidden = !enabled;
   }
   $("use-context").addEventListener("change", () => { contextMode($("use-context").checked); invalidate(); });
+  function forgetImportedPacket() {
+    importedPacket = null; $("packet-file").value = ""; $("replay").disabled = true;
+    $("packet-status").textContent = "No packet loaded. Ask the source owner for the review evidence JSON and original CSV.";
+  }
+  $("packet-file").addEventListener("change", async () => {
+    invalidate(); importedPacket = null; $("replay").disabled = true;
+    const request = generation, file = $("packet-file").files[0]; if (!file) return;
+    try {
+      if (file.size > 524288) throw new Error("Review packet exceeds 512 KiB. Existing source and policy were kept.");
+      const data = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(await file.arrayBuffer()));
+      if (request !== generation) return;
+      const schema = data?.declared_schema, policy = data?.reporting_policy;
+      if (data?.product !== "Wingman" || ![1, 2, 3].includes(data.packet_version) || !schema || !Array.isArray(schema.columns) || !schema.columns.length || schema.columns.length > 64 || !Array.isArray(schema.key_columns) || schema.key_columns.length > 8 ||
+          schema.columns.some((item) => !item || typeof item.name !== "string" || !item.name.trim() || item.name.length > 128 || /[\x00\r\n]/.test(item.name) || typeof item.type !== "string" || !item.type.trim() || item.type.length > 64 || (item.required !== undefined && typeof item.required !== "boolean")) ||
+          new Set(schema.columns.map((item) => item.name)).size !== schema.columns.length || new Set(schema.key_columns).size !== schema.key_columns.length || schema.key_columns.some((key) => !schema.columns.some((item) => item.name === key))) {
+        throw new Error("Choose a supported Wingman arithmetic review packet, not journal handoff JSON. Existing source and policy were kept.");
+      }
+      if (policy && (typeof policy !== "object" || ["period_column", "expected_period", "currency_column", "expected_currency", "unit_column", "expected_unit", "accounting_basis"].some((key) => typeof policy[key] !== "string" || policy[key].length > 128) || !Array.isArray(policy.amount_columns) || !policy.amount_columns.length || policy.amount_columns.length > 64 || policy.amount_columns.some((name) => typeof name !== "string" || name.length > 128) || !["units", "cents", "thousands", "millions"].includes(policy.expected_unit) || !["unknown", "cash", "accrual", "modified_accrual"].includes(policy.accounting_basis))) {
+        throw new Error("Packet reporting policy is invalid. Existing source and policy were kept.");
+      }
+      nativeMode(null); reviewMode(false); contextMode(!!policy);
+      $("columns").replaceChildren(); schema.columns.forEach((item) => column(item.name, item.type, item.required === true, schema.key_columns.includes(item.name)));
+      if (policy) {
+        [["period-column", "period_column"], ["expected-period", "expected_period"], ["currency-column", "currency_column"], ["expected-currency", "expected_currency"], ["unit-column", "unit_column"], ["expected-unit", "expected_unit"], ["accounting-basis", "accounting_basis"]].forEach(([id, key]) => { $(id).value = policy[key]; });
+        $("amount-columns").value = policy.amount_columns.join("\n");
+      }
+      importedPacket = data;
+      $("replay").disabled = !$("csv").value;
+      $("packet-status").textContent = "Declared policy loaded from historical packet. " + (data.native_schema ? "Native binding is historical, not connected or current. " : "") + "No approval or saved decisions imported. Supply the original CSV and reproduce, or run a fresh check.";
+      $("message").textContent = "Packet policy loaded without retyping. No Workiva request or saved check. Review the declarations before checking.";
+    } catch (error) { if (request === generation) { $("packet-status").textContent = "No packet loaded."; $("message").textContent = error instanceof SyntaxError || error instanceof TypeError ? "Packet is not supported UTF-8 JSON. Existing source and policy were kept." : error.message; } }
+  });
+  $("replay").addEventListener("click", async () => {
+    if (!importedPacket || !$("csv").value) return;
+    invalidate(); const request = generation;
+    $("replay").disabled = true; $("replay-status").textContent = "Recomputing historical evidence against the supplied source…";
+    try {
+      const data = await journalRequest("/api/replay", { packet: importedPacket, csv_text: $("csv").value });
+      if (request !== generation) return;
+      $("replay-status").textContent = data.status === "reproduced" ? "Evidence reproduced. Historical results match this source and build. No authorship, current native schema or approval verified; run a fresh check before saving new decisions." : "Evidence mismatch: " + data.mismatched_fields.join(", ") + ". Ask the source owner for the correct source/packet/build. No prior approval is imported.";
+    } catch (error) { if (request === generation) $("replay-status").textContent = "Replay unavailable. " + error.message + " Your source remains; confirm the service or packet, then retry."; }
+    finally { if (request === generation) $("replay").disabled = !importedPacket || !$("csv").value; }
+  });
   fetch("/api/review-config", { cache: "no-store" }).then((response) => response.json()).then((config) => {
     $("durable-options").hidden = !config.durable_review_enabled;
   }).catch(() => { /* Persistence stays unavailable; do not imply it is enabled. */ });
@@ -193,6 +239,7 @@
   $("add").addEventListener("click", () => { if ($("columns").children.length >= 64) { $("message").textContent = "The schema is limited to 64 columns."; return; } invalidate(); column().focus(); });
   $("review-form").addEventListener("input", () => invalidate());
   $("sample").addEventListener("click", () => {
+    forgetImportedPacket();
     invalidate("Fictional example loaded. Check it to find a duplicate key and an invalid amount.");
     nativeMode(null);
     contextMode(false);
@@ -200,12 +247,12 @@
     $("columns").replaceChildren(); column("department", "string", true, true); column("actual", "decimal", true);
     $("csv").value = "department,actual\nFinance,1250.25\nOperations,-50.10\nFinance,invalid\n"; $("file").value = "";
   });
-  $("clear").addEventListener("click", () => { invalidate("Inputs cleared. Explicitly saved journal entries remain; raw CSV is not retained."); nativeMode(null); contextMode(false); reviewMode(false); $("review-scope").querySelectorAll("input").forEach((node) => { node.value = ""; }); $("context-fields").querySelectorAll("input, textarea").forEach((node) => { node.value = ""; }); $("expected-unit").value = "units"; $("accounting-basis").value = "unknown"; $("csv").value = ""; $("file").value = ""; $("columns").replaceChildren(); column().focus(); });
+  $("clear").addEventListener("click", () => { forgetImportedPacket(); invalidate("Inputs cleared. Explicitly saved journal entries remain; raw CSV is not retained."); nativeMode(null); contextMode(false); reviewMode(false); $("review-scope").querySelectorAll("input").forEach((node) => { node.value = ""; }); $("context-fields").querySelectorAll("input, textarea").forEach((node) => { node.value = ""; }); $("expected-unit").value = "units"; $("accounting-basis").value = "unknown"; $("csv").value = ""; $("file").value = ""; $("columns").replaceChildren(); column().focus(); });
   $("cancel").addEventListener("click", () => invalidate("Stopped waiting. No result is retained; the bounded local check may finish on the server."));
   $("file").addEventListener("change", async () => {
     invalidate(); const request = generation, file = $("file").files[0]; if (!file) return;
     if (file.size > 262144) { $("file").value = ""; $("message").textContent = "File exceeds 256 KiB. Existing pasted text was kept."; return; }
-    try { const text = new TextDecoder("utf-8", { fatal: true }).decode(await file.arrayBuffer()); if (request !== generation) return; $("csv").value = text; $("message").textContent = "CSV loaded locally. Declare its expected schema before checking."; }
+    try { const text = new TextDecoder("utf-8", { fatal: true }).decode(await file.arrayBuffer()); if (request !== generation) return; $("csv").value = text; $("replay").disabled = !importedPacket || !text; $("message").textContent = importedPacket ? "CSV loaded locally. Reproduce imported evidence or run a fresh check with its declared policy." : "CSV loaded locally. Declare its expected schema before checking."; }
     catch (_) { if (request === generation) $("message").textContent = "File is not valid UTF-8. Export a UTF-8 CSV and try again."; }
   });
   $("review-form").addEventListener("submit", async (event) => {

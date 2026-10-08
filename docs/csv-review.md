@@ -221,6 +221,28 @@ Packets include the explicitly declared schema and key policy, so the next revie
 does not have to reconstruct them. Keep the original CSV in its approved private
 source location; Wingman does not keep a copy for you.
 
+In the browser, open **Continue a previous CSV review**, choose the original CSV
+above and the prior **review evidence JSON** (not journal handoff JSON). Wingman
+loads the packet's declared column order/types/required flags/keys and reporting
+context without retyping. Inputs are declarations from an untrusted historical
+file, not new schema approval. No Workiva read or saved decision is imported.
+Historical native binding is explicitly not connected/current.
+
+Choose **Reproduce imported evidence**. This uses the packet's original policy,
+not edits in the controls, and calls the same bounded offline verifier as the CLI
+through the private loopback service. A reproduced failed screen stays failed;
+replay is not approval, signed authorship, fresh native acceptance or a saved check.
+Changed source/build/findings/trust claims produce a visible mismatch. Run **Check
+CSV** for fresh evidence under the currently displayed policy; saving new decisions
+still needs the separate explicit journal choice/scope/confirmation. Import turns
+saving off so a prior scope cannot accidentally receive another file's check.
+
+Packets are limited to 512 KiB in the browser. Unsupported JSON, journal handoffs
+and invalid control shapes leave existing source/policy untouched and claim no
+replay. Source edits clear prior replay/results; raw inputs remain browser-memory
+only until an explicit check/replay sends them to this VPS process. Clear/reload
+forgets imported packets. CLI replay remains available for retained exact builds.
+
 ```sh
 python3 server/csv_review.py --verify-packet wingman-csv-review.json --csv original.csv
 ```
