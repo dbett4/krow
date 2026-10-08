@@ -1,4 +1,4 @@
-# Wingman CSV review
+# Krow CSV review
 
 This private read-only tool screens a real CSV against an explicit schema. Default
 mode does not connect to Workiva. An optional operator-bound LSL sandbox mode reads
@@ -6,7 +6,7 @@ one synthetic table's native schema; neither mode uploads or changes Workiva dat
 
 ## Run and use
 
-From the Wingman checkout on the VPS:
+From the Krow checkout on the VPS:
 
 ```sh
 python3 server/csv_review.py --port 8781
@@ -28,7 +28,7 @@ unauthenticated tool on a public interface or reverse proxy.
 4. Review affected records (header = record 1), physical line endings, duplicate
    first occurrences and complete/partial totals. Quoted multiline records mean
    record number is not physical line number.
-5. Correct your source outside Wingman and recheck. Any input edit clears earlier
+5. Correct your source outside Krow and recheck. Any input edit clears earlier
    evidence and disables download. Choose **Download review evidence** explicitly
    to retain the JSON packet; it remains unreviewed, not accounting approval.
 6. Clear inputs when finished. Stop with Ctrl+C. Default mode forgets all review
@@ -39,8 +39,8 @@ unauthenticated tool on a public interface or reverse proxy.
 Create a new owner-only directory on the VPS and explicitly enable a journal:
 
 ```sh
-mkdir -m 700 /private/wingman-review
-python3 server/csv_review.py --port 8784 --review-db /private/wingman-review/review.db
+mkdir -m 700 /private/krow-review
+python3 server/csv_review.py --port 8784 --review-db /private/krow-review/review.db
 ```
 
 Do not reuse an unrelated SQLite database. New journals are mode 600; unsafe paths,
@@ -96,7 +96,7 @@ repair execution. Separate reviewer handoff acceptance remains open.
 From the source checkout, build a **new** private ZIP path in an existing directory:
 
 ```sh
-python3 scripts/build_csv_review_bundle.py /private/wingman-csv-review-v3.zip
+python3 scripts/build_csv_review_bundle.py /private/krow-csv-review-v3.zip
 python3 -m pytest scripts/test_csv_bundle.py -q
 ```
 
@@ -151,7 +151,7 @@ cannot supply the independent acceptance. No timed human result is claimed yet.
 
 Dave authorized the existing LSL sandbox grant, not customer production or broader
 grants. The scoped acceptance table is `0f618794c8374c8fa18f872158f058ed`, named
-`zz Wingman Synthetic CSV Acceptance 20261007`. It contains no imported datasets.
+`zz Krow Synthetic CSV Acceptance 20261007`. It contains no imported datasets.
 
 ```sh
 python3 server/csv_review.py --port 8782 \
@@ -159,7 +159,7 @@ python3 server/csv_review.py --port 8782 \
 ```
 
 This profile additionally requires the adopted `wk` command and its existing LSL
-read grant on the VPS. Do not copy credentials into Wingman, the browser or a bundle.
+read grant on the VPS. Do not copy credentials into Krow, the browser or a bundle.
 Use exact loopback port 8782 (or an approved SSH forward) as above.
 
 Setup status reads local configuration only, not Workiva. Default mode disables
@@ -167,10 +167,10 @@ native loading and explains that declared schema/packet review needs no grant.
 Configured mode says **access is not yet verified**; it does not test credentials
 until you explicitly load. Configuration failure leaves optional loading/journaling
 unavailable, not approved; local CSV checks remain usable. Confirm the service and
-retain any pasted source outside Wingman before reloading the page to retry setup.
+retain any pasted source outside Krow before reloading the page to retry setup.
 
 Open **Optional native LSL sandbox schema**, then **Load configured sandbox schema**.
-Wingman proves the account through `wk`, reads only the configured ID, checks its
+Krow proves the account through `wk`, reads only the configured ID, checks its
 native account/table binding and unshared synthetic name, and locks the schema.
 Key policy is still explicit. Each check rereads the schema and compares its full
 fingerprint, native `updated` field and `version`; changed evidence requires reload.
@@ -204,7 +204,7 @@ Enable **Check a declared reporting policy** and bind exact text period/currency
 columns, expected YYYY-MM period, uppercase three-letter currency label, numeric
 amount columns (one exact name per line), unit label and accounting basis. Bind a
 unit column when the source contains one. Supported row-unit labels are `units`,
-`cents`, `thousands`, `millions`; Wingman never derives units from a column name.
+`cents`, `thousands`, `millions`; Krow never derives units from a column name.
 Empty unit binding and unknown accounting basis stay **incomplete**, not matched.
 
 Every supplied row's labels are compared exactly, without trimming, coercion,
@@ -226,10 +226,10 @@ Policy declarations in downloaded evidence can be sensitive.
 
 Packets include the explicitly declared schema and key policy, so the next reviewer
 does not have to reconstruct them. Keep the original CSV in its approved private
-source location; Wingman does not keep a copy for you.
+source location; Krow does not keep a copy for you.
 
 In the browser, open **Continue a previous CSV review**, choose the original CSV
-above and the prior **review evidence JSON** (not journal handoff JSON). Wingman
+above and the prior **review evidence JSON** (not journal handoff JSON). Krow
 loads the packet's declared column order/types/required flags/keys and reporting
 context without retyping. Inputs are declarations from an untrusted historical
 file, not new schema approval. No Workiva read or saved decision is imported.
@@ -251,7 +251,7 @@ only until an explicit check/replay sends them to this VPS process. Clear/reload
 forgets imported packets. CLI replay remains available for retained exact builds.
 
 ```sh
-python3 server/csv_review.py --verify-packet wingman-csv-review.json --csv original.csv
+python3 server/csv_review.py --verify-packet krow-csv-review.json --csv original.csv
 ```
 
 This starts no HTTP service. It reads only the two explicit files, reruns the
@@ -299,12 +299,12 @@ repository at `/home/dave/work/design-venture/lockfield/workiva-plugin`, Git com
 `tests/test_local_checks.py`. Original Git blob IDs:
 `eeacb25fefaf9c485708d3b4f1626b6d6bf1ff2d` and
 `a9bce7aafd55b76dad6e39f005fd334e26300d31`.
-Checker logic is unchanged; Wingman's standard-library exception replaces the
+Checker logic is unchanged; Krow's standard-library exception replaces the
 plugin's package import. Keep validation changes synchronized through an explicit
 source comparison, rather than maintaining divergent screens unknowingly.
 
 The native-schema adapter, customer OAuth/proposal database, private configs and
-operator grants were not copied. Wingman icons and `setup.css` are reused in place.
+operator grants were not copied. Krow icons and `setup.css` are reused in place.
 See [source inventory, thesis and roadmap](product-development.md).
 
 ## Verify

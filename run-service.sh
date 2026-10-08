@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Start the Wingman local service (holds Workiva creds; serves /scan /fix /apply /version).
+# Start the Krow local service (holds Workiva creds; serves /scan /fix /apply /version).
 # Leave it running while you use or iterate on the extension.
 set -uo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -20,15 +20,15 @@ load_env() {
 load_env "$HERE/.env"
 
 # No static fallback: authenticated routes stay disabled until setup creates a token.
-if [ -z "${WINGMAN_TOKEN:-}" ]; then
-  echo "Wingman: WINGMAN_TOKEN is not set." >&2
+if [ -z "${KROW_TOKEN:-}" ]; then
+  echo "Krow: KROW_TOKEN is not set." >&2
   echo "  Run ./setup.sh to create the per-install service/extension token." >&2
   exit 1
 fi
 
 # Fail fast with a clear message if creds are missing — otherwise every Workiva call 401s.
 if [ -z "${WORKIVA_CLIENT_ID:-}" ] || [ -z "${WORKIVA_CLIENT_SECRET:-}" ]; then
-  echo "Wingman: WORKIVA_CLIENT_ID / WORKIVA_CLIENT_SECRET are not set." >&2
+  echo "Krow: WORKIVA_CLIENT_ID / WORKIVA_CLIENT_SECRET are not set." >&2
   echo "  Add them to $HERE/.env (run ./setup.sh to create it) or export them in your shell." >&2
   echo "  You need your OWN Workiva OAuth client — see README.md." >&2
   exit 1

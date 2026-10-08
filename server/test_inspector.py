@@ -20,7 +20,7 @@ from test_demo import browser, demo_url  # shared disposable simulator fixtures
 def test_http_exact_cell_without_mutation(browser, addr, kind, formula, calculated):
     before = browser.state()
     path = f"/api/inspect?spreadsheetId=de00&sheetId=de01&addr={addr}"
-    request = urllib.request.Request(browser.url + path, headers={"X-Wingman-Demo": "1"})
+    request = urllib.request.Request(browser.url + path, headers={"X-Krow-Demo": "1"})
     with browser.opener.open(request, timeout=10) as response:
         assert response.headers["Cache-Control"] == "no-store"
         data = json.load(response)

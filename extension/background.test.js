@@ -9,7 +9,7 @@ function broker(token, fetcher, sendMessage) {
   let listener, toolbar, installed, optionsOpened = 0;
   const signal = {}, deadlines = [];
   const context = {
-    WINGMAN_LOCAL_CONFIG: { token },
+    KROW_LOCAL_CONFIG: { token },
     importScripts: () => {},
     console,
     AbortSignal: { timeout: ms => { deadlines.push(ms); return signal; } },
@@ -36,20 +36,20 @@ function broker(token, fetcher, sendMessage) {
 }
 
 test("connection uses the paired token, no-store and an eight-second abort signal", async () => {
-  const data = { service: "wingman", authorization: "accepted" };
+  const data = { service: "krow", authorization: "accepted" };
   let requested;
   const worker = broker(" fictional-pair ", async (url, opts) => {
     requested = { url, opts };
     return { ok: true, status: 200, json: async () => data };
   });
-  const opts = { cache: "force-cache", headers: { "X-Wingman-Token": "untrusted", Accept: "application/json" } };
+  const opts = { cache: "force-cache", headers: { "X-Krow-Token": "untrusted", Accept: "application/json" } };
   const reply = await worker.request(opts);
   assert.equal(requested.url, "http://127.0.0.1:8770/api/connection");
   assert.equal(requested.opts.cache, "no-store");
   assert.equal(requested.opts.signal, worker.signal);
-  assert.equal(requested.opts.headers["X-Wingman-Token"], "fictional-pair");
+  assert.equal(requested.opts.headers["X-Krow-Token"], "fictional-pair");
   assert.equal(requested.opts.headers.Accept, "application/json");
-  assert.equal(opts.headers["X-Wingman-Token"], "untrusted");
+  assert.equal(opts.headers["X-Krow-Token"], "untrusted");
   assert.deepEqual(worker.deadlines, [8000]);
   assert.equal(reply.ok, true);
   assert.equal(reply.status, 200);

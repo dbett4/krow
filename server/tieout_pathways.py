@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Tieout diagnosis pathways for Wingman check-tieout queue items.
+Tieout diagnosis pathways for Krow check-tieout queue items.
 
 Keeps generic pathways in diagnose.py; this module adds scorecard-aware next actions
 when tieout_enrich has attached coordinates and heuristics.

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Wingman Workiva read client (stdlib-only, self-contained).
+Krow Workiva read client (stdlib-only, self-contained).
 
 Implements the OAuth2 client-credentials flow directly rather than depending on an
 external client package — the service stays standalone and pip-install-free.
@@ -24,7 +24,7 @@ import sys
 import urllib.parse
 import urllib.request
 
-import wingman_config
+import krow_config
 
 REGIONS = {"us": "https://api.app.wdesk.com", "eu": "https://api.eu.wdesk.com", "apac": "https://api.apac.wdesk.com"}
 AUTH_PATH = "/iam/v1/oauth2/token"
@@ -109,7 +109,7 @@ class ReadScopeError(PermissionError):
 def _read_scope():
     # Private/read-only installations cannot opt out by omitting or misspelling
     # the scope setting. Unrestricted reads exist only in standard local mode.
-    if (not wingman_config.read_only_enabled() and "WORKIVA_CREDENTIALS_FILE" not in os.environ
+    if (not krow_config.read_only_enabled() and "WORKIVA_CREDENTIALS_FILE" not in os.environ
             and "WORKIVA_READ_SCOPE_FILE" not in os.environ):
         return None
     try:
@@ -266,10 +266,10 @@ def _formula_from_content_value(val, raw_value=None):
     return None
 
 
-FORMULA_FETCH_CAP = int(os.environ.get("WINGMAN_FORMULA_FETCH_CAP", "500"))
+FORMULA_FETCH_CAP = int(os.environ.get("KROW_FORMULA_FETCH_CAP", "500"))
 # Default-on but visible-range-scoped: a smaller cap so the formula-hygiene detectors fire on
 # the reviewer's current sheet at ~1 extra content-cells GET, instead of being silent out of the box.
-FORMULA_FETCH_SCOPED_CAP = int(os.environ.get("WINGMAN_FORMULA_FETCH_SCOPED_CAP", "200"))
+FORMULA_FETCH_SCOPED_CAP = int(os.environ.get("KROW_FORMULA_FETCH_SCOPED_CAP", "200"))
 
 _FF_OFF = ("0", "false", "no", "off")
 _FF_FULL = ("1", "true", "yes", "on", "full", "all", "max")
@@ -282,9 +282,9 @@ def formula_fetch_mode():
     means 'scoped': formulas are fetched for the active sheet's used range up to
     FORMULA_FETCH_SCOPED_CAP, so the formula-hygiene wave (hardcoded-*, round-wrapper-workaround,
     formula-evaluates-blank) is live out of the box at one extra content-cells GET.
-    WINGMAN_FORMULA_FETCH=off keeps it silent (cost escape hatch); =on/full uses the full cap.
+    KROW_FORMULA_FETCH=off keeps it silent (cost escape hatch); =on/full uses the full cap.
     """
-    raw = str(os.environ.get("WINGMAN_FORMULA_FETCH", "")).strip().lower()
+    raw = str(os.environ.get("KROW_FORMULA_FETCH", "")).strip().lower()
     if raw in _FF_OFF:
         return "off"
     if raw in _FF_FULL:
@@ -310,7 +310,7 @@ def build_formula_fetch_meta(*, enabled, cell_count, enriched_count, table_id_pr
             "partial": True,
             "mode": mode or "off",
             "reason": (
-                "WINGMAN_FORMULA_FETCH off — sheetdata literals only; "
+                "KROW_FORMULA_FETCH off — sheetdata literals only; "
                 "TEXT()/wrapper heuristics need the content cells API"
             ),
         }
@@ -345,9 +345,9 @@ _LINK_OFF = ("0", "false", "no", "off")
 
 
 def link_fetch_enabled():
-    """Document range-link awareness (ADR-0008). Default ON; WINGMAN_LINK_FETCH=off disables it.
+    """Document range-link awareness (ADR-0008). Default ON; KROW_LINK_FETCH=off disables it.
     One extra read-only GET per sheet scan when a content table id is available."""
-    return str(os.environ.get("WINGMAN_LINK_FETCH", "")).strip().lower() not in _LINK_OFF
+    return str(os.environ.get("KROW_LINK_FETCH", "")).strip().lower() not in _LINK_OFF
 
 
 def fetch_range_links(table_id, token, ctx, *, api_version="2026-01-01", max_pages=50, meta=None):
@@ -400,7 +400,7 @@ def enrich_cells_with_formulas(cells, table_id, token, ctx, *, api_version="2026
     Merge formula strings from the content cells endpoint into normalized cells.
     Only fetches the bounding box of the supplied cell list; no-op when table_id
     is missing or cells is empty. When max_cells is set, only the first N cells
-    are enriched (WINGMAN_FORMULA_FETCH cap). Pass raw_cells to reuse a prior GET.
+    are enriched (KROW_FORMULA_FETCH cap). Pass raw_cells to reuse a prior GET.
     """
     if not table_id or not cells:
         return cells, 0
@@ -460,7 +460,7 @@ def enrich_cells_with_formulas(cells, table_id, token, ctx, *, api_version="2026
 
 
 def type_fetch_enabled():
-    return str(os.environ.get("WINGMAN_TYPE_FETCH", "")).strip().lower() in (
+    return str(os.environ.get("KROW_TYPE_FETCH", "")).strip().lower() in (
         "1", "true", "yes", "on",
     )
 

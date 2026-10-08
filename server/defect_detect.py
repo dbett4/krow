@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Vision defect-detection (pixel layer) for Wingman.
+Vision defect-detection (pixel layer) for Krow.
 
 Graduates the validated spike detectors into a server-local library. NumPy/Pillow
 only — no model, on-device. Per ADR-0001: addresses come from the DOM/API; vision
@@ -11,7 +11,7 @@ Detectors wired into the scan path (opt-in via ?vision=1 or POST cellImages):
   - clipped  : ink reaches the cell right edge (overflow signal; surfaced)
 
 Blank-cell pixel detection lives here for self-test parity but is NOT merged into
-the Wingman scan — blank-linked is API-grounded in detectors.py.
+the Krow scan — blank-linked is API-grounded in detectors.py.
 """
 from __future__ import annotations
 
@@ -136,7 +136,7 @@ def decode_cell_image(data):
     return img.convert("RGB")
 
 
-def _to_wingman_finding(addr, pf: PixelFinding, cell_meta=None):
+def _to_krow_finding(addr, pf: PixelFinding, cell_meta=None):
     """Map a pixel finding to the detectors.py finding dict shape."""
     cell_meta = cell_meta or {}
     if pf.kind == "contrast":
@@ -194,7 +194,7 @@ def scan_cell_images(cell_images, cells_by_addr=None, *, contrast_threshold=AA):
                 continue  # API-confirmed empty cell — skip contrast/clip on blank content
             meta = meta or {}
             for pf in analysis.findings:
-                wf = _to_wingman_finding(addr, pf, meta)
+                wf = _to_krow_finding(addr, pf, meta)
                 if wf:
                     findings.append(wf)
         except Exception as e:

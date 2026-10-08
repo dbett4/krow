@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Wingman activity log — the data substrate for automatic tool improvement.
+Krow activity log — the data substrate for automatic tool improvement.
 
 Every scan and every fix outcome is appended as one JSON line to a daily log under
-WINGMAN_LOG_DIR (default ~/.wingman/logs). `wingman_log_digest.py` mines these lines
+KROW_LOG_DIR (default ~/.krow/logs). `krow_log_digest.py` mines these lines
 into an improvement digest: which detectors are noisy, which fixes get reverted/refused
 (false-positive signal), drift, and vision's net contribution.
 
@@ -49,7 +49,7 @@ def _strip_forbidden(obj):
 
 
 def log_dir() -> Path:
-    return Path(os.environ.get("WINGMAN_LOG_DIR", str(Path.home() / ".wingman" / "logs")))
+    return Path(os.environ.get("KROW_LOG_DIR", str(Path.home() / ".krow" / "logs")))
 
 
 def _sheet_hash(spreadsheet_id, sheet_id) -> str:
@@ -106,7 +106,7 @@ def log_event(record: dict) -> None:
         d.mkdir(parents=True, exist_ok=True)
         now = datetime.now(timezone.utc)
         record = _strip_forbidden({"ts": now.isoformat(), "schema": SCHEMA_VERSION, **record})
-        path = d / f"wingman-events-{now.strftime('%Y-%m-%d')}.jsonl"
+        path = d / f"krow-events-{now.strftime('%Y-%m-%d')}.jsonl"
         with path.open("a", encoding="utf-8") as fh:
             fh.write(json.dumps(record, ensure_ascii=False) + "\n")
     except Exception:
@@ -162,13 +162,13 @@ def _selftest():
 
     # log_event writes a line to an isolated dir
     with tempfile.TemporaryDirectory() as td:
-        os.environ["WINGMAN_LOG_DIR"] = td
+        os.environ["KROW_LOG_DIR"] = td
         log_event({"event": "scan", "findingCount": 1})
-        files = list(Path(td).glob("wingman-events-*.jsonl"))
+        files = list(Path(td).glob("krow-events-*.jsonl"))
         check("log file written", len(files) == 1)
         line = json.loads(files[0].read_text().strip())
         check("log line has ts + schema", "ts" in line and line["schema"] == SCHEMA_VERSION)
-    os.environ.pop("WINGMAN_LOG_DIR", None)
+    os.environ.pop("KROW_LOG_DIR", None)
 
     ok = sum(1 for _, c in cases if c)
     for name, c in cases:

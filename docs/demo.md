@@ -1,8 +1,8 @@
-# Wingman in two minutes
+# Krow in two minutes
 
 Run `python3 server/demo.py` with Python 3.11 or newer, then open local port 8771.
 No pip install, `.env`, OAuth credentials, or unpacked extension is required.
-In an Amp orb, use `amp orb services ensure` and its Wingman demo portal.
+In an Amp orb, use `amp orb services ensure` and its Krow demo portal.
 
 **Connection** below the panel header opens a separate status view. Choose **Check
 connection** to see **Demo connection**: the fictional service responded, but
@@ -31,7 +31,7 @@ return to the review.
    restore earlier evidence without new reads. None of these actions moves the
    Workiva selection. Inspect Review notes B3: it still displays `Accrual`, but its
    cell link is disconnected. The covering range link does not prove this cell's
-   connection, and Wingman does not infer a source cell from range offsets.
+   connection, and Krow does not infer a source cell from range offsets.
    Reads are limited to 100 cells across 10 ranges, never silently sampled.
    The inspector makes no edits, performs no reconciliation, and applies no
    client policy. Changing the cell, sheet, or workbook clears its evidence.
@@ -65,7 +65,7 @@ to update them. Packet download always runs a fresh workbook scan.
 
 | Layer | Execution |
 | --- | --- |
-| Review UI | `wingman-core.js`, `wingman-inspector.js`, `wingman-connection.js`, and `wingman-panel.js`; demo-only sizing and disabled live-only controls |
+| Review UI | `krow-core.js`, `krow-inspector.js`, `krow-connection.js`, and `krow-panel.js`; demo-only sizing and disabled live-only controls |
 | Browser transport | `demo/demo.js` substitutes same-origin fetch for Chrome background messaging and selection for debugger-driven navigation |
 | Service | `app.Handler` inspect, scan, preview, apply, and packet routes; demo wrapper restricts accessible routes |
 | Connection check | Demo-only response identifying the simulation; no token or Workiva credential validation |

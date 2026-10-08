@@ -1,4 +1,4 @@
-"""Tests for the per-install Wingman service/extension token bootstrap."""
+"""Tests for the per-install Krow service/extension token bootstrap."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ spec.loader.exec_module(configure_local)
 
 def _token_from_env(path: Path) -> str:
     for line in path.read_text(encoding="utf-8").splitlines():
-        if line.startswith("WINGMAN_TOKEN="):
+        if line.startswith("KROW_TOKEN="):
             return line.split("=", 1)[1]
     return ""
 
@@ -56,7 +56,7 @@ def test_packaged_sources_have_no_nonempty_token_fallback():
         encoding="utf-8"
     )
 
-    assert 'os.environ.get("WINGMAN_TOKEN", "")' in app_source
+    assert 'os.environ.get("KROW_TOKEN", "")' in app_source
     assert 'importScripts("local-config.js")' in background_source
     assert "local token missing" in background_source
     assert not re.search(r'const WM_TOKEN\s*=\s*["\'][^"\']+["\']', background_source)
@@ -65,12 +65,12 @@ def test_packaged_sources_have_no_nonempty_token_fallback():
 def test_service_credential_file_wins_and_missing_file_does_not_fall_back(tmp_path):
     token_file = tmp_path / "token"
     token_file.write_text("  fictional-file-token\n")
-    env = {k: v for k, v in os.environ.items() if not k.startswith(("WORKIVA_", "WINGMAN_"))}
-    env.update(WINGMAN_TOKEN="wrong-environment-token", WINGMAN_TOKEN_FILE=str(token_file))
-    command = [sys.executable, "-c", "import app; assert app.WINGMAN_TOKEN == 'fictional-file-token'"]
+    env = {k: v for k, v in os.environ.items() if not k.startswith(("WORKIVA_", "KROW_"))}
+    env.update(KROW_TOKEN="wrong-environment-token", KROW_TOKEN_FILE=str(token_file))
+    command = [sys.executable, "-c", "import app; assert app.KROW_TOKEN == 'fictional-file-token'"]
     result = subprocess.run(command, cwd=REPO / "server", env=env, capture_output=True, text=True, timeout=10)
     assert result.returncode == 0, result.stderr
-    env["WINGMAN_TOKEN_FILE"] = str(tmp_path / "missing")
+    env["KROW_TOKEN_FILE"] = str(tmp_path / "missing")
     result = subprocess.run(command, cwd=REPO / "server", env=env, capture_output=True, text=True, timeout=10)
     assert result.returncode != 0
     assert "FileNotFoundError" in result.stderr

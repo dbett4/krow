@@ -1,4 +1,4 @@
-# Wingman detector evaluation
+# Krow detector evaluation
 
 Run the actual normalized-cell detector pipeline offline, before queue grouping:
 
@@ -85,8 +85,8 @@ unseen defect-family coverage or a customer/native benchmark. The same builder
 authored the protocol; independence and release-acceptance flags remain false.
 
 ```sh
-python3 server/synthetic_holdout.py prepare /private/new-wingman-holdout
-python3 server/synthetic_holdout.py run /private/new-wingman-holdout
+python3 server/synthetic_holdout.py prepare /private/new-krow-holdout
+python3 server/synthetic_holdout.py run /private/new-krow-holdout
 ```
 
 Commit the protocol before preparing the run. `prepare` creates a new mode-700

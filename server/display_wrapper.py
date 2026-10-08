@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Display-wrapper formula detector (Wingman Lane A — surfaced/RED only, no auto-fix).
+Display-wrapper formula detector (Krow Lane A — surfaced/RED only, no auto-fix).
 
 Flags display-mirror formula patterns observed in production ACFR workbook scans:
   - TEXT(ROUND(.../1000)) and TEXT(.../1000) scaled mirrors

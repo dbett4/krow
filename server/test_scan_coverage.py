@@ -72,9 +72,9 @@ def test_zero_findings_do_not_imply_complete(gap):
 
 @pytest.mark.parametrize("failure", ["none", "content-error", "content-short", "content-shape", "link-error", "link-shape"])
 def test_scanner_records_enrichment_failure_before_queue(monkeypatch, failure):
-    monkeypatch.setenv("WINGMAN_FORMULA_FETCH", "on")
-    monkeypatch.setenv("WINGMAN_TYPE_FETCH", "on")
-    monkeypatch.setenv("WINGMAN_LINK_FETCH", "on")
+    monkeypatch.setenv("KROW_FORMULA_FETCH", "on")
+    monkeypatch.setenv("KROW_TYPE_FETCH", "on")
+    monkeypatch.setenv("KROW_LINK_FETCH", "on")
 
     def read(path, *_args, **_kwargs):
         if "/sheets?" in path:
@@ -134,9 +134,9 @@ def test_link_page_cap_and_late_failure_keep_observations(monkeypatch):
 
 
 def test_type_coverage_uses_actual_shared_cap(monkeypatch):
-    monkeypatch.setenv("WINGMAN_FORMULA_FETCH", "scoped")
-    monkeypatch.setenv("WINGMAN_TYPE_FETCH", "on")
-    monkeypatch.setenv("WINGMAN_LINK_FETCH", "off")
+    monkeypatch.setenv("KROW_FORMULA_FETCH", "scoped")
+    monkeypatch.setenv("KROW_TYPE_FETCH", "on")
+    monkeypatch.setenv("KROW_LINK_FETCH", "off")
     monkeypatch.setattr(wk, "FORMULA_FETCH_SCOPED_CAP", 1)
     monkeypatch.setattr(wk, "iter_sheetdata", lambda *_a, **_kw: iter([
         {"data": {"cells": [[{"value": "Alpha"}, {"value": "Beta"}]]}}]))

@@ -233,7 +233,7 @@
 
   function buildReport(data) {
     if (!data || !data.sheets) return "";
-    var lines = ["# Wingman review", ""];
+    var lines = ["# Krow review", ""];
     var meta = reportMetaLines(data);
     if (meta.length) lines = lines.concat(meta, [""]);
     lines.push(workbookSummary(data));
@@ -633,7 +633,7 @@
   function exportProofChecklistIntro() {
     return (
       "Manual proof checklist — complete each step in Workiva (publish links, export PDF, grep), " +
-      "then check it off here. Wingman does not publish or export for you."
+      "then check it off here. Krow does not publish or export for you."
     );
   }
   function exportProofFilterBanner() {
@@ -935,9 +935,9 @@
   }
   function formulaPartialChipTooltip(ff) {
     if (ff && ff.reason) {
-      return ff.reason + " Enable WINGMAN_FORMULA_FETCH=1 on the local service for full formula-text detection.";
+      return ff.reason + " Enable KROW_FORMULA_FETCH=1 on the local service for full formula-text detection.";
     }
-    return "Wingman reads display values from sheetdata. Full formula-text detection requires WINGMAN_FORMULA_FETCH=1 on the service.";
+    return "Krow reads display values from sheetdata. Full formula-text detection requires KROW_FORMULA_FETCH=1 on the service.";
   }
 
   function operatorConfigWarningLines(status) {
@@ -1040,6 +1040,6 @@
     module.exports = api;
     return;
   }
-  root.WingmanCore = api;
+  root.KrowCore = api;
   Object.keys(api).forEach(function (k) { root[k] = api[k]; });
 })(typeof globalThis !== "undefined" ? globalThis : this);

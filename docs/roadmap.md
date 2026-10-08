@@ -1,4 +1,4 @@
-# Wingman product completion goals
+# Krow product completion goals
 
 Set September 15, 2026, for the revamp. This is the completion contract for a
 **polished private v1 used during real Workiva reporting review**, not a claim
@@ -41,7 +41,7 @@ concurrent edits, or usability by a new reviewer. No goal below is closed by thi
 
 The owner approved publishing the revamp, deploying the VPS backend and updating the
 existing Mac extension. GitHub `main` received all eighteen implementation/history
-commits through [the coverage repair](https://github.com/dbett4/wingman/commit/0ee4f35957a0c53661dd1feffe8a76ca5aae2b85).
+commits through [the coverage repair](https://github.com/dbett4/krow/commit/0ee4f35957a0c53661dd1feffe8a76ca5aae2b85).
 GitHub CI passed both Python versions and the demo-browser job. That exact runtime
 release is active on the VPS; 85 archived files matched the commit. Fourteen Mac
 runtime/checker files matched the same source; the pairing was preserved, Chrome
@@ -163,7 +163,7 @@ the companion URL let the backend verify J18's source location at its saved
 revision. Keyboard activation opened the actual companion's **Stmt Activities FY25**
 sheet in a new tab with no opener access. The grid and selected sheet were visually
 inspected. Switching back retained the exact source formula and trail; returning to
-D12 restored 0 without additional observed Wingman API requests or a changed report
+D12 restored 0 without additional observed Krow API requests or a changed report
 URL. It opens today's sheet, not a selected historical J18 cell. The temporary
 extension, package, pairing copy and trial tabs were removed; privileged path and
 serialized Chrome readback confirmed cleanup. The harness's initial nonprivileged
@@ -386,7 +386,7 @@ Why: passing tests and polished screenshots do not establish a finished product.
   data handling, write boundaries and high-impact behavior. No unresolved critical
   issue may be relabeled as a documentation limitation to close this goal.
 - With consent, run a pilot with the owner and at least one reviewer who did not
-  build Wingman. Use comparable unfamiliar workbooks with and without Wingman,
+  build Krow. Use comparable unfamiliar workbooks with and without Krow,
   counterbalance order, and record completion time, missed defects, false alarms
   acted on, setup failures and manual workarounds. Use fictional data for the blind
   comparison; real-work evaluation needs its own approved scope.

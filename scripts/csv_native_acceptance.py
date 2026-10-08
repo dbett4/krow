@@ -26,7 +26,7 @@ def main():
     url = "http://127.0.0.1:" + str(args.port)
     def post(path, data, expected=200):
         request = urllib.request.Request(url + path, data=json.dumps(data).encode(),
-                                         headers={"Origin": url, "Content-Type": "application/json", "X-Wingman-Review": "1"})
+                                         headers={"Origin": url, "Content-Type": "application/json", "X-Krow-Review": "1"})
         try:
             response = urllib.request.urlopen(request, timeout=25)
         except urllib.error.HTTPError as error:

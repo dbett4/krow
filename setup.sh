@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Wingman one-time setup. Checks Python, optional vision deps, local config,
+# Krow one-time setup. Checks Python, optional vision deps, local config,
 # and Workiva creds, then runs a smoke test. Safe to re-run. Does NOT require creds to
 # run — it tells you exactly what is still missing. See README.md for the full flow.
 set -uo pipefail
@@ -39,21 +39,21 @@ fi
 say "4. Local config (.env)"
 if [ ! -f .env ]; then
   cat > .env <<'ENVEOF'
-# Wingman service config. This file is gitignored — never commit real credentials.
+# Krow service config. This file is gitignored — never commit real credentials.
 # Shell exports (~/.zshrc) win over these; .env only fills vars the shell did not set.
 # Do not wrap values in quotes. Use your own Workiva OAuth client-credentials pair.
 
 WORKIVA_CLIENT_ID=
 WORKIVA_CLIENT_SECRET=
-WINGMAN_TOKEN=
+KROW_TOKEN=
 
 # Optional:
 # WORKIVA_REGION=us
 # WORKIVA_CA_BUNDLE=/path/to/corp-ca-bundle.pem
-# WINGMAN_PORT=8770            # if changed, update extension/manifest.json host_permissions
-# WINGMAN_FORMULA_FETCH=1      # enable hardcoded-value / formula-hygiene detectors
+# KROW_PORT=8770            # if changed, update extension/manifest.json host_permissions
+# KROW_FORMULA_FETCH=1      # enable hardcoded-value / formula-hygiene detectors
 # WORKIVA_EXPECTED_ARID=Account/...          # write gate: expected account resource ID
-# WINGMAN_APPLY_ALLOWLIST=<workbook-id>      # restrict /apply writes to listed workbooks
+# KROW_APPLY_ALLOWLIST=<workbook-id>      # restrict /apply writes to listed workbooks
 ENVEOF
   ok "created .env — edit it and add your Workiva creds"
 else

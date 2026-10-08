@@ -97,7 +97,7 @@ class ScorecardIngestTests(unittest.TestCase):
     def test_ingest_scorecard_from_override_path(self):
         with tempfile.TemporaryDirectory() as td:
             path = _write_scorecard(td)
-            with patch.dict(os.environ, {"WINGMAN_TIEOUT_SCORECARD": path}, clear=False):
+            with patch.dict(os.environ, {"KROW_TIEOUT_SCORECARD": path}, clear=False):
                 meta = checks_bridge.ingest_scorecard("ss1", project="acfr")
         self.assertTrue(meta["applied"])
         self.assertEqual(meta["source"], "scorecard")
@@ -114,7 +114,7 @@ class ScorecardIngestTests(unittest.TestCase):
         self.assertEqual(fail.get("jumpHint", {}).get("addr"), "L50")
 
     def test_ingest_scorecard_missing(self):
-        env = {k: v for k, v in os.environ.items() if k != "WINGMAN_TIEOUT_SCORECARD"}
+        env = {k: v for k, v in os.environ.items() if k != "KROW_TIEOUT_SCORECARD"}
         with patch.dict(os.environ, env, clear=True):
             meta = checks_bridge.ingest_scorecard("ss1", project="othercity")
         self.assertFalse(meta["applied"])
@@ -135,7 +135,7 @@ class ScorecardIngestTests(unittest.TestCase):
     def test_suite_scorecard_routes_to_ingest(self):
         with tempfile.TemporaryDirectory() as td:
             path = _write_scorecard(td)
-            with patch.dict(os.environ, {"WINGMAN_TIEOUT_SCORECARD": path}, clear=False):
+            with patch.dict(os.environ, {"KROW_TIEOUT_SCORECARD": path}, clear=False):
                 # Even with a live script available, suite=scorecard never spawns it.
                 with patch.object(checks_bridge, "resolve_run_checks_script") as rs:
                     meta = checks_bridge.run_checks_suite("ss1", suite="scorecard")
@@ -147,7 +147,7 @@ class ScorecardIngestTests(unittest.TestCase):
     def test_fallback_when_no_script_acfr(self):
         with tempfile.TemporaryDirectory() as td:
             path = _write_scorecard(td)
-            env = {**os.environ, "WINGMAN_TIEOUT_SCORECARD": path}
+            env = {**os.environ, "KROW_TIEOUT_SCORECARD": path}
             with patch.dict(os.environ, env, clear=False):
                 with patch.object(checks_bridge, "resolve_run_checks_script", return_value=None):
                     with patch.object(
@@ -161,7 +161,7 @@ class ScorecardIngestTests(unittest.TestCase):
 
     def test_no_fallback_when_not_eligible(self):
         # Non-acfr project + no override -> stays a skip even if a script is missing.
-        env = {k: v for k, v in os.environ.items() if k != "WINGMAN_TIEOUT_SCORECARD"}
+        env = {k: v for k, v in os.environ.items() if k != "KROW_TIEOUT_SCORECARD"}
         with patch.dict(os.environ, env, clear=True):
             with patch.object(checks_bridge, "resolve_run_checks_script", return_value=None):
                 with patch.object(
@@ -181,7 +181,7 @@ class ScorecardIngestTests(unittest.TestCase):
             def boom(cmd, *, cwd, timeout):
                 raise _sp.TimeoutExpired(cmd, timeout)
 
-            env = {**os.environ, "WINGMAN_TIEOUT_SCORECARD": path}
+            env = {**os.environ, "KROW_TIEOUT_SCORECARD": path}
             with patch.dict(os.environ, env, clear=False):
                 with patch.object(
                     checks_bridge, "resolve_run_checks_script",
@@ -229,7 +229,7 @@ class ChecksBridgeTests(unittest.TestCase):
             script = os.path.join(td, "run_checks.py")
             with open(script, "w", encoding="utf-8") as f:
                 f.write("# stub\n")
-            with patch.dict(os.environ, {"WINGMAN_CHECKS_SCRIPTS": td}, clear=False):
+            with patch.dict(os.environ, {"KROW_CHECKS_SCRIPTS": td}, clear=False):
                 resolved = checks_bridge.resolve_run_checks_script()
             self.assertEqual(os.path.realpath(str(resolved)), os.path.realpath(script))
 
@@ -239,7 +239,7 @@ class ChecksBridgeTests(unittest.TestCase):
             pj = os.path.join(td, "projects.json")
             with open(pj, "w", encoding="utf-8") as f:
                 json.dump({"ss_id": ss, "client": "test"}, f)
-            with patch.dict(os.environ, {"WINGMAN_CHECKS_WORKING_DIR": td}, clear=False):
+            with patch.dict(os.environ, {"KROW_CHECKS_WORKING_DIR": td}, clear=False):
                 got = checks_bridge.resolve_working_dir(ss)
             self.assertIsNotNone(got)
             self.assertEqual(os.path.realpath(got[0]), os.path.realpath(td))
@@ -247,9 +247,9 @@ class ChecksBridgeTests(unittest.TestCase):
     def test_default_acfr_preset_ss_map(self):
         ss = checks_bridge.client_preset.acfr_preset_ss_id()
         with patch.dict(os.environ, {}, clear=False):
-            os.environ.pop("WINGMAN_CHECKS_WORKING_DIR", None)
+            os.environ.pop("KROW_CHECKS_WORKING_DIR", None)
             os.environ.pop("CHECKS_CLIENT_DIR", None)
-            os.environ.pop("WINGMAN_CHECKS_SS_MAP", None)
+            os.environ.pop("KROW_CHECKS_SS_MAP", None)
         mapped = checks_bridge._ss_map().get(ss)
         self.assertIsNotNone(mapped)
         self.assertTrue(mapped.endswith("riverton"))
@@ -258,9 +258,9 @@ class ChecksBridgeTests(unittest.TestCase):
         ss = checks_bridge.client_preset.acfr_preset_ss_id()
         wd = checks_bridge.client_preset.acfr_preset_working_dir()
         with patch.dict(os.environ, {}, clear=False):
-            os.environ.pop("WINGMAN_CHECKS_WORKING_DIR", None)
-            os.environ.pop("WINGMAN_CHECKS_PROJECT", None)
-            os.environ.pop("WINGMAN_CHECKS_SS_MAP", None)
+            os.environ.pop("KROW_CHECKS_WORKING_DIR", None)
+            os.environ.pop("KROW_CHECKS_PROJECT", None)
+            os.environ.pop("KROW_CHECKS_SS_MAP", None)
         with patch.object(pathlib.Path, "is_dir", return_value=True):
             got = checks_bridge.resolve_working_dir(ss)
         self.assertIsNotNone(got)
@@ -269,7 +269,7 @@ class ChecksBridgeTests(unittest.TestCase):
     def test_env_ss_map_overrides_default(self):
         ss = checks_bridge.client_preset.acfr_preset_ss_id()
         with tempfile.TemporaryDirectory() as td:
-            with patch.dict(os.environ, {"WINGMAN_CHECKS_SS_MAP": json.dumps({ss: td})}, clear=False):
+            with patch.dict(os.environ, {"KROW_CHECKS_SS_MAP": json.dumps({ss: td})}, clear=False):
                 self.assertEqual(checks_bridge._ss_map().get(ss), td)
 
     def test_run_checks_suite_mocked_success(self):
@@ -287,7 +287,7 @@ class ChecksBridgeTests(unittest.TestCase):
                     stderr = ""
                 return Proc()
 
-            with patch.dict(os.environ, {"WINGMAN_CHECKS_WORKING_DIR": td}, clear=False):
+            with patch.dict(os.environ, {"KROW_CHECKS_WORKING_DIR": td}, clear=False):
                 with patch.object(checks_bridge, "resolve_run_checks_script", return_value=__import__("pathlib").Path(__file__)):
                     meta = checks_bridge.run_checks_suite("abc123def456", suite="tieout", runner=fake_runner)
 
@@ -297,7 +297,7 @@ class ChecksBridgeTests(unittest.TestCase):
 
     def test_run_checks_suite_skipped_no_script(self):
         # No script, no resolvable acfr project, no scorecard override -> honest skip.
-        env = {k: v for k, v in os.environ.items() if k != "WINGMAN_TIEOUT_SCORECARD"}
+        env = {k: v for k, v in os.environ.items() if k != "KROW_TIEOUT_SCORECARD"}
         with patch.dict(os.environ, env, clear=True):
             with patch.object(checks_bridge, "resolve_run_checks_script", return_value=None):
                 meta = checks_bridge.run_checks_suite("ss1", suite="tieout")

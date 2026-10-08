@@ -10,11 +10,11 @@ extension/local-config.js
 *.zip
 # live capture / debug images (may contain client pixels)
 live_capture*.png
-# Wingman activity logs — runtime telemetry, may reflect client workbook structure.
-# Default lives at ~/.wingman/logs (outside the repo); these guard a repo-local override.
-.wingman/
+# Krow activity logs — runtime telemetry, may reflect client workbook structure.
+# Default lives at ~/.krow/logs (outside the repo); these guard a repo-local override.
+.krow/
 /logs/
-wingman-events-*.jsonl
+krow-events-*.jsonl
 # scratch logo/render images at repo root only — root-anchored so
 # extension/icons/ and assets/ stay tracked. Loose images at root are scratch.
 /*.png
@@ -29,4 +29,4 @@ __pycache__/
 .DS_Store
 
 # regenerable Web Store bundle — rebuild via extension/PACKAGING.md
-wingman-extension.zip
+krow-extension.zip

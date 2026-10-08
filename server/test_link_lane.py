@@ -287,12 +287,12 @@ class FetchRangeLinksTests(unittest.TestCase):
 class LinkFetchEnabledTests(unittest.TestCase):
     def test_default_on(self):
         with patch.dict(os.environ, {}, clear=False):
-            os.environ.pop("WINGMAN_LINK_FETCH", None)
+            os.environ.pop("KROW_LINK_FETCH", None)
             self.assertTrue(wk.link_fetch_enabled())
 
     def test_explicit_off(self):
         for val in ("off", "0", "false", "no"):
-            with patch.dict(os.environ, {"WINGMAN_LINK_FETCH": val}, clear=False):
+            with patch.dict(os.environ, {"KROW_LINK_FETCH": val}, clear=False):
                 self.assertFalse(wk.link_fetch_enabled(), val)
 
 

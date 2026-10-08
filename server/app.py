@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Wingman local service (stdlib http.server — zero pip deps, self-contained per ADR-0002).
+Krow local service (stdlib http.server — zero pip deps, self-contained per ADR-0002).
 
 The extension side panel calls this on localhost. It holds Workiva creds (never the
 extension), reads + scans via wk_client/detectors, and brokers the safe-lane fix via
@@ -9,7 +9,7 @@ fixer (confirm-before-write, readback, revert).
 Endpoints (JSON):
   GET  /health
   GET  /config                                     -> presets + safe_fix_kinds contract
-  GET  /api/status, /status                         -> wingman feature flags + extension build id (read-only)
+  GET  /api/status, /status                         -> krow feature flags + extension build id (read-only)
   GET  /api/connection                              -> authenticated local configuration check; no Workiva calls
   GET  /api/queue?spreadsheetId=..&sheetId=..&checks=tieout  -> scan queue + run_checks FAILs
   GET  /api/checks?spreadsheetId=..&suite=tieout|hardening_gate|scorecard -> checks FAILs only
@@ -21,9 +21,9 @@ Endpoints (JSON):
   POST /apply {spreadsheetId,sheetId,addr,kind?,targetHex?} -> writes (readback+revert)
       kind: "low-contrast" (default) | "label-hygiene" | "negative-without-parens" | "junk-decimal"
 
-CORS: only the Wingman extension origin (chrome-extension://<id>) + localhost are allowed.
+CORS: only the Krow extension origin (chrome-extension://<id>) + localhost are allowed.
 Run:  python3 server/app.py            # binds 127.0.0.1:8770
-      WINGMAN_PORT=9000 python3 server/app.py
+      KROW_PORT=9000 python3 server/app.py
 """
 from __future__ import annotations
 
@@ -46,21 +46,21 @@ import fixer
 import inspector
 import review_packet
 import vision_candidates
-import wingman_config
-import wingman_log
-import wingman_receipts
+import krow_config
+import krow_log
+import krow_receipts
 import wk_client as wk
 
-PORT = int(os.environ.get("WINGMAN_PORT", "8770"))
+PORT = int(os.environ.get("KROW_PORT", "8770"))
 # A systemd credential file takes precedence; a missing configured file fails startup.
-WINGMAN_TOKEN = (
-    Path(os.environ["WINGMAN_TOKEN_FILE"]).read_text(encoding="utf-8").strip()
-    if os.environ.get("WINGMAN_TOKEN_FILE") else os.environ.get("WINGMAN_TOKEN", "").strip()
+KROW_TOKEN = (
+    Path(os.environ["KROW_TOKEN_FILE"]).read_text(encoding="utf-8").strip()
+    if os.environ.get("KROW_TOKEN_FILE") else os.environ.get("KROW_TOKEN", "").strip()
 )
-# Allowlisted extension id(s). Set WINGMAN_EXT_ID to your unpacked/store extension ID
+# Allowlisted extension id(s). Set KROW_EXT_ID to your unpacked/store extension ID
 # (chrome://extensions with Developer mode on shows the ID of a loaded unpacked build).
 ALLOWED_EXT_IDS = {
-    x.strip() for x in os.environ.get("WINGMAN_EXT_ID", "").split(",") if x.strip()
+    x.strip() for x in os.environ.get("KROW_EXT_ID", "").split(",") if x.strip()
 }
 REPO_ROOT = Path(__file__).resolve().parents[1]
 # Operator-provided write-safety configs (see _assert_apply_safety). /apply fails closed
@@ -186,15 +186,15 @@ def _load_json_file(path):
 
 
 def _configured_safety_json_path():
-    return Path(os.environ.get("WINGMAN_SAFETY_JSON", str(DEFAULT_SAFETY_JSON)))
+    return Path(os.environ.get("KROW_SAFETY_JSON", str(DEFAULT_SAFETY_JSON)))
 
 
 def _configured_dummy_ids_json_path():
-    return Path(os.environ.get("WINGMAN_DUMMY_IDS_JSON", str(DEFAULT_DUMMY_IDS_JSON)))
+    return Path(os.environ.get("KROW_DUMMY_IDS_JSON", str(DEFAULT_DUMMY_IDS_JSON)))
 
 
 def _apply_allowlist_ids():
-    ids = {x.strip() for x in os.environ.get("WINGMAN_APPLY_ALLOWLIST", "").split(",") if x.strip()}
+    ids = {x.strip() for x in os.environ.get("KROW_APPLY_ALLOWLIST", "").split(",") if x.strip()}
     dummy_cfg = _load_json_file(_configured_dummy_ids_json_path()) or {}
     for item in dummy_cfg.get("dummy_ids") or []:
         if isinstance(item, dict) and item.get("id"):
@@ -225,7 +225,7 @@ def _assert_apply_safety(spreadsheet_id):
     dummy_path = _configured_dummy_ids_json_path()
     if _load_json_file(safety_path) is None:
         raise RuntimeError(f"refusing Workiva write: safety config missing ({safety_path})")
-    if _load_json_file(dummy_path) is None and not os.environ.get("WINGMAN_APPLY_ALLOWLIST"):
+    if _load_json_file(dummy_path) is None and not os.environ.get("KROW_APPLY_ALLOWLIST"):
         raise RuntimeError(f"refusing Workiva write: dummy allowlist missing ({dummy_path})")
     if spreadsheet_id in _protected_source_ids():
         raise RuntimeError("refusing Workiva write: target is a protected source workbook")
@@ -246,7 +246,7 @@ def _run_workbook_queue(ss, checks_suite=None):
     # Each sheet entry already carries noise-dropped groups + cellCount (wk.scan_workbook).
     for sheet in wb.get("sheets") or []:
         if not sheet.get("error"):
-            wingman_log.log_scan(ss, sheet.get("sheetId"), sheet)  # PII-safe; failsafe
+            krow_log.log_scan(ss, sheet.get("sheetId"), sheet)  # PII-safe; failsafe
     payload = _maybe_merge_checks(payload, ss, checks_suite)
     payload["coverage"] = diagnose.scan_coverage(payload)
     return payload
@@ -347,7 +347,7 @@ def _run_sheet_queue(ss, sh, *, vision=False, cell_images=None, checks_suite=Non
     _attach_formula_fetch(payload, formula_meta)
     _attach_type_fetch(payload, type_meta)
     _attach_link_fetch(payload, link_meta)
-    wingman_log.log_scan(ss, sh, payload)  # PII-safe aggregate; failsafe
+    krow_log.log_scan(ss, sh, payload)  # PII-safe aggregate; failsafe
     payload = _maybe_merge_checks(payload, ss, checks_suite)
     payload["coverage"] = diagnose.scan_coverage(payload)
     return payload
@@ -380,16 +380,16 @@ def _operator_config_status():
     This intentionally reports only present/missing/custom/default facts. It never
     returns tokens, extension IDs, or Workiva credential values.
     """
-    token_configured = bool(WINGMAN_TOKEN)
-    ext_custom = bool(os.environ.get("WINGMAN_EXT_ID"))
+    token_configured = bool(KROW_TOKEN)
+    ext_custom = bool(os.environ.get("KROW_EXT_ID"))
     credentials = wk.credentials_present()
     warnings = []
     if not token_configured:
-        warnings.append("WINGMAN_TOKEN is missing; guarded endpoints are disabled. Run ./setup.sh.")
+        warnings.append("KROW_TOKEN is missing; guarded endpoints are disabled. Run ./setup.sh.")
     if not ext_custom:
-        warnings.append("WINGMAN_EXT_ID is using the packaged default; verify it matches the installed extension before relying on origin-gated writes.")
+        warnings.append("KROW_EXT_ID is using the packaged default; verify it matches the installed extension before relying on origin-gated writes.")
     return {
-        "wingman_token": "configured" if token_configured else "missing",
+        "krow_token": "configured" if token_configured else "missing",
         "extension_origin": "custom" if ext_custom else "default-packaged",
         "allowed_extension_ids_count": len([x for x in ALLOWED_EXT_IDS if x]),
         "workiva_client_id": "present" if credentials else "missing",
@@ -401,21 +401,21 @@ def _operator_config_status():
     }
 
 
-def _wingman_status():
+def _krow_status():
     return {
         "ok": True,
-        "service": "wingman",
+        "service": "krow",
         "port": PORT,
         "version": {"extension_build": _ext_build()},
         "operator_config": _operator_config_status(),
         "features": {
-            "read_only": wingman_config.read_only_enabled(),
+            "read_only": krow_config.read_only_enabled(),
             "formula_fetch": wk.formula_fetch_enabled(),
             "formula_fetch_mode": wk.formula_fetch_mode(),
             "formula_fetch_cap": wk.formula_fetch_cap(),
-            "vision": not wingman_config.read_only_enabled(),
-            "checks_adapter": not wingman_config.read_only_enabled(),
-            "external_checks_cli": not wingman_config.read_only_enabled() and checks_bridge.resolve_run_checks_script() is not None,
+            "vision": not krow_config.read_only_enabled(),
+            "checks_adapter": not krow_config.read_only_enabled(),
+            "external_checks_cli": not krow_config.read_only_enabled() and checks_bridge.resolve_run_checks_script() is not None,
         },
     }
 
@@ -431,7 +431,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Access-Control-Allow-Origin", origin)
             self.send_header("Vary", "Origin")
             self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-            self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Wingman-Token")
+            self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Krow-Token")
 
     def _send(self, code, payload):
         body = json.dumps(payload).encode()
@@ -459,8 +459,8 @@ class Handler(BaseHTTPRequestHandler):
         # can't gate it — the per-install token does. Origin checks remain an additional CORS
         # boundary, never a substitute for the token on guarded endpoints.
         return bool(
-            WINGMAN_TOKEN
-            and self.headers.get("X-Wingman-Token") == WINGMAN_TOKEN
+            KROW_TOKEN
+            and self.headers.get("X-Krow-Token") == KROW_TOKEN
         )
 
     def _guard(self):
@@ -485,7 +485,7 @@ class Handler(BaseHTTPRequestHandler):
         if not self._loopback_readonly_ok(path) and not self._guard():
             return
         q = urllib.parse.parse_qs(u.query)
-        if wingman_config.read_only_enabled() and (
+        if krow_config.read_only_enabled() and (
             path == "/api/checks" or any(q.get("checks", [])) or
             any(_truthy(value) for value in q.get("write", []))
         ):
@@ -495,32 +495,32 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/":
                 self._send(200, {
                     "ok": True,
-                    "service": "wingman",
-                    "message": "Wingman local service is running. Use the Chrome extension for Workiva actions.",
+                    "service": "krow",
+                    "message": "Krow local service is running. Use the Chrome extension for Workiva actions.",
                     "status": "/api/status",
                     "digest": "/digest",
                     "operator_config": _operator_config_status(),
                     "guarded_endpoints": ["/api/connection", "/api/inspect", "/api/queue", "/api/checks", "/api/review-packet", "/fix", "/apply"],
                 })
             elif path == "/config":
-                self._send(200, wingman_config.service_config())
+                self._send(200, krow_config.service_config())
             elif path in ("/api/status", "/status"):
-                self._send(200, _wingman_status())
+                self._send(200, _krow_status())
             elif path == "/api/connection":
                 # Unlike local status probes, this route always requires the token.
                 # Presence of credentials is not evidence of valid Workiva access.
                 self._send(200, {
-                    "service": "wingman", "protocol": 1, "readOnly": True,
+                    "service": "krow", "protocol": 1, "readOnly": True,
                     "authorization": "accepted", "workivaAccess": "not_tested",
-                    "serviceMode": "read-only" if wingman_config.read_only_enabled() else "standard",
+                    "serviceMode": "read-only" if krow_config.read_only_enabled() else "standard",
                     "workivaCredentials": "present" if wk.credentials_present() else "missing",
                     **wk.read_access_status(),
                 })
             elif path == "/version":
                 self._send(200, {"build": _ext_build()})  # dev auto-reload signal
             elif path == "/digest":
-                import wingman_log_digest as wd  # improvement digest mined from the activity log
-                self._send(200, wd.build_digest(wd.load_events(wingman_log.log_dir())))
+                import krow_log_digest as wd  # improvement digest mined from the activity log
+                self._send(200, wd.build_digest(wd.load_events(krow_log.log_dir())))
             elif path == "/api/inspect":
                 ss, sh, addr = (q.get(key, [""])[0] for key in ("spreadsheetId", "sheetId", "addr"))
                 try:
@@ -620,7 +620,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self._guard():
             return
-        if wingman_config.read_only_enabled():
+        if krow_config.read_only_enabled():
             # Reject before body parsing, OAuth, table lookup, fixer or subprocesses.
             # Close the connection so an unread body cannot become another request.
             self.close_connection = True
@@ -673,7 +673,7 @@ class Handler(BaseHTTPRequestHandler):
             if not all([ss, sh, addr]):
                 self._send(400, {"error": "spreadsheetId, sheetId, addr required"})
                 return
-            if kind not in wingman_config.SAFE_FIX_KINDS:
+            if kind not in krow_config.SAFE_FIX_KINDS:
                 self._send(400, {"error": f"unknown fix kind: {kind!r}"})
                 return
             tid = _table_id(ss, sh)
@@ -717,8 +717,8 @@ class Handler(BaseHTTPRequestHandler):
                 result = fixer.fix_year_coercion(ss, sh, tid, addr, tok, ctx, confirm=confirm, target_vf=tgt_vf)
             else:
                 result = fixer.fix_contrast(ss, sh, tid, addr, tgt, tok, ctx, confirm=confirm)
-            wingman_log.log_fix(kind, confirm, result, addr=addr)  # PII-safe outcome; failsafe
-            receipt_path = wingman_receipts.log_action_receipt(
+            krow_log.log_fix(kind, confirm, result, addr=addr)  # PII-safe outcome; failsafe
+            receipt_path = krow_receipts.log_action_receipt(
                 spreadsheet_id=ss, sheet_id=sh, addr=addr, kind=kind, confirm=confirm,
                 result=result, arid_status=arid_status, safety_status=safety_status,
             )
@@ -729,7 +729,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send(502, _api_error_payload(e))
 
 
-class WingmanHTTPServer(ThreadingHTTPServer):
+class KrowHTTPServer(ThreadingHTTPServer):
     """Threaded local server with quiet handling for probe disconnects.
 
     Browser/devtools/curl probes sometimes close the socket after reading enough
@@ -751,8 +751,8 @@ class WingmanHTTPServer(ThreadingHTTPServer):
 
 
 def main():
-    srv = WingmanHTTPServer(("127.0.0.1", PORT), Handler)
-    print(f"Wingman service on http://127.0.0.1:{PORT} (allowed ext: {', '.join(ALLOWED_EXT_IDS)})", flush=True)
+    srv = KrowHTTPServer(("127.0.0.1", PORT), Handler)
+    print(f"Krow service on http://127.0.0.1:{PORT} (allowed ext: {', '.join(ALLOWED_EXT_IDS)})", flush=True)
     try:
         srv.serve_forever()
     except KeyboardInterrupt:

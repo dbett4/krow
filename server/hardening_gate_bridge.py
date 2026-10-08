@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Bridge Wingman queue to the workbook hardening gate (dry-run + evaluate).
+Bridge Krow queue to the workbook hardening gate (dry-run + evaluate).
 
 Runs `workiva_hardening_gate.py` without CONFIRM (read-only plan) and evaluates
 the local xlsx snapshot for parity / patch-ref / criteria-bank FAILs.
@@ -8,9 +8,9 @@ the local xlsx snapshot for parity / patch-ref / criteria-bank FAILs.
 Scoped to the configured ACFR preset workbook — other workbooks skip gracefully.
 
 Configure:
-  WINGMAN_HARDENING_REPO_ROOT — ACFR preset repo root (default: WINGMAN_DATA_DIR)
-  WINGMAN_HARDENING_SCRIPT   — path to workiva_hardening_gate.py
-  WINGMAN_HARDENING_TIMEOUT  — subprocess seconds (default 180)
+  KROW_HARDENING_REPO_ROOT — ACFR preset repo root (default: KROW_DATA_DIR)
+  KROW_HARDENING_SCRIPT   — path to workiva_hardening_gate.py
+  KROW_HARDENING_TIMEOUT  — subprocess seconds (default 180)
 """
 from __future__ import annotations
 
@@ -37,7 +37,7 @@ def _norm_ss(ss: str) -> str:
 def resolve_hardening_repo_root() -> pathlib.Path | None:
     """Return ACFR preset client repo root or None."""
     for key in (
-        "WINGMAN_HARDENING_REPO_ROOT",
+        "KROW_HARDENING_REPO_ROOT",
         "ACFR_PRESET_REPO_ROOT",
     ):
         raw = os.environ.get(key)
@@ -53,7 +53,7 @@ def resolve_hardening_repo_root() -> pathlib.Path | None:
 
 def resolve_hardening_script() -> pathlib.Path | None:
     """Return path to workiva_hardening_gate.py or None."""
-    raw = os.environ.get("WINGMAN_HARDENING_SCRIPT")
+    raw = os.environ.get("KROW_HARDENING_SCRIPT")
     if raw:
         p = pathlib.Path(raw).expanduser()
         if p.is_file():
@@ -83,7 +83,7 @@ def parse_dry_run_operations(stdout: str) -> int | None:
 
 
 def evaluation_to_fail_rows(ev: dict[str, Any]) -> list[dict[str, Any]]:
-    """Turn evaluate() payload into Wingman fail_rows."""
+    """Turn evaluate() payload into Krow fail_rows."""
     rows: list[dict[str, Any]] = []
     if not ev:
         return rows
@@ -209,8 +209,8 @@ def run_hardening_gate_suite(
     script = resolve_hardening_script()
     if script is None:
         meta["skipped"] = (
-            "workiva_hardening_gate.py not found — set WINGMAN_HARDENING_REPO_ROOT or "
-            "WINGMAN_HARDENING_SCRIPT"
+            "workiva_hardening_gate.py not found — set KROW_HARDENING_REPO_ROOT or "
+            "KROW_HARDENING_SCRIPT"
         )
         meta["elapsed_s"] = round(time.time() - t0, 2)
         return meta
@@ -218,7 +218,7 @@ def run_hardening_gate_suite(
     root = script.parent.parent
     meta["working_dir"] = str(root)
 
-    timeout_s = float(timeout if timeout is not None else os.environ.get("WINGMAN_HARDENING_TIMEOUT", "180"))
+    timeout_s = float(timeout if timeout is not None else os.environ.get("KROW_HARDENING_TIMEOUT", "180"))
     run = runner or _default_runner
     dry_env = {**os.environ, "PYTHONUTF8": "1"}
     dry_env.pop("CONFIRM", None)

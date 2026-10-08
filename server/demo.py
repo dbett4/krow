@@ -36,7 +36,7 @@ ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = json.loads((ROOT / "server/fixtures/riverton.json").read_text())
 WORKBOOK = FIXTURE["spreadsheetId"]
 CURRENT_SESSION = ContextVar("demo_session")
-COOKIE = "wingman_demo"
+COOKIE = "krow_demo"
 SESSION_TTL = 3600
 
 
@@ -269,9 +269,9 @@ class UpstreamHandler(BaseHTTPRequestHandler):
 
 
 ASSETS = {"/": "demo/index.html", "/demo/demo.css": "demo/demo.css", "/demo/demo.js": "demo/demo.js",
-          "/wingman-inspector.js": "extension/wingman-inspector.js",
-          "/wingman-connection.js": "extension/wingman-connection.js",
-          "/wingman-core.js": "extension/wingman-core.js", "/wingman-panel.js": "extension/wingman-panel.js",
+          "/krow-inspector.js": "extension/krow-inspector.js",
+          "/krow-connection.js": "extension/krow-connection.js",
+          "/krow-core.js": "extension/krow-core.js", "/krow-panel.js": "extension/krow-panel.js",
           "/icons/icon128.png": "extension/icons/icon128.png"}
 GET_ROUTES = {"/config", "/api/inspect", "/api/inspect-source", "/api/document-tables", "/api/inspect-document",
               "/api/queue", "/api/review-packet"}
@@ -290,7 +290,7 @@ class DemoHandler(app.Handler):
     def _authorized(self):
         # Only this demo's same-origin browser adapter sends this header.
         # Cross-origin JavaScript cannot send it without a preflight, which we deny.
-        return self.headers.get("X-Wingman-Demo") == "1"
+        return self.headers.get("X-Krow-Demo") == "1"
 
     def do_OPTIONS(self):
         self._send(403, {"error": "Cross-origin demo requests are disabled"})
@@ -337,9 +337,9 @@ class DemoHandler(app.Handler):
                 if self.command == "GET" and path == "/demo/state":
                     self._send(200, book.state())
                 elif self.command == "GET" and path == "/api/connection":
-                    self._send(200, {"simulation": True, "service": "wingman-demo"})
+                    self._send(200, {"simulation": True, "service": "krow-demo"})
                 elif self.command == "GET" and path in ("/api/status", "/status"):
-                    self._send(200, {"simulation": True, "service": "wingman-demo",
+                    self._send(200, {"simulation": True, "service": "krow-demo",
                                      "features": {"formula_fetch": True, "formula_fetch_mode": "full",
                                                   "vision": False, "checks_adapter": False},
                                      "operator_config": {"token_configured": True}})
@@ -394,24 +394,24 @@ def main():
         raise KeyboardInterrupt
 
     signal.signal(signal.SIGTERM, stop)
-    with tempfile.TemporaryDirectory(prefix="wingman-demo-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="krow-demo-") as tmp:
         # Replace ALL known regions; even an inherited WORKIVA_REGION cannot
         # select a live host. No general base-URL override is added to production.
         wk.REGIONS = {k: f"http://127.0.0.1:{upstream.server_port}" for k in wk.REGIONS}
         app._token = demo_token
         app.PORT = args.port
-        app.WINGMAN_TOKEN = secrets.token_urlsafe(32)
-        os.environ.update({"WORKIVA_EXPECTED_ARID": "Account/demo", "WINGMAN_APPLY_ALLOWLIST": WORKBOOK,
-                           "WINGMAN_FORMULA_FETCH": "full", "WINGMAN_TYPE_FETCH": "on", "WINGMAN_LINK_FETCH": "on",
-                           "WINGMAN_SAFETY_JSON": tmp + "/safety.json", "WINGMAN_DUMMY_IDS_JSON": tmp + "/dummy.json",
-                           "WINGMAN_LOG_DIR": tmp + "/logs", "WINGMAN_RECEIPT_DIR": tmp + "/receipts"})
+        app.KROW_TOKEN = secrets.token_urlsafe(32)
+        os.environ.update({"WORKIVA_EXPECTED_ARID": "Account/demo", "KROW_APPLY_ALLOWLIST": WORKBOOK,
+                           "KROW_FORMULA_FETCH": "full", "KROW_TYPE_FETCH": "on", "KROW_LINK_FETCH": "on",
+                           "KROW_SAFETY_JSON": tmp + "/safety.json", "KROW_DUMMY_IDS_JSON": tmp + "/dummy.json",
+                           "KROW_LOG_DIR": tmp + "/logs", "KROW_RECEIPT_DIR": tmp + "/receipts"})
         Path(tmp + "/safety.json").write_text('{"protected_source_ids": {}}')
         Path(tmp + "/dummy.json").write_text(json.dumps({"dummy_ids": [{"id": WORKBOOK}]}))
-        server = app.WingmanHTTPServer(("127.0.0.1", args.port), DemoHandler)
+        server = app.KrowHTTPServer(("127.0.0.1", args.port), DemoHandler)
         server.sessions = sessions
         thread = threading.Thread(target=upstream.serve_forever, daemon=True)
         thread.start()
-        print(f"Wingman demo ready on port {server.server_port} — fictional data, no Workiva connection", flush=True)
+        print(f"Krow demo ready on port {server.server_port} — fictional data, no Workiva connection", flush=True)
         try:
             server.serve_forever()
         except KeyboardInterrupt:

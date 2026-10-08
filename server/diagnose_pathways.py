@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Wingman pathway catalogs — extracted from diagnose.py for maintainability."""
+"""Krow pathway catalogs — extracted from diagnose.py for maintainability."""
 from __future__ import annotations
 
 import re
@@ -54,7 +54,7 @@ BLANK_DL_GUIDED_STEPS: list[dict[str, Any]] = [
         "detail": (
             "Final verification: walk the document for destination links with empty cached text — "
             "do NOT rely on resolve-based scope (15–25% false negatives at scale). Re-scan this sheet "
-            "in Wingman; flagged cells should clear once caches refresh."
+            "in Krow; flagged cells should clear once caches refresh."
         ),
     },
 ]
@@ -76,7 +76,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "font-color write via applyFormats is safe when preceded by a full pre-read."
         ),
         "judgment": "safe-auto — mechanical color correction; reversible by re-writing before-state.",
-        "suggested_action": "Preview the computed AA-passing color, then confirm Apply in Wingman.",
+        "suggested_action": "Preview the computed AA-passing color, then confirm Apply in Krow.",
         "trap_refs": [
             _trap(
                 "applyFormats-richText-noop",
@@ -237,7 +237,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "plainText, so a trim write via the Values API is safe with readback/revert."
         ),
         "judgment": "safe-auto — mechanical trim; reversible by re-writing before-state.",
-        "suggested_action": "Preview trimmed label, then confirm Apply in Wingman.",
+        "suggested_action": "Preview trimmed label, then confirm Apply in Krow.",
         "trap_refs": [],
         "fix_refs": [
             _fix("fixer-label-trim", "Strip/collapse whitespace via Values PUT (ADR-0004 follow-on)."),
@@ -264,7 +264,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "is safe with readback/revert."
         ),
         "judgment": "safe-auto — ACCOUNTING format with useParensForNegatives; not TEXT or NUMBER.",
-        "suggested_action": "Preview the planned ACCOUNTING format, then confirm Apply in Wingman.",
+        "suggested_action": "Preview the planned ACCOUNTING format, then confirm Apply in Krow.",
         "trap_refs": [
             _trap(
                 "accounting-prefix-string-bypass",
@@ -289,7 +289,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         ),
         "judgment": "surfaced — mixed column; judgment fix in Workiva UI or batch after review.",
         "suggested_action": (
-            "Review the full column in Workiva; when homogenized, use Wingman "
+            "Review the full column in Workiva; when homogenized, use Krow "
             "\"Apply column format\" or apply ACCOUNTING + parentheses for negatives consistently."
         ),
         "trap_refs": [],
@@ -309,7 +309,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "preflight passes."
         ),
         "judgment": "safe-auto — copy neighbor valueFormat; readback/revert; TEXT() cells refused.",
-        "suggested_action": "Preview before/after format, then confirm Apply in Wingman.",
+        "suggested_action": "Preview before/after format, then confirm Apply in Krow.",
         "trap_refs": [
             _trap(
                 "w21-native-valueformat-scale-rewrite",
@@ -332,7 +332,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         ),
         "judgment": "surfaced — batch format paste in Workiva after column review.",
         "suggested_action": (
-            "Review the column in Workiva; when homogenized, use Wingman "
+            "Review the column in Workiva; when homogenized, use Krow "
             "\"Apply column format\" (gated dry-run → confirm → apply) or batch paste in Workiva."
         ),
         "trap_refs": [
@@ -351,7 +351,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "showThousandsSeparator. Neighbor format consensus (2-of-3) makes applyFormats copy safe."
         ),
         "judgment": "safe-auto — copy neighbor valueFormat; readback/revert; TEXT() cells refused.",
-        "suggested_action": "Preview before/after format, then confirm Apply in Wingman.",
+        "suggested_action": "Preview before/after format, then confirm Apply in Krow.",
         "trap_refs": [
             _trap(
                 "w21-native-valueformat-scale-rewrite",
@@ -374,7 +374,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         ),
         "judgment": "surfaced — batch format paste in Workiva after column review.",
         "suggested_action": (
-            "Review the column; when homogenized, use Wingman "
+            "Review the column; when homogenized, use Krow "
             "\"Apply column format\" or apply thousands separator consistently in Workiva."
         ),
         "trap_refs": [],
@@ -388,7 +388,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "Copying neighbor format preserves ACFR presentation without formula mutation."
         ),
         "judgment": "safe-auto — copy neighbor ACCOUNTING valueFormat; TEXT() cells refused.",
-        "suggested_action": "Preview planned ACCOUNTING format, then confirm Apply in Wingman.",
+        "suggested_action": "Preview planned ACCOUNTING format, then confirm Apply in Krow.",
         "trap_refs": [
             _trap(
                 "accounting-prefix-string-bypass",
@@ -409,7 +409,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         ),
         "judgment": "surfaced — review before batch format paste.",
         "suggested_action": (
-            "Confirm column intent; use Wingman \"Apply column format\" after homogenizing, "
+            "Confirm column intent; use Krow \"Apply column format\" after homogenizing, "
             "or apply ACCOUNTING in Workiva if appropriate."
         ),
         "trap_refs": [],
@@ -423,7 +423,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "precision. Non-junk band — distinct from absurd junk-decimal precision."
         ),
         "judgment": "safe-auto — copy neighbor integer precision; readback/revert.",
-        "suggested_action": "Preview before/after format, then confirm Apply in Wingman.",
+        "suggested_action": "Preview before/after format, then confirm Apply in Krow.",
         "trap_refs": [
             _trap(
                 "w21-native-valueformat-scale-rewrite",
@@ -443,7 +443,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         ),
         "judgment": "surfaced — review column before batch format paste.",
         "suggested_action": (
-            "Review the column; use Wingman \"Apply column format\" after homogenizing, "
+            "Review the column; use Krow \"Apply column format\" after homogenizing, "
             "or align precision in Workiva if appropriate."
         ),
         "trap_refs": [],
@@ -458,7 +458,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "ACFR presentation without formula mutation."
         ),
         "judgment": "safe-auto — copy neighbor valueFormat; readback/revert; TEXT() cells refused.",
-        "suggested_action": "Preview before/after format, then confirm Apply in Wingman.",
+        "suggested_action": "Preview before/after format, then confirm Apply in Krow.",
         "trap_refs": [
             _trap(
                 "accounting-prefix-string-bypass",
@@ -483,7 +483,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         ),
         "judgment": "surfaced — review before batch format paste.",
         "suggested_action": (
-            "Confirm column intent; use Wingman \"Apply column format\" after homogenizing, "
+            "Confirm column intent; use Krow \"Apply column format\" after homogenizing, "
             "or apply prefix in Workiva if appropriate."
         ),
         "trap_refs": [],
@@ -497,7 +497,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "use displayZeroAs EM DASH. Copying neighbor valueFormat aligns ACFR zero presentation."
         ),
         "judgment": "safe-auto — copy neighbor ACCOUNTING zero format; TEXT() cells refused.",
-        "suggested_action": "Preview before/after format, then confirm Apply in Wingman.",
+        "suggested_action": "Preview before/after format, then confirm Apply in Krow.",
         "trap_refs": [
             _trap(
                 "w21-native-valueformat-scale-rewrite",
@@ -517,7 +517,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "valueFormatType=PERIOD suppresses the separator — reversible, no value rescale."
         ),
         "judgment": "safe-auto — PERIOD valueFormat write; readback/revert; richText surfaced.",
-        "suggested_action": "Preview before/after format, then confirm Apply in Wingman.",
+        "suggested_action": "Preview before/after format, then confirm Apply in Krow.",
         "trap_refs": [
             _trap(
                 "year-period-consumer-propagation",
@@ -550,7 +550,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         ),
         "judgment": "surfaced — review column before batch format paste.",
         "suggested_action": (
-            "Review the column; use Wingman \"Apply column format\" after homogenizing, "
+            "Review the column; use Krow \"Apply column format\" after homogenizing, "
             "or set display zero as em-dash in Workiva if appropriate."
         ),
         "trap_refs": [],
@@ -643,7 +643,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "IF(ISNUMBER(src), TEXT(ROUND(src/1000,...), ...)) band — the display-mirror screenshot pattern. "
             "Breaks the numeric-formula contract; DL/tieout need numeric calculatedValue."
         ),
-        "judgment": "surfaced — RED structural formula judgment; no Wingman auto-fix.",
+        "judgment": "surfaced — RED structural formula judgment; no Krow auto-fix.",
         "suggested_action": (
             "Replace mirror column with =src or scaled numeric ref; apply presentation via valueFormat "
             "on a separate layer. Do not mutate valueFormat on the TEXT band."
@@ -871,7 +871,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "Bind each full-column range to a uniform ceiling that covers the largest sheet "
             "($AC:$AC -> $AC$1:$AC$N). Use one M across all ranges in a call so SUMIFS dimensions "
             "stay equal. The external checks toolkit's bounded-SUMIFS write-plan generates the exact before/after "
-            "and a gated live-apply pushes it with readback proof -- Wingman does not auto-write it."
+            "and a gated live-apply pushes it with readback proof -- Krow does not auto-write it."
         ),
         "trap_refs": [
             _trap(
@@ -955,7 +955,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
     },
 }
 
-# run_checks FAIL pathways (read-only diagnostics — no Wingman auto-fix lane).
+# run_checks FAIL pathways (read-only diagnostics — no Krow auto-fix lane).
 CHECK_PATHWAYS: dict[str, dict[str, Any]] = {
     "acctmap_gaps": {
         "pathway_id": "data.acctmap-gaps",

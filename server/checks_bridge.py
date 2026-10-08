@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Bridge Wingman queue to an external checks CLI (read-only subprocess).
+Bridge Krow queue to an external checks CLI (read-only subprocess).
 
 Runs `run_checks.py --json --suite <suite>` in a client working directory resolved
 from spreadsheetId (projects.json ss_id scan) or env overrides. Parses JSON stdout
@@ -8,12 +8,12 @@ and the markdown report for FAIL rows. Degrades gracefully when the checks toolk
 is not installed.
 
 Configure:
-  WINGMAN_CHECKS_SCRIPTS    — directory containing run_checks.py (default: WINGMAN_DATA_DIR)
-  WINGMAN_CHECKS_WORKING_DIR — force client working dir (projects.json + wk.py)
-  WINGMAN_CHECKS_PROJECT    — client slug when working dir is set via env only
+  KROW_CHECKS_SCRIPTS    — directory containing run_checks.py (default: KROW_DATA_DIR)
+  KROW_CHECKS_WORKING_DIR — force client working dir (projects.json + wk.py)
+  KROW_CHECKS_PROJECT    — client slug when working dir is set via env only
   CHECKS_CLIENT_DIR         — alias for working dir (run_checks convention)
-  WINGMAN_CHECKS_TIMEOUT    — subprocess seconds (default 120)
-  WINGMAN_CHECKS_SS_MAP     — JSON map {spreadsheetId: workingDirPath}
+  KROW_CHECKS_TIMEOUT    — subprocess seconds (default 120)
+  KROW_CHECKS_SS_MAP     — JSON map {spreadsheetId: workingDirPath}
 """
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ import client_preset
 
 import tieout_enrich
 
-# Slug → working directory (under the Wingman data root; see client_preset.data_root).
+# Slug → working directory (under the Krow data root; see client_preset.data_root).
 _CLIENT_WORKING_DIRS: dict[str, str] = {
     "acfr": str(client_preset.data_root() / "clients" / "riverton"),
 }
@@ -48,7 +48,7 @@ def _norm_ss(ss: str) -> str:
 
 def resolve_run_checks_script() -> pathlib.Path | None:
     """Return path to run_checks.py or None if not installed."""
-    for key in ("WINGMAN_CHECKS_SCRIPTS", "ACFR_CHECKS_SCRIPTS"):
+    for key in ("KROW_CHECKS_SCRIPTS", "ACFR_CHECKS_SCRIPTS"):
         raw = os.environ.get(key)
         if raw:
             p = pathlib.Path(raw).expanduser()
@@ -63,7 +63,7 @@ def resolve_run_checks_script() -> pathlib.Path | None:
 
 def _ss_map() -> dict[str, str]:
     merged = dict(client_preset.default_ss_map())
-    raw = os.environ.get("WINGMAN_CHECKS_SS_MAP")
+    raw = os.environ.get("KROW_CHECKS_SS_MAP")
     if raw:
         try:
             data = json.loads(raw)
@@ -78,19 +78,19 @@ def resolve_working_dir(spreadsheet_id: str | None) -> tuple[str, str | None] | 
     """
     Resolve (working_dir, project_slug) for run_checks.
 
-    Priority: WINGMAN_CHECKS_WORKING_DIR / CHECKS_CLIENT_DIR → WINGMAN_CHECKS_SS_MAP →
+    Priority: KROW_CHECKS_WORKING_DIR / CHECKS_CLIENT_DIR → KROW_CHECKS_SS_MAP →
     scan known client dirs for matching projects.json ss_id.
     """
-    for key in ("WINGMAN_CHECKS_WORKING_DIR", "CHECKS_CLIENT_DIR"):
+    for key in ("KROW_CHECKS_WORKING_DIR", "CHECKS_CLIENT_DIR"):
         wd = os.environ.get(key)
         if wd and pathlib.Path(wd).expanduser().is_dir():
-            slug = os.environ.get("WINGMAN_CHECKS_PROJECT")
+            slug = os.environ.get("KROW_CHECKS_PROJECT")
             return str(pathlib.Path(wd).expanduser().resolve()), slug
 
     if spreadsheet_id:
         mapped = _ss_map().get(spreadsheet_id) or _ss_map().get(_norm_ss(spreadsheet_id))
         if mapped and pathlib.Path(mapped).expanduser().is_dir():
-            slug = os.environ.get("WINGMAN_CHECKS_PROJECT")
+            slug = os.environ.get("KROW_CHECKS_PROJECT")
             if not slug and _norm_ss(spreadsheet_id) == _norm_ss(client_preset.acfr_preset_ss_id()):
                 slug = "acfr"
             return str(pathlib.Path(mapped).expanduser().resolve()), slug
@@ -192,14 +192,14 @@ def ingest_scorecard(
 
     This is the read-only "watcher/check output" bridge: scheduled ACFR check runs and
     tieout runs already persist a tieout scorecard JSON. When the live run_checks subprocess
-    cannot run (script missing, no working dir, or timeout) Wingman can still surface the
+    cannot run (script missing, no working dir, or timeout) Krow can still surface the
     existing diagnostics as actionable queue items by reading that artifact directly.
 
     Returns the same metadata shape as run_checks_suite() so the result drops straight into
     diagnose.merge_queue_with_checks(). ``source`` is set to ``"scorecard"`` and ``exit_code``
     is None (no process was spawned).
 
-    Configure: WINGMAN_TIEOUT_SCORECARD overrides the scorecard path.
+    Configure: KROW_TIEOUT_SCORECARD overrides the scorecard path.
     """
     t0 = time.time()
     suite = (suite or "scorecard").strip().lower()
@@ -238,7 +238,7 @@ def ingest_scorecard(
 
     if path is None:
         meta["skipped"] = (
-            "no tieout scorecard JSON found — set WINGMAN_TIEOUT_SCORECARD to the scorecard path"
+            "no tieout scorecard JSON found — set KROW_TIEOUT_SCORECARD to the scorecard path"
         )
         meta["elapsed_s"] = round(time.time() - t0, 2)
         return meta
@@ -279,7 +279,7 @@ def ingest_scorecard(
 
 def _scorecard_eligible(project: str | None) -> bool:
     """Auto-fallback to a saved scorecard only for ACFR, or when a path override is set."""
-    if os.environ.get("WINGMAN_TIEOUT_SCORECARD"):
+    if os.environ.get("KROW_TIEOUT_SCORECARD"):
         return True
     return (project or "").strip().lower() == "acfr"
 
@@ -311,7 +311,7 @@ def run_checks_suite(
 ) -> dict[str, Any]:
     """
     Run run_checks --json for the resolved client. Read-only — no Workiva writes
-    from Wingman (run_checks may read live Workiva for tieout suite).
+    from Krow (run_checks may read live Workiva for tieout suite).
 
     Returns metadata dict suitable for diagnose.merge_queue_with_checks().
     """
@@ -349,7 +349,7 @@ def run_checks_suite(
         if fb is not None:
             return fb
         meta["skipped"] = (
-            "external checks CLI not found — set WINGMAN_CHECKS_SCRIPTS to its scripts/ dir"
+            "external checks CLI not found — set KROW_CHECKS_SCRIPTS to its scripts/ dir"
         )
         meta["elapsed_s"] = round(time.time() - t0, 2)
         return meta
@@ -362,8 +362,8 @@ def run_checks_suite(
         if fb is not None:
             return fb
         meta["skipped"] = (
-            "no client working dir for this spreadsheet — set WINGMAN_CHECKS_WORKING_DIR "
-            "or WINGMAN_CHECKS_SS_MAP"
+            "no client working dir for this spreadsheet — set KROW_CHECKS_WORKING_DIR "
+            "or KROW_CHECKS_SS_MAP"
         )
         meta["elapsed_s"] = round(time.time() - t0, 2)
         return meta
@@ -372,7 +372,7 @@ def run_checks_suite(
     meta["working_dir"] = wd
     meta["project"] = project
 
-    timeout_s = float(timeout if timeout is not None else os.environ.get("WINGMAN_CHECKS_TIMEOUT", "120"))
+    timeout_s = float(timeout if timeout is not None else os.environ.get("KROW_CHECKS_TIMEOUT", "120"))
     cmd = [sys.executable, str(script), "--json", "--suite", suite]
     if project:
         cmd.extend(["--project", project])

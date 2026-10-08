@@ -64,7 +64,7 @@ li strong { color: #354257; font-weight: 600; }
 .review-heading .eyebrow { margin: 0; }
 #open-panel { color: #fff; background: #295ccc; border-color: #295ccc; font-size: 12px; }
 #panel-slot { min-height: 150px; }
-#panel-slot #__wk_wingman__ { position: relative !important; inset: auto !important; z-index: 1 !important; width: 100%; }
+#panel-slot #__wk_krow__ { position: relative !important; inset: auto !important; z-index: 1 !important; width: 100%; }
 .panel-note { color: #677183; font-size: 11px; line-height: 1.6; padding: 0 5px; margin-top: 13px; }
 footer { max-width: 1480px; margin: auto; padding: 18px 32px 30px; font-size: 11px; color: #717b8a; }
 @media (max-width: 1000px) { .workspace { grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; } main { padding: 24px 20px; } .intro { align-items: flex-start; } .simulation { max-width: 280px; } }

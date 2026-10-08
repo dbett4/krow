@@ -60,7 +60,7 @@ def test_http_restart_double_confirm_and_lost_response_reconciliation(tmp_path):
 
 def test_browser_saved_review_accept_reopen_handoff_and_uncertain_response(tmp_path):
     executable = shutil.which("agent-browser"); assert executable
-    session = "wingman-journal-" + uuid.uuid4().hex[:8]
+    session = "krow-journal-" + uuid.uuid4().hex[:8]
     env = {**os.environ, "AGENT_BROWSER_ENGINE": "chrome"}
     def run(*args):
         result = subprocess.run([executable, "--session", session, *args], env=env,

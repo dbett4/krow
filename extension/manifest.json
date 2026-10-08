@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Wingman",
+  "name": "Krow",
   "version": "0.1.0",
   "description": "Inspect Workiva cell values and their sources, review workbook findings, and preview narrow repairs.",
   "icons": {
@@ -9,7 +9,7 @@
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_title": "Wingman for Workiva"
+    "default_title": "Krow for Workiva"
   },
   "options_ui": {
     "page": "setup.html",
@@ -32,10 +32,10 @@
         "https://*.workiva.com/*"
       ],
       "js": [
-        "wingman-core.js",
-        "wingman-inspector.js",
-        "wingman-connection.js",
-        "wingman-panel.js"
+        "krow-core.js",
+        "krow-inspector.js",
+        "krow-connection.js",
+        "krow-panel.js"
       ],
       "run_at": "document_idle",
       "all_frames": true

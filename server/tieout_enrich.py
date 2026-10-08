@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Tie-out scorecard enrichment for Wingman queue rows.
+Tie-out scorecard enrichment for Krow queue rows.
 
 Loads validation/tieout_scorecard.json (wb_row, wb_col, critic heuristics)
 and attaches coordinates + jump hints to run_checks tieout FAIL rows.
 
 Configure:
-  WINGMAN_TIEOUT_SCORECARD — override path to scorecard JSON
+  KROW_TIEOUT_SCORECARD — override path to scorecard JSON
 """
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ SHEET_ALIAS: dict[str, str] = {
 
 DEFAULT_REL = "validation/tieout_scorecard.json"
 
-# Heuristic cause ids (aligned with the tieout scorecard generator's critic + Wingman extensions).
+# Heuristic cause ids (aligned with the tieout scorecard generator's critic + Krow extensions).
 CAUSE_DOUBLE_AGG = "double_aggregation"
 CAUSE_TB_SOURCE_GAP = "tb_source_gap"
 CAUSE_RECLASS = "reclass"
@@ -63,7 +63,7 @@ def resolve_scorecard_path(
     """Return the tie-out scorecard path for the ACFR preset, or None."""
     if project and project.lower() != "acfr":
         return None
-    override = os.environ.get("WINGMAN_TIEOUT_SCORECARD")
+    override = os.environ.get("KROW_TIEOUT_SCORECARD")
     if override:
         p = pathlib.Path(override).expanduser()
         if p.is_file():

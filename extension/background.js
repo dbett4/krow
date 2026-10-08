@@ -1,13 +1,13 @@
 // MV3 service worker.
 importScripts("vision-capture.js");
 try { importScripts("local-config.js"); } catch (_err) { /* setup.sh creates it */ }
-//  (1) Toolbar click toggles the in-page Wingman panel (messages the content script).
+//  (1) Toolbar click toggles the in-page Krow panel (messages the content script).
 //  (2) API broker: the in-page panel asks the worker to call the local service, so the
 //      request carries the extension origin (a content-script fetch would carry the
 //      Workiva page origin instead).
 //  (3) Dev auto-reload: poll /version, reload the extension when the on-disk code changes.
 const SERVICE = "http://127.0.0.1:8770";
-const WM_TOKEN = String((globalThis.WINGMAN_LOCAL_CONFIG || {}).token || "").trim();
+const WM_TOKEN = String((globalThis.KROW_LOCAL_CONFIG || {}).token || "").trim();
 
 chrome.runtime.onInstalled.addListener((details) => {
   if (details.reason === "install") chrome.runtime.openOptionsPage();
@@ -29,11 +29,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     (async () => {
       try {
         if (!WM_TOKEN) {
-          sendResponse({ ok: false, configError: true, error: "Wingman local token missing; run ./setup.sh and reload the extension." });
+          sendResponse({ ok: false, configError: true, error: "Krow local token missing; run ./setup.sh and reload the extension." });
           return;
         }
         const opts = Object.assign({}, msg.opts);
-        opts.headers = Object.assign({}, opts.headers, { "X-Wingman-Token": WM_TOKEN });
+        opts.headers = Object.assign({}, opts.headers, { "X-Krow-Token": WM_TOKEN });
         if (msg.path === "/api/connection") {
           opts.cache = "no-store";
           opts.signal = AbortSignal.timeout(8000);
@@ -275,7 +275,7 @@ async function devReloadCheck() {
   if (!WM_TOKEN) return;
   let build;
   try {
-    const r = await fetch(SERVICE + "/version", { headers: { "X-Wingman-Token": WM_TOKEN } });
+    const r = await fetch(SERVICE + "/version", { headers: { "X-Krow-Token": WM_TOKEN } });
     if (!r.ok) return;
     build = (await r.json()).build;
   } catch (e) { return; }
@@ -284,6 +284,6 @@ async function devReloadCheck() {
   if (wmBuild === undefined) { await chrome.storage.session.set({ wmBuild: build }); return; }
   if (build !== wmBuild) { await chrome.storage.session.set({ wmBuild: build }); chrome.runtime.reload(); }
 }
-chrome.alarms.create("wingman-dev-reload", { periodInMinutes: 0.1 });
-chrome.alarms.onAlarm.addListener((a) => { if (a.name === "wingman-dev-reload") devReloadCheck(); });
+chrome.alarms.create("krow-dev-reload", { periodInMinutes: 0.1 });
+chrome.alarms.onAlarm.addListener((a) => { if (a.name === "krow-dev-reload") devReloadCheck(); });
 devReloadCheck();

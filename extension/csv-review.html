@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Wingman · CSV review</title>
+  <title>Krow · CSV review</title>
   <link rel="icon" href="icon.png">
   <link rel="stylesheet" href="setup.css">
   <link rel="stylesheet" href="csv-review.css">
@@ -11,7 +11,7 @@
 </head>
 <body>
 <main>
-  <header><img src="icon.png" width="44" height="44" alt=""><div><p class="eyebrow">Wingman / Pre-import review</p><h1>Check a CSV before it reaches Wdata.</h1><p>Find row-level problems. Keep the evidence for your review.</p></div></header>
+  <header><img src="icon.png" width="44" height="44" alt=""><div><p class="eyebrow">Krow / Pre-import review</p><h1>Check a CSV before it reaches Wdata.</h1><p>Find row-level problems. Keep the evidence for your review.</p></div></header>
   <div class="boundary"><strong id="boundary-title">Private local screen · No Workiva connection</strong><p id="boundary-description">CSV values go to this VPS process only when you run a check and are not saved. If enabled, the optional private journal saves review metadata only with your explicit choice. A local pass does not verify the native schema, import, period, units or accounting.</p></div>
   <div class="workspace">
     <form id="review-form">
@@ -20,9 +20,9 @@
         <label for="csv">Or paste CSV text, including the header</label><textarea id="csv" required spellcheck="false" placeholder="department,actual&#10;Finance,1250.25"></textarea>
         <p class="hint">Up to 256 KiB, 1,000 data records and 64 columns. Blank records are checked, not dropped.</p>
       </section>
-      <section><h2>2. Declare the expected schema</h2><p class="hint">Use the exact column order and types from your approved source. Wingman does not infer them from the CSV.</p>
-        <details id="handoff-options"><summary>Continue a previous CSV review</summary><p>Choose the prior review evidence JSON and supply its original CSV above. Wingman loads its declared schema, keys and reporting policy so you do not have to retype them. It does not load approvals or connect to Workiva.</p>
-          <label for="packet-file">Choose Wingman review evidence JSON</label><input type="file" id="packet-file" accept=".json,application/json">
+      <section><h2>2. Declare the expected schema</h2><p class="hint">Use the exact column order and types from your approved source. Krow does not infer them from the CSV.</p>
+        <details id="handoff-options"><summary>Continue a previous CSV review</summary><p>Choose the prior review evidence JSON and supply its original CSV above. Krow loads its declared schema, keys and reporting policy so you do not have to retype them. It does not load approvals or connect to Workiva.</p>
+          <label for="packet-file">Choose Krow review evidence JSON</label><input type="file" id="packet-file" accept=".json,application/json">
           <p id="packet-status" class="hint" role="status">No packet loaded. Journal handoff JSON is separate; ask the source owner for the arithmetic review packet and original CSV.</p>
           <button type="button" id="replay" class="wm-btn" disabled>Reproduce imported evidence</button>
           <p class="hint">Replay uses the packet's original policy, not edits below. Reproduced means historical results match this source/build—not authenticity, current native schema, accounting approval or a new saved check.</p>
@@ -33,7 +33,7 @@
         <details><summary>Types, required values and keys</summary><p>Supported types: string, integer, decimal, boolean, date and timestamp. Unknown types stay incomplete. Required means a value cannot be empty. Key columns are compared as exact text; “001” and “1” remain distinct. Select at most eight keys.</p></details>
       </section>
       <section class="reporting"><h2>Reporting context · Separate from arithmetic</h2>
-        <p class="hint">Without context, totals have no verified period or units. Check exact row labels against your source owner's policy; Wingman never infers currency or converts amounts.</p>
+        <p class="hint">Without context, totals have no verified period or units. Check exact row labels against your source owner's policy; Krow never infers currency or converts amounts.</p>
         <label class="context-toggle"><input type="checkbox" id="use-context"> Check a declared reporting policy</label>
         <fieldset id="context-fields" disabled hidden><legend>Source-owner policy · Not accounting approval</legend>
           <div class="context-grid">
@@ -65,7 +65,7 @@
     </form>
     <aside aria-label="Review evidence"><section id="results" aria-live="polite"><p class="eyebrow">3. Review the evidence</p><h2>Start with a check.</h2><p>Declare your schema, then run the screen. You’ll see affected records, exact numeric totals and checks that remain unknown.</p><p>No data is uploaded to Workiva. Nothing is fixed automatically.</p></section><button type="button" id="download" class="wm-btn" disabled>Download review evidence</button><p class="hint">The JSON packet includes column names, findings and numeric totals, but not raw CSV rows. Treat it as sensitive. Download is explicit; the packet is not approval.</p><section id="review-journal" aria-live="polite"></section></aside>
   </div>
-  <footer>Wingman · Validator reused from Lockfield Workiva Plugin v0.4.0 · Read-only review</footer>
+  <footer>Krow · Validator reused from Lockfield Workiva Plugin v0.4.0 · Read-only review</footer>
 </main>
 </body>
 </html>

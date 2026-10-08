@@ -40,7 +40,7 @@ def project(snapshot):
         binding = snapshot["binding"]
         if (binding["account_id"] != LSL_ACCOUNT
                 or not re.fullmatch(r"[a-f0-9]{32}", binding["table_id"])
-                or not binding["table_name"].startswith("zz Wingman Synthetic ")
+                or not binding["table_name"].startswith("zz Krow Synthetic ")
                 or type(binding["version"]) is not int):
             raise ValueError("Scope")
         raw = binding["table_schema"]["columns"]
@@ -79,7 +79,7 @@ class NativeSchema:
         table = body.get("body") if isinstance(body, dict) else None
         if (not isinstance(table, dict) or response.get("status") != 200 or table.get("id") != self.table_id
                 or table.get("databaseId") != LSL_ACCOUNT
-                or not str(table.get("name", "")).startswith("zz Wingman Synthetic ")
+                or not str(table.get("name", "")).startswith("zz Krow Synthetic ")
                 or table.get("isShared") is not False):
             raise ServiceError("native_scope_denied", "The exact private synthetic table/account binding was not verified.")
         binding = {"account_id": LSL_ACCOUNT, "table_id": self.table_id,

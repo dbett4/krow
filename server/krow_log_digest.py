@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Wingman improvement digest — mines the activity log (wingman_log.py) into actionable
+Krow improvement digest — mines the activity log (krow_log.py) into actionable
 signals for tuning the tool.
 
 What it surfaces:
@@ -15,7 +15,7 @@ This is the "logs improve the tool" loop: scan/fix continuously → digest → f
 weakest detector → fix it → the next digest should show the flag clear.
 
 Pure analysis over JSON lines; no network, no Workiva. CLI:
-    python3 server/wingman_log_digest.py [--dir DIR] [--json]
+    python3 server/krow_log_digest.py [--dir DIR] [--json]
 """
 from __future__ import annotations
 
@@ -42,7 +42,7 @@ _REFUSED_RATE_FLAG = 0.50
 
 def load_events(log_directory: Path) -> list[dict]:
     events: list[dict] = []
-    for path in sorted(log_directory.glob("wingman-events-*.jsonl")):
+    for path in sorted(log_directory.glob("krow-events-*.jsonl")):
         try:
             for line in path.read_text(encoding="utf-8").splitlines():
                 line = line.strip()
@@ -131,7 +131,7 @@ def build_digest(events: list[dict]) -> dict:
 
 
 def render(digest: dict) -> str:
-    lines = ["Wingman improvement digest",
+    lines = ["Krow improvement digest",
              f"  scans={digest['scanCount']}  fixes={digest['fixCount']}"
              f"  truncatedScans={digest['truncatedScans']}  visionNetNew={digest['visionNetNew']}",
              "", "Findings by kind (volume):"]
@@ -159,9 +159,9 @@ def render(digest: dict) -> str:
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(description="Mine the Wingman activity log into an improvement digest.")
-    ap.add_argument("--dir", default=os.environ.get("WINGMAN_LOG_DIR",
-                                                    str(Path.home() / ".wingman" / "logs")))
+    ap = argparse.ArgumentParser(description="Mine the Krow activity log into an improvement digest.")
+    ap.add_argument("--dir", default=os.environ.get("KROW_LOG_DIR",
+                                                    str(Path.home() / ".krow" / "logs")))
     ap.add_argument("--json", action="store_true", help="emit the digest as JSON")
     args = ap.parse_args(argv)
     events = load_events(Path(args.dir))

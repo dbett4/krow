@@ -1,4 +1,4 @@
-# Wingman
+# Krow
 
 ## The problem this answers
 
@@ -13,15 +13,15 @@ can prove the fix and undo it.
 **One-line pitch:** find workbook defects in the live editor; automate only the
 fixes you can confirm, read back, and reverse.
 
-Wingman is a Chrome extension plus a local Python service for that loop in
-Workiva-shaped reporting workbooks. Fictional demo data only; not affiliated with
+Krow, formerly Wingman, is a Chrome extension plus a local Python service for that
+loop in Workiva-shaped reporting workbooks. Fictional demo data only; not affiliated with
 or endorsed by Workiva.
 
 > **Provenance.** Sanitized public extract published August 2026; Git dates are
 > publication dates, not the original private development timeline. City of
 > Riverton data is fictional — no client data or credentials are included.
 
-![Tests](https://github.com/dbett4/wingman/actions/workflows/test.yml/badge.svg)
+![Tests](https://github.com/dbett4/krow/actions/workflows/test.yml/badge.svg)
 
 ## Review a real CSV before import
 
@@ -31,7 +31,7 @@ exact totals and completeness limits, then explicitly download an unreviewed
 evidence packet. Replay that packet against the original CSV with
 `python3 server/csv_review.py --verify-packet packet.json --csv source.csv`.
 
-This reuses the Lockfield Workiva Plugin's deterministic validator and Wingman's
+This reuses the Lockfield Workiva Plugin's deterministic validator and Krow's
 existing visual identity. Default mode makes no Workiva requests. Optional
 `--sandbox-table` mode reads only an operator-bound private synthetic LSL table
 through the existing `wk` grant; explicit schema loading and fresh readback bind
@@ -48,7 +48,7 @@ python3 server/demo.py     # Python 3.11+, standard library only; default port 8
 ```
 
 Open port 8771 on your local machine. In an Amp orb, run `amp orb services ensure`
-and open its **Wingman demo** portal instead.
+and open its **Krow demo** portal instead.
 
 The fictional City of Riverton workbook runs through the **actual extension panel,
 service routes, detectors, and fixer** against a session-isolated simulated Workiva
@@ -64,7 +64,7 @@ See the [two-minute walkthrough and simulation boundary](docs/demo.md).
 
 ## Selected-cell inspector
 
-On first use, Wingman opens on **Inspect**, without reading the workbook or starting a scan.
+On first use, Krow opens on **Inspect**, without reading the workbook or starting a scan.
 Select one spreadsheet cell and choose **Inspect selected cell** to see stored
 content/formula, calculated result, and native value format separately. Zero,
 blank, unavailable content, and unrecognized content types remain distinct.
@@ -140,7 +140,7 @@ Workiva compatibility remain open in [G1](docs/roadmap.md#g1-a-reviewer-can-inst
 ## Why I built it
 
 Financial reports often live in cloud editors where an exported file omits useful
-context. Wingman turns repeated government financial-reporting review checks into
+context. Krow turns repeated government financial-reporting review checks into
 detectors. It does not try to repair every finding. A change is automated only when
 the service can capture the original state, predict the result, read the cell back,
 and attempt to restore the original value if the result differs.
@@ -193,15 +193,15 @@ write-path choices, including rejected approaches and measured false positives.
 ## Run it
 
 ```bash
-git clone https://github.com/dbett4/wingman.git
-cd wingman
+git clone https://github.com/dbett4/krow.git
+cd krow
 ./setup.sh                 # creates a per-install token + .env, then runs smoke checks
 # add your Workiva OAuth client credentials to .env
 ./run-service.sh           # starts the service on 127.0.0.1:8770
 ```
 
 Load `extension/` as an unpacked extension from `chrome://extensions`, open a Workiva
-spreadsheet, and click the Wingman toolbar icon. Without credentials, you can still
+spreadsheet, and click the Krow toolbar icon. Without credentials, you can still
 start the detector self-test with `python3 server/detectors.py`. The full service
 launcher exits early if credentials are missing.
 

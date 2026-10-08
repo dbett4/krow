@@ -11,8 +11,8 @@
       : error.status === 401 || error.status === 403 ? "denied" : "failed";
     else if ("data" in state) {
       if (!data) code = "incompatible";
-      else if (demo && data.simulation === true && data.service === "wingman-demo") code = "demo";
-      else if (data.service !== "wingman" || data.protocol !== 1 || data.readOnly !== true ||
+      else if (demo && data.simulation === true && data.service === "krow-demo") code = "demo";
+      else if (data.service !== "krow" || data.protocol !== 1 || data.readOnly !== true ||
           data.authorization !== "accepted" || data.workivaAccess !== "not_tested" || data.simulation ||
           ["present", "missing"].indexOf(data.workivaCredentials) < 0) code = "incompatible";
       else code = data.workivaCredentials === "present" ? "connected" : "credentials";
@@ -21,14 +21,14 @@
       unchecked: ["Not checked", "Check the extension-to-service connection. This does not read a workbook or test Workiva access."],
       checking: ["Checking connection…", "Waiting for the service. No workbook is being read. You can stop waiting at any time."],
       cancelled: ["Check stopped", "Stopped waiting. Any late response will be ignored. No workbook action was sent."],
-      setup: ["Extension setup needed", "This extension has no service token. Install the paired extension configuration from your approved setup, then reload the extension and reopen Wingman. Refresh any open Workiva tabs. Do not paste Workiva credentials here."],
+      setup: ["Extension setup needed", "This extension has no service token. Install the paired extension configuration from your approved setup, then reload the extension and reopen Krow. Refresh any open Workiva tabs. Do not paste Workiva credentials here."],
       offline: ["Service unreachable", "The configured connection could not be reached. Check the approved connection on this device and that the backend is running. Retry when the route is available."],
       timeout: ["Connection timed out", "The service did not respond within 8 seconds. Check the connection route and retry. No workbook action was sent."],
       denied: ["Service access rejected", "The service rejected this extension's request. Verify that the installed extension configuration is paired with the intended backend. This is not a Workiva workbook permission result."],
       failed: ["Connection check failed", "The service check did not complete. Retry; if it persists, copy the redacted diagnostics for your operator."],
       incompatible: ["Service update needed", "The response does not match this extension's connection protocol. Verify the backend and extension are a compatible pair. No access claim can be made."],
-      reloaded: ["Extension reloaded", "Reload this page, then reopen Wingman. Refresh any open Workiva tabs too. A response from the old extension cannot be used."],
-      credentials: ["Workiva setup incomplete", "The extension reached Wingman and its service token was accepted. Workiva credentials are missing on the backend; complete the approved backend setup, then check again."],
+      reloaded: ["Extension reloaded", "Reload this page, then reopen Krow. Refresh any open Workiva tabs too. A response from the old extension cannot be used."],
+      credentials: ["Workiva setup incomplete", "The extension reached Krow and its service token was accepted. Workiva credentials are missing on the backend; complete the approved backend setup, then check again."],
       connected: ["Service connected", "The service accepted this extension's token. Workiva credentials are configured, but their validity and access to this workbook have not been tested."],
       demo: ["Demo connection", "The fictional demo responded. Extension authorization and live Workiva access are not tested in this simulation."],
     }[code];
@@ -49,7 +49,7 @@
   }
 
   function diagnostics(state, demo) {
-    return ["Wingman connection check", "Result: " + describe(state, demo).title,
+    return ["Krow connection check", "Result: " + describe(state, demo).title,
       "Checked at: " + (state.checkedAt || "Not checked"),
       "Route: " + (demo ? "Fictional same-origin demo" : "http://127.0.0.1:8770 (backend location not established)")]
       .concat(facts(state, demo).map(function (row) { return row.join(": "); }))
@@ -113,5 +113,5 @@
     ".wm-panel.wc-mode{max-width:calc(100vw - 28px)}.wc-mode .wm-tabs,.wc-mode .wm-tab-actions,.wc-mode .wm-ctx,.wc-mode .wm-operator-warnings,.wc-mode .wm-thermo,.wc-mode .wm-preset,.wc-mode .wm-wide-toggle,.wc-mode .wm-reset-size{display:none!important}";
   var api = { describe: describe, facts: facts, diagnostics: diagnostics, render: render, styles: styles };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
-  else root.WingmanConnection = api;
+  else root.KrowConnection = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);

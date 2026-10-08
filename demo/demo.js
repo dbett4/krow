@@ -17,7 +17,7 @@
   function message(text) { document.getElementById("demo-status").textContent = text; }
   function api(path, opts) {
     opts = opts || {};
-    return fetch(path, Object.assign({}, opts, { headers: Object.assign({}, opts.headers, { "X-Wingman-Demo": "1" }) }))
+    return fetch(path, Object.assign({}, opts, { headers: Object.assign({}, opts.headers, { "X-Krow-Demo": "1" }) }))
       .then(async function (r) {
         var data = await r.json();
         if (!r.ok) throw new Error(data.error || "Demo request failed");
@@ -113,7 +113,7 @@
 
   window.chrome = window.chrome || {};
   window.chrome.runtime = {
-    id: "wingman-isolated-demo",
+    id: "krow-isolated-demo",
     getURL: function (path) { return "/" + path; },
     onMessage: { addListener: function (fn) { listeners.push(fn); } },
     sendMessage: function (msg, cb) {
@@ -134,7 +134,7 @@
     get: function (_keys, cb) { cb(storage); },
     set: function (obj, cb) { Object.assign(storage, obj); if (cb) cb(); },
   } };
-  function panelRoot() { return document.getElementById("__wk_wingman__").shadowRoot; }
+  function panelRoot() { return document.getElementById("__wk_krow__").shadowRoot; }
   function togglePanel() { listeners.forEach(function (fn) { fn({ type: "WM_TOGGLE" }, {}, function () {}); }); }
   function action(id, path, after) {
     document.getElementById(id).onclick = function () {
@@ -145,7 +145,7 @@
     };
   }
   document.addEventListener("DOMContentLoaded", function () {
-    var host = document.getElementById("__wk_wingman__");
+    var host = document.getElementById("__wk_krow__");
     document.getElementById("panel-slot").appendChild(host);
     // Host the unchanged extension panel in the demo layout; never ship these overrides.
     var style = node("style", ".wm-panel{width:100%!important;max-width:100%!important;height:700px!important;max-height:85vh!important}.wm-pill{width:100%}button,.wm-addr{min-height:40px}.wm-addr{display:inline-flex;align-items:center}.wm-row{cursor:pointer}button:disabled{cursor:not-allowed}");
@@ -167,7 +167,7 @@
       api("/api/review-packet?spreadsheetId=de00").then(function (data) {
         var blob = new Blob(["SIMULATION — fictional Riverton workbook; not audit evidence.\n\n" + data.markdown], { type: "text/markdown" });
         var url = URL.createObjectURL(blob), link = node("a");
-        link.href = url; link.download = "wingman-riverton-demo-review.md";
+        link.href = url; link.download = "krow-riverton-demo-review.md";
         document.body.appendChild(link); link.click(); link.remove();
         setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
         message("Downloaded a fresh, scan-derived review packet. Unresolved findings still need human review.");

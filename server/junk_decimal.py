@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Junk-decimal Wingman detector (Lane E).
+Junk-decimal Krow detector (Lane E).
 
 Absurd valueFormat.precision (formatting_audit pattern —
 `0.#{6,}` Excel formats → high precision.value in Workiva). Safe-auto copies a

@@ -1,8 +1,8 @@
-# Wingman service dependencies.
+# Krow service dependencies.
 #
 # The CORE service — active-cell pill, API sheet/workbook scan, and every safe fix
 # (contrast, label-hygiene, negative-parens, junk-decimal) — runs on the Python 3
-# standard library ALONE. You do NOT need to install anything to use Wingman.
+# standard library ALONE. You do NOT need to install anything to use Krow.
 #
 # The packages below are ONLY for the opt-in VISION lane (pixel contrast/clipping
 # detection on cell screenshots; the panel "Vision" checkbox). Without them, vision

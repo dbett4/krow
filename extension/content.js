@@ -1,5 +1,5 @@
-// Wingman content script — split across wingman-core.js + wingman-panel.js (see manifest.json).
-// Node unit tests require wingman-core.js directly.
+// Krow content script — split across krow-core.js + krow-panel.js (see manifest.json).
+// Node unit tests require krow-core.js directly.
 if (typeof module !== "undefined" && module.exports) {
-  module.exports = require("./wingman-core.js");
+  module.exports = require("./krow-core.js");
 }

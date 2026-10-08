@@ -20,7 +20,7 @@ def probe(token, expected_credentials="missing"):
     def request(path, *, auth=None, method="GET", body=None):
         connection = http.client.HTTPConnection("127.0.0.1", 8770, timeout=10)
         try:
-            headers = {"X-Wingman-Token": auth} if auth is not None else {}
+            headers = {"X-Krow-Token": auth} if auth is not None else {}
             connection.request(method, path, body=body, headers=headers)
             response = connection.getresponse()
             return response.status, json.loads(response.read())
@@ -39,7 +39,7 @@ def probe(token, expected_credentials="missing"):
     if expected_credentials == "present":
         require(scope == "valid" and account == "present")
     require(data == {
-        "service": "wingman", "protocol": 1, "readOnly": True,
+        "service": "krow", "protocol": 1, "readOnly": True,
         "authorization": "accepted", "workivaAccess": "not_tested",
         "serviceMode": "read-only", "workivaCredentials": expected_credentials,
     })

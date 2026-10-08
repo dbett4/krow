@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Wingman service config — presets and safe-fix lane contract for the extension."""
+"""Krow service config — presets and safe-fix lane contract for the extension."""
 from __future__ import annotations
 
 import os
@@ -22,7 +22,7 @@ SAFE_FIX_KINDS: tuple[str, ...] = (
 
 def read_only_enabled() -> bool:
     """Explicit false values opt out; a misspelled nonempty value fails closed."""
-    return os.environ.get("WINGMAN_READ_ONLY", "").strip().lower() not in ("", "0", "false", "no", "off")
+    return os.environ.get("KROW_READ_ONLY", "").strip().lower() not in ("", "0", "false", "no", "off")
 
 
 def service_config() -> dict:

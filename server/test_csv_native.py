@@ -17,7 +17,7 @@ COLUMNS = [{"name": "id", "type": "string", "mode": "required"},
 
 
 def table():
-    return {"id": TABLE, "databaseId": LSL_ACCOUNT, "name": "zz Wingman Synthetic Test",
+    return {"id": TABLE, "databaseId": LSL_ACCOUNT, "name": "zz Krow Synthetic Test",
             "isShared": False, "version": 3, "updated": "2026-10-07T00:00:00Z",
             "tableSchema": {"columns": copy.deepcopy(COLUMNS)}}
 

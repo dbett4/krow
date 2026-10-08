@@ -1,7 +1,7 @@
 """Installed MV3 connection/source tests: real worker + HTTP handler, fictional data only.
 
 Requires Python Playwright and its Chromium, and a FREE loopback port 8770.
-Run separately from a running Wingman service. Never reads .env or local-config.js.
+Run separately from a running Krow service. Never reads .env or local-config.js.
 Do not edit extension/ (including docs) during the run: the real /version watcher
 fingerprints that directory and will reload the installed worker mid-request.
 """
@@ -25,8 +25,8 @@ import app
 
 @pytest.mark.parametrize("token", ["", "fictional-extension-pair"])
 def test_installed_connection(tmp_path, monkeypatch, token):
-    monkeypatch.setattr(app, "WINGMAN_TOKEN", "fictional-extension-pair")
-    monkeypatch.setenv("WINGMAN_READ_ONLY", "1")
+    monkeypatch.setattr(app, "KROW_TOKEN", "fictional-extension-pair")
+    monkeypatch.setenv("KROW_READ_ONLY", "1")
     monkeypatch.setenv("WORKIVA_CLIENT_ID", "fictional-id")
     monkeypatch.setenv("WORKIVA_CLIENT_SECRET", "fictional-secret")
     upstream_calls = []
@@ -51,7 +51,7 @@ def test_installed_connection(tmp_path, monkeypatch, token):
             pass
 
         def do_GET(self):
-            requests.append((self.path, self.headers.get("X-Wingman-Token") == "fictional-extension-pair"))
+            requests.append((self.path, self.headers.get("X-Krow-Token") == "fictional-extension-pair"))
             if self.path == "/api/connection" and delay.is_set():
                 released.wait(15)
                 self.close_connection = True
@@ -80,11 +80,11 @@ def test_installed_connection(tmp_path, monkeypatch, token):
             target = extension / asset
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / "extension" / asset, target)
-        (extension / "local-config.js").write_text("globalThis.WINGMAN_LOCAL_CONFIG = " + json.dumps({"token": token}) + ";")
+        (extension / "local-config.js").write_text("globalThis.KROW_LOCAL_CONFIG = " + json.dumps({"token": token}) + ";")
         with sync_playwright() as playwright:
             context = playwright.chromium.launch_persistent_context(
                 str(tmp_path / "profile"), channel="chromium", headless=True, chromium_sandbox=True,
-                executable_path=os.environ.get("WINGMAN_TEST_CHROMIUM") or playwright.chromium.executable_path,
+                executable_path=os.environ.get("KROW_TEST_CHROMIUM") or playwright.chromium.executable_path,
                 viewport={"width": 1280, "height": 900}, device_scale_factor=2,
                 args=[f"--disable-extensions-except={extension}", f"--load-extension={extension}",
                       "--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1"],
@@ -146,11 +146,11 @@ def test_installed_connection(tmp_path, monkeypatch, token):
                     setup.screenshot(path=str(tmp_path / "setup-credentials.png"))
                     setup.emulate_media(color_scheme="light")
                     setup.screenshot(path=str(tmp_path / "setup-light.png"))
-                    monkeypatch.setattr(app, "WINGMAN_TOKEN", "different-fictional-pair")
+                    monkeypatch.setattr(app, "KROW_TOKEN", "different-fictional-pair")
                     setup.locator(".wc-check").click()
                     expect(setup_title).to_have_text("Service access rejected")
                     setup.screenshot(path=str(tmp_path / "setup-denied.png"))
-                    monkeypatch.setattr(app, "WINGMAN_TOKEN", "fictional-extension-pair")
+                    monkeypatch.setattr(app, "KROW_TOKEN", "fictional-extension-pair")
                     monkeypatch.setenv("WORKIVA_CLIENT_SECRET", "fictional-secret")
                     setup.locator(".wc-check").click()
                     expect(setup_title).to_have_text("Service connected")
@@ -209,7 +209,7 @@ def test_installed_connection(tmp_path, monkeypatch, token):
                 page.locator(".wc-check").click()
                 expect(title).to_have_text("Workiva setup incomplete")
                 capture("connection-credentials")
-                monkeypatch.setattr(app, "WINGMAN_TOKEN", "different-fictional-pair")
+                monkeypatch.setattr(app, "KROW_TOKEN", "different-fictional-pair")
                 page.locator(".wc-check").click()
                 expect(title).to_have_text("Service access rejected")
                 capture("connection-denied")
@@ -228,7 +228,7 @@ def test_installed_connection(tmp_path, monkeypatch, token):
                 page.locator('[title^="Theme:"]').click()
                 capture("connection-light")
 
-                monkeypatch.setattr(app, "WINGMAN_TOKEN", "fictional-extension-pair")
+                monkeypatch.setattr(app, "KROW_TOKEN", "fictional-extension-pair")
                 delay.set()
                 page.locator(".wc-check").click()
                 expect(title).to_have_text("Checking connection…")
@@ -346,7 +346,7 @@ def test_installed_connection(tmp_path, monkeypatch, token):
                     expect(page.locator("#wi-open-source-note")).to_contain_text("Values may differ from this saved revision")
                     for theme, width in [("light", 1280), ("dark", 390)]:
                         # Toggle via the shipped control; the attribute is not patched.
-                        if page.locator("#__wk_wingman__").get_attribute("data-theme") != theme:
+                        if page.locator("#__wk_krow__").get_attribute("data-theme") != theme:
                             page.locator('[title^="Theme:"]').click()
                         page.set_viewport_size({"width": width, "height": 900})
                         page.locator(".wm-body").evaluate("e=>e.scrollTop=0")
@@ -395,7 +395,7 @@ def test_installed_connection(tmp_path, monkeypatch, token):
                     assert page.locator(".wi-doc-table option").all_text_contents() == ["Choose a table", "1. Reporting period"]
                     page.get_by_role("combobox", name="Table", exact=True).select_option("demo-report-table")
                     page.get_by_label("Cell address", exact=True).fill("b2")
-                    if page.locator("#__wk_wingman__").get_attribute("data-theme") != "light":
+                    if page.locator("#__wk_krow__").get_attribute("data-theme") != "light":
                         page.locator('[title^="Theme:"]').click()
                     expect(page.locator(".wm-panel")).to_have_css("background-color", "rgb(255, 255, 255)")
                     page.locator(".wm-panel").screenshot(path=str(tmp_path / "document-choice-light.png"))
@@ -564,7 +564,7 @@ def test_installed_connection(tmp_path, monkeypatch, token):
                     from test_scan_coverage import mixed_workbook
                     scan_result = mixed_workbook()
                     source_patch.setattr(app.wk, "scan_workbook", lambda *_a, **_kw: scan_result)
-                    source_patch.setattr(app.wingman_log, "log_scan", lambda *_a, **_kw: None)
+                    source_patch.setattr(app.krow_log, "log_scan", lambda *_a, **_kw: None)
                     page_url = "https://app.wdesk.com/a/fictional-workspace/spreadsheet/de00/-1/sheet/de02"
                     page.goto(page_url)
                     page.locator(".wm-pill").click()
@@ -584,7 +584,7 @@ def test_installed_connection(tmp_path, monkeypatch, token):
                     expect(partial_row).to_have_attribute("aria-expanded", "true")
                     expect(page.locator(".wm-sheet.open")).to_contain_text("remaining pages were not checked")
                     for theme, width in [("light", 1280), ("dark", 390)]:
-                        if page.locator("#__wk_wingman__").get_attribute("data-theme") != theme:
+                        if page.locator("#__wk_krow__").get_attribute("data-theme") != theme:
                             page.locator('[title^="Theme:"]').click()
                         page.set_viewport_size({"width": width, "height": 900})
                         expect(page.locator(".wm-panel")).to_have_css("background-color",

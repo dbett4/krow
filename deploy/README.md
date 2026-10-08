@@ -1,6 +1,6 @@
 # Private read-only deployment
 
-This profile runs Wingman on the authoritative VPS, not on the Mac. The Mac's
+This profile runs Krow on the authoritative VPS, not on the Mac. The Mac's
 launch agent runs only an SSH forward. Provisioning requires the owner's approval;
 these files do not deploy themselves. No store publication or browser policy is needed.
 
@@ -10,7 +10,7 @@ Browser → Mac 127.0.0.1:8770 → verified SSH to davgent → VPS 127.0.0.1:877
 
 ## Enforced boundaries
 
-- `WINGMAN_READ_ONLY=1` rejects every POST before parsing its body, requesting
+- `KROW_READ_ONLY=1` rejects every POST before parsing its body, requesting
   OAuth, or calling a fixer. GET external checks and `write=true` exports are also
   denied. Ordinary authenticated inspection and GET scans remain implemented.
 - `serviceMode: read-only` reports that server-wide restriction separately from
@@ -27,13 +27,13 @@ Browser → Mac 127.0.0.1:8770 → verified SSH to davgent → VPS 127.0.0.1:877
 
 | Host | Path / unit | Purpose |
 | --- | --- | --- |
-| VPS | `/opt/wingman/releases/<git-commit>/` | Root-owned snapshot of reviewed tracked source; no `.env` or extension token |
-| VPS | `/opt/wingman/current` | Symlink to the adopted release |
-| VPS | `/etc/wingman/token` | Paired service token, root-owned mode 0600; never print or commit |
-| VPS | `wingman-readonly.service` | Installed from the adjacent unit file |
-| VPS | `/var/lib/wingman` | Private service state |
-| Mac | `~/Library/LaunchAgents/com.wingman.vps-tunnel.plist` | SSH transport only |
-| Mac | `~/Library/Application Support/Wingman/extension/` | Private paired extension folder; browser installation is separate |
+| VPS | `/opt/krow/releases/<git-commit>/` | Root-owned snapshot of reviewed tracked source; no `.env` or extension token |
+| VPS | `/opt/krow/current` | Symlink to the adopted release |
+| VPS | `/etc/krow/token` | Paired service token, root-owned mode 0600; never print or commit |
+| VPS | `krow-readonly.service` | Installed from the adjacent unit file |
+| VPS | `/var/lib/krow` | Private service state |
+| Mac | `~/Library/LaunchAgents/com.krow.vps-tunnel.plist` | SSH transport only |
+| Mac | `~/Library/Application Support/Krow/extension/` | Private paired extension folder; browser installation is separate |
 
 Before creating these paths, check for an existing owner, service and listener.
 Do not overwrite an older installation or revive a retired Mac service. Use a
@@ -49,9 +49,9 @@ SSH, never a public artifact URL, repository, command argument or screenshot.
 
 ## Verify and recover
 
-After authorized installation, check `systemctl is-active wingman-readonly` and
+After authorized installation, check `systemctl is-active krow-readonly` and
 `ss -ltn '( sport = :8770 )'` on the VPS. On the Mac check
-`launchctl print gui/$(id -u)/com.wingman.vps-tunnel` and the loopback listener.
+`launchctl print gui/$(id -u)/com.krow.vps-tunnel` and the loopback listener.
 An unauthenticated `/api/connection` must return 403. A paired request must report
 `authorization: accepted`, `serviceMode: read-only`, `workivaCredentials: missing`
 and `workivaAccess: not_tested`. An authenticated POST with an empty or malformed
@@ -62,10 +62,10 @@ The included checker runs those exact probes and prints only redacted outcomes:
 
 ```bash
 # VPS
-sudo python3 /opt/wingman/current/deploy/check_connection.py --token-file /etc/wingman/token
+sudo python3 /opt/krow/current/deploy/check_connection.py --token-file /etc/krow/token
 # Mac, after private staging (not browser installation)
-python3 "$HOME/Library/Application Support/Wingman/check_connection.py" \
-  --extension-config "$HOME/Library/Application Support/Wingman/extension/local-config.js"
+python3 "$HOME/Library/Application Support/Krow/check_connection.py" \
+  --extension-config "$HOME/Library/Application Support/Krow/extension/local-config.js"
 ```
 
 Restart the two new units independently and repeat the checks to verify recovery.
@@ -77,8 +77,8 @@ approval and verification steps. The owner approved that scoped update on Septem
 16; the old RCTC report-to-source read passed through the installed Mac broker.
 This does not establish the in-page Workiva journey or general compatibility.
 
-To reverse commissioning, stop and disable `wingman-readonly.service` and boot out
-`com.wingman.vps-tunnel` on the Mac; disable that launchd label to prevent reload at
+To reverse commissioning, stop and disable `krow-readonly.service` and boot out
+`com.krow.vps-tunnel` on the Mac; disable that launchd label to prevent reload at
 login. Preserve the release and private token unless deletion is explicitly wanted.
 For an update rollback, stop the service, repoint `current` to the prior verified
 release, restart, and repeat the connection/write-refusal checks. Do not regenerate
@@ -90,7 +90,7 @@ The base unit remains connection-only. A credentialed test uses a separate priva
 systemd drop-in, never a broader default unit or credentials in source control.
 Provision this only after approval of the workspace, file scope and private update.
 
-- Supply `/etc/wingman/workiva.json` through `LoadCredential=workiva:/etc/wingman/workiva.json`
+- Supply `/etc/krow/workiva.json` through `LoadCredential=workiva:/etc/krow/workiva.json`
   and `Environment=WORKIVA_CREDENTIALS_FILE=%d/workiva`. Its two string keys are
   `WORKIVA_CLIENT_ID` and `WORKIVA_CLIENT_SECRET`. Use the canonical workspace
   connector to resolve the pair internally; never print it or pass it in argv.
@@ -122,8 +122,8 @@ Provision this only after approval of the workspace, file scope and private upda
   `RestrictAddressFamilies` to `AF_UNIX AF_INET` and allows only four freshly
   verified API IPv4 addresses plus the base localhost allowance. The same report
   read then completed in seconds. No wildcard network grant was added.
-- Preserve `WINGMAN_READ_ONLY=1`, the existing pair, base unit and previous release.
-  Set `WINGMAN_EXT_ID` to the existing private installation's ID. After adopting
+- Preserve `KROW_READ_ONLY=1`, the existing pair, base unit and previous release.
+  Set `KROW_EXT_ID` to the existing private installation's ID. After adopting
   the reviewed release/drop-in, run the connection checker with
   `--expect-credentials present`; it also requires `workivaReadScope: valid` and
   `workivaAccountPin: present`. Then test the named old file through the

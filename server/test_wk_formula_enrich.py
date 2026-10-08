@@ -78,13 +78,13 @@ class FormulaEnrichTests(unittest.TestCase):
 
 
 class FormulaFetchModeTests(unittest.TestCase):
-    """U1: WINGMAN_FORMULA_FETCH is tri-state, default-on/scoped (resolved open decision #1)."""
+    """U1: KROW_FORMULA_FETCH is tri-state, default-on/scoped (resolved open decision #1)."""
 
     def _mode_for(self, value):
-        env = {} if value is None else {"WINGMAN_FORMULA_FETCH": value}
+        env = {} if value is None else {"KROW_FORMULA_FETCH": value}
         with patch.dict(os.environ, env, clear=False):
             if value is None:
-                os.environ.pop("WINGMAN_FORMULA_FETCH", None)
+                os.environ.pop("KROW_FORMULA_FETCH", None)
             return wk.formula_fetch_mode(), wk.formula_fetch_enabled(), wk.formula_fetch_cap()
 
     def test_default_is_scoped_and_enabled(self):

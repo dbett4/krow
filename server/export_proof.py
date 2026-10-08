@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Wingman Lane C — export-proof guided workflow (RED gate).
+Krow Lane C — export-proof guided workflow (RED gate).
 
 For "source fixed but not client-visible": user republishes links, exports PDF
 (binary-safe), greps pdftotext for target label/value, then marks verdict.
@@ -23,7 +23,7 @@ NOT_PROVEN_VISUAL_FOOTER = (
     "grep pass ≠ page flow / clipping / raster proof still required."
 )
 
-# RED — user executes publish + export in Workiva UI; Wingman guides only.
+# RED — user executes publish + export in Workiva UI; Krow guides only.
 EXPORT_PROOF_GUIDED_STEPS: list[dict[str, Any]] = [
     {
         "id": "publish-spreadsheet",

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Hardcoded face-value detector (Wingman ACFR issue family 2 -- surfaced/RED only).
+Hardcoded face-value detector (Krow ACFR issue family 2 -- surfaced/RED only).
 
 Flags numeric cells with no formula in a column where >=2 sampled numeric
 neighbors ARE formula-driven. Common in ACFR statement faces when an amount
@@ -106,7 +106,7 @@ def detect_hardcoded_face_value(cell: dict, *, cells_by_addr: dict = None,
       7. Column gate: >=2 sampled numeric neighbors have formulas (proves column expects formulas)
       8. cells_by_addr context must be provided (no context -> skip, not noise)
       9. Cap-boundary guard: when the scan carries formula_fetched markers (partial formula
-         enrichment past WINGMAN_FORMULA_FETCH_CAP), trust only a cell whose formula was
+         enrichment past KROW_FORMULA_FETCH_CAP), trust only a cell whose formula was
          actually fetched — a formula cell beyond the cap has formula=None and would otherwise
          look like a literal. Inert when no cell carries the marker (no false negatives off it).
     """

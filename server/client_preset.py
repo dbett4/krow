@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-ACFR Wingman preset defaults — Lane F preset for checks_bridge resolution.
+ACFR Krow preset defaults — Lane F preset for checks_bridge resolution.
 
-Env `WINGMAN_CHECKS_SS_MAP` JSON overrides these defaults (env wins).
+Env `KROW_CHECKS_SS_MAP` JSON overrides these defaults (env wins).
 """
 from __future__ import annotations
 
@@ -13,17 +13,17 @@ _ACFR_PRESET_SS = "a1b2c3d4e5f60718293a4b5c6d7e8f90"
 
 
 def data_root() -> pathlib.Path:
-    """Wingman data root (client working dirs, external checks toolkit).
+    """Krow data root (client working dirs, external checks toolkit).
 
-    WINGMAN_DATA_DIR overrides; the default is the XDG data home
-    (``$XDG_DATA_HOME/wingman`` or ``~/.local/share/wingman``).
+    KROW_DATA_DIR overrides; the default is the XDG data home
+    (``$XDG_DATA_HOME/krow`` or ``~/.local/share/krow``).
     """
-    raw = os.environ.get("WINGMAN_DATA_DIR")
+    raw = os.environ.get("KROW_DATA_DIR")
     if raw:
         return pathlib.Path(raw).expanduser()
     xdg = os.environ.get("XDG_DATA_HOME")
     base = pathlib.Path(xdg).expanduser() if xdg else pathlib.Path.home() / ".local" / "share"
-    return base / "wingman"
+    return base / "krow"
 
 
 def acfr_preset_ss_id() -> str:

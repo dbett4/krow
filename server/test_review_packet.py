@@ -86,9 +86,9 @@ class RollbackAndReasonTests(unittest.TestCase):
         self.assertIn("reverts", rb)
         self.assertIn("B7", rb)
 
-    def test_blocked_rollback_no_wingman_write(self):
+    def test_blocked_rollback_no_krow_write(self):
         rb = rp.rollback_path({"kind": "negative-without-parens"}, rp.BLOCKED)
-        self.assertIn("No Wingman write", rb)
+        self.assertIn("No Krow write", rb)
 
     def test_scan_error_rollback_na(self):
         self.assertTrue(rp.rollback_path({"kind": "scan-error"}, rp.BLOCKED).startswith("n/a"))
@@ -211,11 +211,11 @@ class WritePacketTests(unittest.TestCase):
     def test_packet_dir_env_override(self):
         import os
         with tempfile.TemporaryDirectory() as td:
-            os.environ["WINGMAN_PACKET_DIR"] = td
+            os.environ["KROW_PACKET_DIR"] = td
             try:
                 self.assertEqual(str(rp.packet_dir()), td)
             finally:
-                os.environ.pop("WINGMAN_PACKET_DIR", None)
+                os.environ.pop("KROW_PACKET_DIR", None)
 
 
 class CoverageTests(unittest.TestCase):

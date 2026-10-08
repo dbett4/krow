@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Wingman formula-hygiene detectors (Lane G — surfaced only, no auto-fix).
+Krow formula-hygiene detectors (Lane G — surfaced only, no auto-fix).
 
 Companion to hardcoded_value.py. That module flags a cell that SHOULD be a formula but is a
 bare literal (a hardcoded face value). This module flags the opposite shape: a real formula
@@ -10,7 +10,7 @@ through the architecture (TB / mapping / Formula Reference), not literals."
 
 Every finding here is JUDGMENT (the correct fix is a mapping/formula change the scanner cannot
 synthesize), so all are fix_lane="surfaced", fixable=False — review items, never auto-written.
-All three need the formula string (WINGMAN_FORMULA_FETCH); each no-ops cleanly when absent.
+All three need the formula string (KROW_FORMULA_FETCH); each no-ops cleanly when absent.
 
 Detectors:
   - hardcoded-text-criteria-in-formula : a literal CODE criterion baked into a SUMIFS-family
@@ -38,7 +38,7 @@ Detectors:
         value-preserving repair) — the single most frequent Workiva
         portability defect. The fix is to BIND every full-column range to explicit rows ($1:$N),
         value-preserving when N >= the data extent; that gated write-plan is generated/applied by
-        the external checks toolkit's bounded-SUMIFS write-planner, so Wingman only SURFACES the latent debt. Each SUMIFS-family call's
+        the external checks toolkit's bounded-SUMIFS write-planner, so Krow only SURFACES the latent debt. Each SUMIFS-family call's
         argument list is parsed and tested for a full-column range AFTER quoted strings + sheet names
         are stripped, so a quoted criterion that merely looks like a range ("A:Z"), a sheet name
         containing a colon, a full-ROW range ($1:$1 header lookup — not the #VALUE risk), a bounded
@@ -58,7 +58,7 @@ Detectors:
         ('SORT detail'!A1) or quoted criteria ("FILTER") are stripped before matching. The detail
         names the function SET, so a sheet's identical-pattern cells collapse to one per-sheet Review
         row. It is surfaced only: the remediation is a per-function formula rewrite to a supported
-        equivalent (a judgment Wingman cannot synthesize), never an auto-write.
+        equivalent (a judgment Krow cannot synthesize), never an auto-write.
   - degenerate-placeholder-formula       : a formula cell contains only a placeholder constant
         shape (=0, =1+1, =100-100, =(2+2)*0) instead of a governed pull/formula. These pass numeric
         tieout only when another cell compensates or when the line is untested; they also survive

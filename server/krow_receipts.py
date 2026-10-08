@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Durable, redacted Wingman action receipts.
+"""Durable, redacted Krow action receipts.
 
 The telemetry log is deliberately aggregate-only. Action receipts are the local audit trail
 for dry-run/apply outcomes: one JSON line per attempted fix with timestamp, pseudonymous
@@ -27,7 +27,7 @@ _SAFE_KEYS = {
 
 
 def receipt_dir() -> Path:
-    return Path(os.environ.get("WINGMAN_RECEIPT_DIR", str(Path.home() / ".wingman" / "receipts")))
+    return Path(os.environ.get("KROW_RECEIPT_DIR", str(Path.home() / ".krow" / "receipts")))
 
 
 def _hash(raw: str | None, n: int = 16) -> str:
@@ -85,7 +85,7 @@ def build_action_receipt(
 ) -> dict[str, Any]:
     now = datetime.now(timezone.utc)
     return {
-        "artifact": "wingman-action-receipt",
+        "artifact": "krow-action-receipt",
         "schema": SCHEMA_VERSION,
         "ts": now.isoformat(),
         "workbookHash": _hash(spreadsheet_id),
@@ -104,7 +104,7 @@ def write_action_receipt(receipt: dict[str, Any], *, out_dir: str | os.PathLike 
     d = Path(out_dir) if out_dir else receipt_dir()
     d.mkdir(parents=True, exist_ok=True)
     day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    path = d / f"wingman-action-receipts-{day}.jsonl"
+    path = d / f"krow-action-receipts-{day}.jsonl"
     with path.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(receipt, ensure_ascii=False, sort_keys=True) + "\n")
     return str(path)

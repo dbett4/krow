@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Wingman safe-lane write path (ADR-0002, ADR-0003, ADR-0004).
+Krow safe-lane write path (ADR-0002, ADR-0003, ADR-0004).
 
 Two v1 auto-writes behind the full safety harness (dry-run → confirm Apply → readback → revert):
 
@@ -117,7 +117,7 @@ def _retry_after_seconds(resp, default=1.0):
     """Return a bounded Retry-After delay from a urllib response-like object.
 
     Workiva's public OpenAPI docs note that operation polling is rate-limited at 1/sec and
-    429s may include Retry-After. Keep Wingman's safe-fix lane inside that contract instead
+    429s may include Retry-After. Keep Krow's safe-fix lane inside that contract instead
     of hammering `/operations/{id}` every 0.5s.
     """
     headers = getattr(resp, "headers", None)

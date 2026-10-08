@@ -1,4 +1,4 @@
-# Wingman — private Chrome installation
+# Krow — private Chrome installation
 
 The current route is a **privately paired unpacked extension**, not a store release
 or enterprise force-install. Installation in the owner's browser requires approval.
@@ -11,11 +11,11 @@ These steps assume the private service, tunnel and paired folder have already be
 provisioned. Do not run a second backend on the Mac or regenerate its pairing token.
 
 1. Open `chrome://extensions/` in the intended Chrome profile.
-2. Check for an existing Wingman installation before adding another. Preserve any
+2. Check for an existing Krow installation before adding another. Preserve any
    installation whose owner or source folder is unknown.
 3. Use Developer mode and **Load unpacked**. Select the folder, not a ZIP:
-   `~/Library/Application Support/Wingman/extension/`.
-4. Open Wingman's **Details**. Confirm it is enabled, has a service worker and shows
+   `~/Library/Application Support/Krow/extension/`.
+4. Open Krow's **Details**. Confirm it is enabled, has a service worker and shows
    the expected source folder. Investigate manifest/runtime errors before continuing.
 5. Keep that folder in place: Chrome loads directly from it. It contains a private
    pairing configuration; do not upload, share, paste or screenshot that file.
@@ -42,8 +42,8 @@ been rendered and inspected with the existing pairing preserved.
 Run the sanitized transport checker on the Mac:
 
 ```bash
-python3 "$HOME/Library/Application Support/Wingman/check_connection.py" \
-  --extension-config "$HOME/Library/Application Support/Wingman/extension/local-config.js" \
+python3 "$HOME/Library/Application Support/Krow/check_connection.py" \
+  --extension-config "$HOME/Library/Application Support/Krow/extension/local-config.js" \
   --expect-credentials present
 ```
 
@@ -54,7 +54,7 @@ use the installed worker: a paired `/api/connection` request should return 200 w
 For connection-only commissioning, omit the flag and expect missing credentials.
 A wrong token and an authenticated malformed POST
 to `/apply` must return 403; the latter must report `code: read_only`. Never print
-the paired token while probing. Repeat after Wingman's **Reload** control.
+the paired token while probing. Repeat after Krow's **Reload** control.
 
 **Observed September 15, 2026:** Chrome 153.0.8010.36 on the owner's Mac loaded the
 staged folder through the normal file picker. The extension was enabled with zero
@@ -74,7 +74,7 @@ the old file in LSL Sandbox without transferring its session. No Workiva edits
 were made; both selected files retained their August 8 modification timestamps.
 
 With separate temporary-install approval, the authenticated VPS Chrome 149 browser
-then exercised Wingman on that actual old RCTC document: explicit table/D12 choice,
+then exercised Krow on that actual old RCTC document: explicit table/D12 choice,
 J18 source formula and calculated value, then return to D12 without additional
 observed API requests. The temporary extension, pairing copy and owned tabs were
 removed; neither browser nor backend was restarted. This is bounded in-page proof,
@@ -91,7 +91,7 @@ a fictional page. They do not establish compatibility with live Workiva.
 This improvement passed local tests and an owner-approved temporary VPS trial on
 the old RCTC pair: D12 → J18 → the actual companion sheet → return. The temporary
 installation was removed afterward. The owner's later September 16 update installed
-[the published runtime](https://github.com/dbett4/wingman/commit/0ee4f35957a0c53661dd1feffe8a76ca5aae2b85)
+[the published runtime](https://github.com/dbett4/krow/commit/0ee4f35957a0c53661dd1feffe8a76ca5aae2b85)
 on the VPS and in the existing Mac extension. Pairing was preserved; Chrome
 153.0.8010.48 reloaded it with zero manifest/runtime errors, and the setup button
 reached the deployed service. Refresh existing Workiva tabs after an extension
@@ -131,12 +131,12 @@ to chosen cell**. Choosing another cell or changing context clears the candidate
 ## Update, recover and remove
 
 For an approved update, preserve the pairing file and previous verified package;
-stage matching reviewed code and backend versions, then use Wingman's **Reload**
+stage matching reviewed code and backend versions, then use Krow's **Reload**
 control. Repeat the connection/refusal checks. Restore the prior verified files and
 reload to reverse a failed extension update. Upgrade/rollback have not yet passed
 clean-machine product acceptance.
 
-Disabling Wingman in Chrome stops the extension without deleting its private files.
+Disabling Krow in Chrome stops the extension without deleting its private files.
 Removing it through Chrome removes the browser installation, not the VPS service
 or SSH tunnel. Those have separate rollback steps in the deployment guide. Do not
 revive the retired Mac service during recovery.

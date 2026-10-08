@@ -1,4 +1,4 @@
-# Wingman Design Contract
+# Krow Design Contract
 
 **Register:** product UI / browser extension panel  
 **Posture:** high-trust, low-distraction Workiva operator surface

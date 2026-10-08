@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """
-Wingman scan -> review packet (F1).
+Krow scan -> review packet (F1).
 
-Closes the "Wingman finds issues but leaves no durable artifact" gap. Takes a
+Closes the "Krow finds issues but leaves no durable artifact" gap. Takes a
 prioritized scan queue (diagnose.build_sheet_queue / build_workbook_queue, with or
 without merged run_checks rows) and produces a structured, redacted handoff packet:
 each finding is classified ACCEPT / BLOCKED / UNVERIFIED, carries its capability tier
 (safe-auto | guided | surfaced) and a per-finding rollback path, and the packet rolls
 up an overall verdict. The packet is designed to attach to an external task tracker or hand
-to a verifier — Wingman never creates the external task itself (no external send).
+to a verifier — Krow never creates the external task itself (no external send).
 
-Redaction (mirrors the wingman_log.py data boundary):
+Redaction (mirrors the krow_log.py data boundary):
   - The raw Workiva spreadsheet id is pseudonymized to a SHA-256 `workbookHash`.
   - Client cell VALUES never enter the packet (cellValues is dropped; signatures have
     their numeric runs redacted to `#`).
@@ -48,7 +48,7 @@ DISPOSITIONS = (ACCEPT, BLOCKED, UNVERIFIED)
 _VERDICT_ORDER = {BLOCKED: 3, UNVERIFIED: 2, ACCEPT: 1}
 
 # Surfaced, non-fixable kinds that are nonetheless CONFIRMED defects (not heuristics) — they
-# need a human action Wingman will not auto-do, so they belong in BLOCKED, not UNVERIFIED.
+# need a human action Krow will not auto-do, so they belong in BLOCKED, not UNVERIFIED.
 _BLOCKED_KINDS = frozenset({"broken-ref", "scan-error"})
 
 CLIENT_READY_CAVEAT = (
@@ -78,9 +78,9 @@ def _workbook_hash(spreadsheet_id: str | None) -> str:
 def classify_disposition(item: dict[str, Any]) -> str:
     """Classify one queue item.
 
-    ACCEPT     — Wingman can fix it itself, safely and reversibly (safe-auto lane).
+    ACCEPT     — Krow can fix it itself, safely and reversibly (safe-auto lane).
     BLOCKED    — a known remediation that needs human authority / source / a Workiva write
-                 Wingman will not auto-do: guided fixes, fixable-but-not-safe-auto, run_checks
+                 Krow will not auto-do: guided fixes, fixable-but-not-safe-auto, run_checks
                  / tieout exceptions, anything carrying a guided lane, and confirmed
                  error-class defects (broken-ref, scan-error).
     UNVERIFIED — a surfaced read-only heuristic with no fix and no guided remediation; a
@@ -108,16 +108,16 @@ def disposition_reason(item: dict[str, Any], disposition: str) -> str:
     kind = item.get("kind") or ""
     dx = item.get("diagnosis") or {}
     if disposition == ACCEPT:
-        return "Safe-auto fix — Wingman applies with readback + automatic revert on mismatch."
+        return "Safe-auto fix — Krow applies with readback + automatic revert on mismatch."
     if disposition == BLOCKED:
         if kind == "scan-error":
             return "Sheet scan failed — restore access / clear the lock before review."
         if item.get("check"):
-            return "Tie-out / check exception — reconcile at source; Wingman never auto-writes tie-out."
+            return "Tie-out / check exception — reconcile at source; Krow never auto-writes tie-out."
         if dx.get("guided_lane") == "export-proof":
             return "Source fix is not client-visible — guided publish + export-proof required."
         if dx.get("guided_steps") or dx.get("guided_lane"):
-            return "Guided fix — a human runs the checklist; no Wingman auto-write."
+            return "Guided fix — a human runs the checklist; no Krow auto-write."
         if kind == "broken-ref":
             return "Formula error — needs manual formula repair; no safe auto-fix."
         if bool(item.get("fixable")):
@@ -139,9 +139,9 @@ def rollback_path(item: dict[str, Any], disposition: str) -> str:
         if kind == "scan-error":
             return "n/a — no change proposed; resolve sheet access first."
         if item.get("check") or (item.get("diagnosis") or {}).get("guided_lane") == "export-proof":
-            return "No Wingman write performed — revert any manual source change via Workiva version history."
+            return "No Krow write performed — revert any manual source change via Workiva version history."
         return (
-            "No Wingman write performed — if a human applies the fix, revert via Workiva version "
+            "No Krow write performed — if a human applies the fix, revert via Workiva version "
             "history or the guided checklist."
         )
     return "n/a — surfaced only, no change proposed."
@@ -225,7 +225,7 @@ def build_review_packet(
     }
 
     return {
-        "artifact": "wingman-review-packet",
+        "artifact": "krow-review-packet",
         "schema": SCHEMA_VERSION,
         "generatedAt": generated_at,
         "label": label,
@@ -263,7 +263,7 @@ def render_packet_md(packet: dict[str, Any]) -> str:
     """Human-readable markdown rendering of the packet (BLOCKED first — act on these)."""
     title = packet.get("label") or f"workbook {packet.get('workbookHash')}"
     lines = [
-        f"# Wingman review packet — {title}",
+        f"# Krow review packet — {title}",
         "",
         f"- **Overall:** {packet.get('overall')}  ·  **Client-ready:** "
         f"{'yes' if packet.get('clientReady') else 'no'}",
@@ -290,7 +290,7 @@ def render_packet_md(packet: dict[str, Any]) -> str:
     sections = [
         (BLOCKED, "🛑 BLOCKED — needs human action / source / authority"),
         (UNVERIFIED, "❓ UNVERIFIED — verify against live source before acting"),
-        (ACCEPT, "✅ ACCEPT — Wingman can apply (safe-auto + readback/revert)"),
+        (ACCEPT, "✅ ACCEPT — Krow can apply (safe-auto + readback/revert)"),
     ]
     dispositions = packet.get("dispositions") or {}
     for key, header in sections:
@@ -322,7 +322,7 @@ def render_packet_md(packet: dict[str, Any]) -> str:
 
 def packet_dir() -> Path:
     """Where packets are written. Outside the repo by default; never committed."""
-    return Path(os.environ.get("WINGMAN_PACKET_DIR", str(Path.home() / ".wingman" / "packets")))
+    return Path(os.environ.get("KROW_PACKET_DIR", str(Path.home() / ".krow" / "packets")))
 
 
 def _slug(text: str | None) -> str:
@@ -339,7 +339,7 @@ def write_packet(
     d = Path(out_dir) if out_dir else packet_dir()
     d.mkdir(parents=True, exist_ok=True)
     stamp = re.sub(r"[^0-9A-Za-z]", "", str(packet.get("generatedAt") or ""))[:15] or "now"
-    base = f"wingman-packet-{packet.get('workbookHash', 'wb')}-{stamp}"
+    base = f"krow-packet-{packet.get('workbookHash', 'wb')}-{stamp}"
     json_path = d / f"{base}.json"
     md_path = d / f"{base}.md"
     json_path.write_text(json.dumps(packet, indent=2, ensure_ascii=False), encoding="utf-8")

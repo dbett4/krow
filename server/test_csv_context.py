@@ -81,7 +81,7 @@ def test_replay_binds_policy_code_results_and_native_context():
     changed["context_validator_sha256"] = "different-build"
     assert verify_packet(changed, INPUT["csv_text"])["mismatched_fields"] == ["context_validator_sha256"]
     from csv_native import LSL_ACCOUNT, bind_packet, fingerprint
-    binding = {"account_id": LSL_ACCOUNT, "table_id": "a" * 32, "table_name": "zz Wingman Synthetic Context",
+    binding = {"account_id": LSL_ACCOUNT, "table_id": "a" * 32, "table_name": "zz Krow Synthetic Context",
                "version": 3, "updated": "2026-10-07T00:00:00Z",
                "table_schema": {"columns": INPUT["columns"]}}
     native = bind_packet(packet, {"binding": binding, "schema_sha256": fingerprint(binding), "evidence": "workiva_api_response"})

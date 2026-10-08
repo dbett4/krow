@@ -10,7 +10,7 @@
   document.documentElement.setAttribute("data-copilot-loaded", frame);
   // The standalone demo may itself be embedded in a preview portal. Chrome-injected
   // content scripts have no currentScript; the extension remains top-frame-only.
-  var demoEmbed = document.currentScript && document.currentScript.hasAttribute("data-wingman-demo");
+  var demoEmbed = document.currentScript && document.currentScript.hasAttribute("data-krow-demo");
   if (frame !== "top" && !demoEmbed) return;
 
   function parseIds() {
@@ -28,7 +28,7 @@
     hasChrome = false;
     clearInterval(inspectTimer);
     inspectRequest++;
-    inspectState = { error: "Extension reloaded. Refresh this Workiva tab and reopen Wingman." };
+    inspectState = { error: "Extension reloaded. Refresh this Workiva tab and reopen Krow." };
     connectionRequest++;
     connectionState = { error: { reloaded: true } };
     if (open && panelUi) {
@@ -252,7 +252,7 @@
         var cb = document.createElement("input");
         cb.type = "checkbox";
         cb.checked = !!progress[step.id];
-        cb.title = "Mark step done (manual — Wingman does not run this step)";
+        cb.title = "Mark step done (manual — Krow does not run this step)";
         cb.setAttribute("aria-label", (step.title || step.id) + " — mark complete");
         cb.onclick = function (ev) { ev.stopPropagation(); };
         li.appendChild(cb);
@@ -272,7 +272,7 @@
         rescanBtn = el("button", "wm-btn wm-rescan", lane === "export-proof" ? "Re-run tieout checks" : "Re-scan this sheet");
         rescanBtn.title = lane === "export-proof"
           ? "Re-run tieout after publish/export proof"
-          : "Re-run Wingman scan after publish/cache refresh";
+          : "Re-run Krow scan after publish/cache refresh";
         rescanBtn.style.display = guidedProgressSummary(progress, steps).complete ? "" : "none";
         rescanBtn.onclick = function (ev) {
           ev.stopPropagation();
@@ -1048,7 +1048,7 @@
   function ensureHost() {
     if (host) return;
     host = document.createElement("div");
-    host.id = "__wk_wingman__";
+    host.id = "__wk_krow__";
     host.style.cssText = "position:fixed;bottom:14px;right:14px;z-index:2147483647";
     sh = host.attachShadow ? host.attachShadow({ mode: "open" }) : host;
     var st = document.createElement("style"); st.textContent = CSS; sh.appendChild(st);
@@ -1097,7 +1097,7 @@
   function renderPill() {
     ensureHost();
     var p = el("div", "wm-pill " + (pillState === "drift" ? "wm-drift" : ""));
-    p.innerHTML = '<img class="wm-logo" alt="" src="' + LOGO + '"><span class="wm-label">Wingman</span>' +
+    p.innerHTML = '<img class="wm-logo" alt="" src="' + LOGO + '"><span class="wm-label">Krow</span>' +
       '<span class="wm-sep">·</span><span class="wm-value"></span>';
     var valueEl = p.querySelector(".wm-value");
     if (shouldShowReloadTabButton({ invalidated: extensionInvalidated, text: pillValue })) {
@@ -1130,7 +1130,7 @@
 
   function paintConnection() {
     syncTabUi();
-    WingmanConnection.render(panelUi.body, connectionState, !!demoEmbed, checkConnection, function () {
+    KrowConnection.render(panelUi.body, connectionState, !!demoEmbed, checkConnection, function () {
       connectionRequest++;
       connectionState = { cancelled: true };
       paintConnection();
@@ -1168,11 +1168,11 @@
 
   function currentInspection() {
     var indicator = document.querySelector(SEL);
-    return WingmanInspector.selection(location.href, indicator && indicator.textContent, !!demoEmbed);
+    return KrowInspector.selection(location.href, indicator && indicator.textContent, !!demoEmbed);
   }
   function syncInspection() {
     var context = currentInspection();
-    if (inspectContext && WingmanInspector.key(context) === WingmanInspector.key(inspectContext)) return;
+    if (inspectContext && KrowInspector.key(context) === KrowInspector.key(inspectContext)) return;
     var before = inspectContext && inspectContext.target, after = context.target;
     var sheetChanged = !before || !after || before.workspaceId !== after.workspaceId ||
       before.spreadsheetId !== after.spreadsheetId || before.sheetId !== after.sheetId;
@@ -1188,7 +1188,7 @@
   function paintInspection() {
     var context = inspectContext || currentInspection();
     if (context.document && inspectState.chosen) context = Object.assign({}, context, {target: inspectState.chosen});
-    WingmanInspector.render(panelUi.body, context, inspectState, inspectSelectedCell,
+    KrowInspector.render(panelUi.body, context, inspectState, inspectSelectedCell,
       followInspectionSource, returnInspection, {load: loadDocumentTables, choose: chooseDocumentCell});
   }
   function loadDocumentTables() {
@@ -1248,7 +1248,7 @@
     syncInspection();
     if (!inspectState.data || inspectState.traceLoading) return;
     var trail = inspectState.trail || [];
-    var blocked = WingmanInspector.traceBlock(inspectState.data, trail, target);
+    var blocked = KrowInspector.traceBlock(inspectState.data, trail, target);
     if (blocked) { inspectState.traceError = blocked; paintInspection(); return; }
     var request = ++inspectRequest;
     inspectState.traceLoading = target;
@@ -1274,7 +1274,7 @@
     }, 30000);
     svc("/api/inspect-source?" + query, { cache: "no-store" }).then(function (data) {
       if (!stillCurrent()) return;
-      if (!WingmanInspector.matchesSource(target, data.target) || data.readOnly !== true || data.sourceValuesRequested !== true) {
+      if (!KrowInspector.matchesSource(target, data.target) || data.readOnly !== true || data.sourceValuesRequested !== true) {
         throw new Error("Source scope mismatch");
       }
       if (!data.content || data.content.status !== "observed" || data.tableId !== target.tableId || data.contentRevision !== target.revision) {
@@ -1319,7 +1319,7 @@
     }, 30000) : null;
     svc((documentCell ? "/api/inspect-document?" : "/api/inspect?") + query, { cache: "no-store" }).then(function (data) {
       if (!stillCurrent()) return;
-      if (!WingmanInspector.matches(target, data.target) || data.readOnly !== true ||
+      if (!KrowInspector.matches(target, data.target) || data.readOnly !== true ||
           (data.sourceValuesRequested === true) !== readSources ||
           (documentCell && data.content && data.content.status === "observed" &&
             (data.tableId !== target.tableId || data.contentRevision !== target.revision))) {
@@ -1329,7 +1329,7 @@
       paintInspection();
     }).catch(function (error) {
       if (!stillCurrent()) return;
-      inspectState = Object.assign({}, retained, { error: error.offline ? "Wingman service is unavailable. No cell was inspected." : error.message });
+      inspectState = Object.assign({}, retained, { error: error.offline ? "Krow service is unavailable. No cell was inspected." : error.message });
       paintInspection();
     }).finally(function () { clearTimeout(timer); });
   }
@@ -1359,7 +1359,7 @@
     panelUi.body.setAttribute("aria-labelledby", connectionOpen ? "wc-heading" : "wm-tab-" + activeTab);
     panelUi.connectionButton.setAttribute("aria-expanded", String(connectionOpen));
     panelUi.connectionButton.textContent = connectionOpen ? "← Back to " + tabLabel(activeTab)
-      : "Connection · " + WingmanConnection.describe(connectionState, !!demoEmbed).title;
+      : "Connection · " + KrowConnection.describe(connectionState, !!demoEmbed).title;
     panelUi.tabsBar.querySelectorAll(".wm-tab").forEach(function (btn) {
       var tid = btn.getAttribute("data-tab");
       btn.classList.toggle("active", tid === activeTab);
@@ -1412,7 +1412,7 @@
   function emptyTabMessage(tabId) {
     if (tabId === "checks") return { big: "No checks run yet", sub: "Run Tieout or Hardening Gate to merge FAIL rows." };
     if (tabId === "workbook") return { big: "No workbook scan yet", sub: "Click All sheets to roll up findings across every sheet." };
-    return { big: "Scan the open sheet", sub: "Click Scan to run Wingman detectors on the current sheet." };
+    return { big: "Scan the open sheet", sub: "Click Scan to run Krow detectors on the current sheet." };
   }
 
   function restoreTabView() {
@@ -1487,12 +1487,12 @@
       return panelUi;
     }
     var panel = el("div", "wm-panel");
-    var inspectorStyle = el("style", null, WingmanInspector.styles + WingmanConnection.styles);
+    var inspectorStyle = el("style", null, KrowInspector.styles + KrowConnection.styles);
     panel.appendChild(inspectorStyle);
     var head = el("div", "wm-head");
     var logo = el("img", "wm-logo"); logo.src = LOGO; logo.style.width = "22px"; logo.style.height = "22px";
     head.appendChild(logo);
-    head.appendChild(el("span", "wm-brand", "Wingman"));
+    head.appendChild(el("span", "wm-brand", "Krow"));
     var presetChip = el("span", "wm-preset", "ACFR");
     presetChip.style.display = "none";
     head.appendChild(presetChip);
@@ -1612,14 +1612,14 @@
     var msg = String(e.message || "");
     if (e.offline) stateMsg(ui.body, "Service not running", "Start it: ./run-service.sh");
     else if (/extension reloaded|context invalidated/i.test(msg)) {
-      stateMsg(ui.body, "Extension reloaded", "Refresh this Workiva tab, then reopen Wingman.");
+      stateMsg(ui.body, "Extension reloaded", "Refresh this Workiva tab, then reopen Krow.");
     } else if (/^not found$/i.test(msg)) {
-      stateMsg(ui.body, "Wingman route missing", "Restart ./run-service.sh, then reload the extension.");
+      stateMsg(ui.body, "Krow route missing", "Restart ./run-service.sh, then reload the extension.");
     } else if (/HTTPError 404|Workiva returned 404/i.test(msg)) {
       stateMsg(ui.body, "Workiva can't reach this workbook",
-        "Confirm the open spreadsheet is accessible to the Wingman service credentials.");
+        "Confirm the open spreadsheet is accessible to the Krow service credentials.");
     } else if (/HTTP 404/i.test(msg)) {
-      stateMsg(ui.body, "Wingman service returned 404", msg + " — restart ./run-service.sh if routes look stale.");
+      stateMsg(ui.body, "Krow service returned 404", msg + " — restart ./run-service.sh if routes look stale.");
     } else stateMsg(ui.body, "Scan failed", msg);
   }
 

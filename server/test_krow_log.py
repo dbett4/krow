@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Tests for the Wingman activity log + improvement digest (PII safety, aggregation, flags)."""
+"""Tests for the Krow activity log + improvement digest (PII safety, aggregation, flags)."""
 import json
 import os
 import tempfile
 import unittest
 from pathlib import Path
 
-import wingman_log as wl
-import wingman_log_digest as wd
+import krow_log as wl
+import krow_log_digest as wd
 
 
 class ScanSummaryTests(unittest.TestCase):
@@ -68,16 +68,16 @@ class FixSummaryTests(unittest.TestCase):
 class LogEventTests(unittest.TestCase):
     def test_writes_jsonl_with_envelope(self):
         with tempfile.TemporaryDirectory() as td:
-            os.environ["WINGMAN_LOG_DIR"] = td
+            os.environ["KROW_LOG_DIR"] = td
             try:
                 wl.log_event({"event": "scan", "findingCount": 1})
-                files = list(Path(td).glob("wingman-events-*.jsonl"))
+                files = list(Path(td).glob("krow-events-*.jsonl"))
                 self.assertEqual(len(files), 1)
                 rec = json.loads(files[0].read_text().strip())
                 self.assertIn("ts", rec)
                 self.assertEqual(rec["schema"], wl.SCHEMA_VERSION)
             finally:
-                os.environ.pop("WINGMAN_LOG_DIR", None)
+                os.environ.pop("KROW_LOG_DIR", None)
 
     def test_log_helpers_never_raise(self):
         # bad inputs must be swallowed, never propagate to the caller
@@ -125,7 +125,7 @@ class DigestTests(unittest.TestCase):
 
     def test_load_events_skips_bad_lines(self):
         with tempfile.TemporaryDirectory() as td:
-            p = Path(td) / "wingman-events-2026-06-19.jsonl"
+            p = Path(td) / "krow-events-2026-06-19.jsonl"
             p.write_text('{"event":"scan"}\nNOT JSON\n\n{"event":"fix","kind":"x"}\n')
             events = wd.load_events(Path(td))
             self.assertEqual(len(events), 2)
@@ -159,7 +159,7 @@ class PIIGuardTests(unittest.TestCase):
 
     def test_log_event_strips_smuggled_content(self):
         with tempfile.TemporaryDirectory() as td:
-            os.environ["WINGMAN_LOG_DIR"] = td
+            os.environ["KROW_LOG_DIR"] = td
             try:
                 wl.log_event({
                     "event": "scan", "findingCount": 1, "addr": "B12",
@@ -176,7 +176,7 @@ class PIIGuardTests(unittest.TestCase):
                 self.assertNotIn("groups", rec)
                 self.assertNotIn("value", rec)
             finally:
-                os.environ.pop("WINGMAN_LOG_DIR", None)
+                os.environ.pop("KROW_LOG_DIR", None)
 
 
 class IntegrationTests(unittest.TestCase):
@@ -184,7 +184,7 @@ class IntegrationTests(unittest.TestCase):
 
     def test_log_then_digest_roundtrip(self):
         with tempfile.TemporaryDirectory() as td:
-            os.environ["WINGMAN_LOG_DIR"] = td
+            os.environ["KROW_LOG_DIR"] = td
             try:
                 wl.log_scan("ss", "s1", {"groups": [{"kind": "junk-decimal", "fix_lane": "surfaced",
                                                       "severity": "medium", "count": 5, "addrs": ["B1"]}],
@@ -198,7 +198,7 @@ class IntegrationTests(unittest.TestCase):
                 flags = {(f["kind"], f["signal"]) for f in d["flags"]}
                 self.assertIn(("junk-decimal", "high-revert"), flags)
             finally:
-                os.environ.pop("WINGMAN_LOG_DIR", None)
+                os.environ.pop("KROW_LOG_DIR", None)
 
 
 if __name__ == "__main__":

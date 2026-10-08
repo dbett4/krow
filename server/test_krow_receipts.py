@@ -3,10 +3,10 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import wingman_receipts as wr
+import krow_receipts as wr
 
 
-class WingmanReceiptTests(unittest.TestCase):
+class KrowReceiptTests(unittest.TestCase):
     def test_action_summary_redacts_cell_values(self):
         rec = wr.build_action_receipt(
             spreadsheet_id="ss-secret",
@@ -41,7 +41,7 @@ class WingmanReceiptTests(unittest.TestCase):
             self.assertTrue(path.exists())
             line = path.read_text(encoding="utf-8").strip()
             loaded = json.loads(line)
-            self.assertEqual(loaded["artifact"], "wingman-action-receipt")
+            self.assertEqual(loaded["artifact"], "krow-action-receipt")
             self.assertEqual(loaded["phase"], "dry-run")
 
 

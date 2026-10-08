@@ -47,7 +47,7 @@ def request(url, path="/api/review", *, body=None, method="POST", headers=None):
     connection = HTTPConnection("127.0.0.1", int(url.rsplit(":", 1)[1]), timeout=5)
     try:
         connection.request(method, path, body=json.dumps(INPUT if body is None else body),
-                           headers={"Origin": url, "Content-Type": "application/json", "X-Wingman-Review": "1", **(headers or {})})
+                           headers={"Origin": url, "Content-Type": "application/json", "X-Krow-Review": "1", **(headers or {})})
         response = connection.getresponse()
         return response.status, dict(response.getheaders()), response.read()
     finally:
@@ -95,7 +95,7 @@ def test_http_uses_real_validator_and_does_not_cache(csv_url):
 
 
 @pytest.mark.parametrize("headers", [{"Origin": "https://attacker.invalid"}, {"Host": "attacker.invalid"},
-                                     {"Origin": "null"}, {"X-Wingman-Review": ""},
+                                     {"Origin": "null"}, {"X-Krow-Review": ""},
                                      {"Content-Type": "text/plain"}, {"Transfer-Encoding": "chunked"}])
 def test_cross_origin_and_rebinding_denied_before_validation(csv_url, headers):
     assert request(csv_url, body={"csv_text": "sensitive"}, headers=headers)[0] == 403

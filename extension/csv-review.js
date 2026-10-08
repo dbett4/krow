@@ -84,10 +84,10 @@
       const data = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(await file.arrayBuffer()));
       if (request !== generation) return;
       const schema = data?.declared_schema, policy = data?.reporting_policy;
-      if (data?.product !== "Wingman" || ![1, 2, 3].includes(data.packet_version) || !schema || !Array.isArray(schema.columns) || !schema.columns.length || schema.columns.length > 64 || !Array.isArray(schema.key_columns) || schema.key_columns.length > 8 ||
+      if (data?.product !== "Krow" || ![1, 2, 3].includes(data.packet_version) || !schema || !Array.isArray(schema.columns) || !schema.columns.length || schema.columns.length > 64 || !Array.isArray(schema.key_columns) || schema.key_columns.length > 8 ||
           schema.columns.some((item) => !item || typeof item.name !== "string" || !item.name.trim() || item.name.length > 128 || /[\x00\r\n]/.test(item.name) || typeof item.type !== "string" || !item.type.trim() || item.type.length > 64 || (item.required !== undefined && typeof item.required !== "boolean")) ||
           new Set(schema.columns.map((item) => item.name)).size !== schema.columns.length || new Set(schema.key_columns).size !== schema.key_columns.length || schema.key_columns.some((key) => !schema.columns.some((item) => item.name === key))) {
-        throw new Error("Choose a supported Wingman arithmetic review packet, not journal handoff JSON. Existing source and policy were kept.");
+        throw new Error("Choose a supported Krow arithmetic review packet, not journal handoff JSON. Existing source and policy were kept.");
       }
       if (policy && (typeof policy !== "object" || ["period_column", "expected_period", "currency_column", "expected_currency", "unit_column", "expected_unit", "accounting_basis"].some((key) => typeof policy[key] !== "string" || policy[key].length > 128) || !Array.isArray(policy.amount_columns) || !policy.amount_columns.length || policy.amount_columns.length > 64 || policy.amount_columns.some((name) => typeof name !== "string" || name.length > 128) || !["units", "cents", "thousands", "millions"].includes(policy.expected_unit) || !["unknown", "cash", "accrual", "modified_accrual"].includes(policy.accounting_basis))) {
         throw new Error("Packet reporting policy is invalid. Existing source and policy were kept.");
@@ -140,7 +140,7 @@
     return { workspace: $("scope-workspace").value, file_copy: $("scope-file").value, period: $("scope-period").value };
   }
   async function journalRequest(path, body) {
-    const response = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json", "X-Wingman-Review": "1" }, body: JSON.stringify(body), cache: "no-store", signal: AbortSignal.timeout(10000) });
+    const response = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json", "X-Krow-Review": "1" }, body: JSON.stringify(body), cache: "no-store", signal: AbortSignal.timeout(10000) });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Private journal unavailable.");
     return data;
@@ -177,7 +177,7 @@
     });
     if (snapshot.run_id) {
       const download = el("button", "Download saved review handoff", "wm-btn"); download.type = "button";
-      download.addEventListener("click", () => { if (!savedReview) return; const url = URL.createObjectURL(new Blob([JSON.stringify(savedReview, null, 2)], { type: "application/json" })); const link = el("a"); link.href = url; link.download = "wingman-review-handoff.json"; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }); host.append(download);
+      download.addEventListener("click", () => { if (!savedReview) return; const url = URL.createObjectURL(new Blob([JSON.stringify(savedReview, null, 2)], { type: "application/json" })); const link = el("a"); link.href = url; link.download = "krow-review-handoff.json"; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }); host.append(download);
     }
     host.append(el("p", snapshot.limits || "Local declarations only; no approval verified."), el("small", "Reasons and scope labels are retained in your operator's private journal. Clear inputs does not delete it. History preview includes the latest 200 events" + (snapshot.history_truncated ? " of " + snapshot.history_count : "") + "."));
   }
@@ -192,7 +192,7 @@
     $("check").disabled = true; $("cancel").hidden = false;
     const timeout = setTimeout(() => abort.abort(), 10000);
     try {
-      const response = await fetch("/api/schema", { method: "POST", headers: { "Content-Type": "application/json", "X-Wingman-Review": "1" }, body: "{}", signal: abort.signal, cache: "no-store" });
+      const response = await fetch("/api/schema", { method: "POST", headers: { "Content-Type": "application/json", "X-Krow-Review": "1" }, body: "{}", signal: abort.signal, cache: "no-store" });
       const data = await response.json(); if (request !== generation) return;
       if (!response.ok) throw new Error(data.error || "Sandbox schema unavailable.");
       $("columns").replaceChildren(); data.columns.forEach((item) => column(item.name, item.type, item.required === true));
@@ -242,7 +242,7 @@
       }); host.append(list);
       if (result.issues_truncated) host.append(el("p", "Showing the first 100 of " + result.issue_count + " issues. Every input record was checked."));
     }
-    host.append(el("h3", "What to do next"), el("p", result.screen_status === "passed" ? "Review the schema, period and units with your source owner before importing. A pass is not accounting approval." : "Review the referenced records and declared schema. Correct your source file, then run a new check. Wingman does not alter it."));
+    host.append(el("h3", "What to do next"), el("p", result.screen_status === "passed" ? "Review the schema, period and units with your source owner before importing. A pass is not accounting approval." : "Review the referenced records and declared schema. Correct your source file, then run a new check. Krow does not alter it."));
     host.append(el("p", "Checked " + new Date(data.generated_at).toLocaleString() + " · Unreviewed evidence", "hint"));
   }
   $("add").addEventListener("click", () => { if ($("columns").children.length >= 64) { $("message").textContent = "The schema is limited to 64 columns."; return; } invalidate(); column().focus(); });
@@ -278,7 +278,7 @@
     $("check").disabled = true; $("cancel").hidden = false; $("message").textContent = "Checking every supplied record…";
     const timeout = setTimeout(() => abort.abort(), 10000);
     try {
-      const response = await fetch("/api/review", { method: "POST", headers: { "Content-Type": "application/json", "X-Wingman-Review": "1" }, body: JSON.stringify({ csv_text: $("csv").value, columns, key_columns, ...(reporting_policy ? { reporting_policy } : {}), ...(nativeSchema ? { native_schema_sha256: nativeSchema.snapshot.schema_sha256 } : {}), ...($("save-review").checked ? { review_scope: reviewScope() } : {}) }), signal: abort.signal, cache: "no-store" });
+      const response = await fetch("/api/review", { method: "POST", headers: { "Content-Type": "application/json", "X-Krow-Review": "1" }, body: JSON.stringify({ csv_text: $("csv").value, columns, key_columns, ...(reporting_policy ? { reporting_policy } : {}), ...(nativeSchema ? { native_schema_sha256: nativeSchema.snapshot.schema_sha256 } : {}), ...($("save-review").checked ? { review_scope: reviewScope() } : {}) }), signal: abort.signal, cache: "no-store" });
       const data = await response.json(); if (request !== generation) return;
       if (!response.ok) {
         const guidance = data.code === "invalid_csv" ? " Check that the header is present and every quoted field is closed. Re-export the CSV and try again." : "";
@@ -290,7 +290,7 @@
     } catch (error) { if (request === generation) $("message").textContent = error.name === "AbortError" ? "Check timed out. Your inputs remain; confirm the service is running and try again." : (error instanceof TypeError ? "Service unavailable. Your inputs remain; restart the private CSV service and try again." : error.message); }
     finally { clearTimeout(timeout); if (request === generation) { controller = null; $("check").disabled = false; $("cancel").hidden = true; } }
   });
-  $("download").addEventListener("click", () => { if (!packet) return; const url = URL.createObjectURL(new Blob([JSON.stringify(packet, null, 2)], { type: "application/json" })); const link = el("a"); link.href = url; link.download = "wingman-csv-review.json"; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); });
+  $("download").addEventListener("click", () => { if (!packet) return; const url = URL.createObjectURL(new Blob([JSON.stringify(packet, null, 2)], { type: "application/json" })); const link = el("a"); link.href = url; link.download = "krow-csv-review.json"; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); });
   window.addEventListener("pagehide", () => { generation++; if (controller) controller.abort(); packet = null; });
   column();
 })();

@@ -98,7 +98,7 @@
     page.appendChild(head);
     if (context.document && !context.target) {
       page.appendChild(el("h2", "wi-doc-heading", "Inspect a report table"));
-      page.appendChild(el("p", "wi-description", "Choose a table in this section and enter a cell address. Wingman does not detect or move your selection in the document."));
+      page.appendChild(el("p", "wi-description", "Choose a table in this section and enter a cell address. Krow does not detect or move your selection in the document."));
       var catalog = state.catalog;
       var load = el("button", "wm-btn wi-doc-load" + (catalog ? "" : " primary"), state.loading ? "Reading tables…" : catalog ? "Reload tables" : "Read section tables");
       load.type = "button"; load.disabled = !!state.loading; load.onclick = documentActions.load;
@@ -135,7 +135,7 @@
           workbook.oninput = function () { workbook.setCustomValidity(""); };
           workbook.oninvalid = function () { companion.open = true; };
           workbookLabel.appendChild(workbook); companion.appendChild(workbookLabel);
-          companion.appendChild(el("p", "wi-description", "Use a current sheet URL from this workspace. Wingman verifies source-table membership at the recorded revision before offering a sheet link."));
+          companion.appendChild(el("p", "wi-description", "Use a current sheet URL from this workspace. Krow verifies source-table membership at the recorded revision before offering a sheet link."));
           form.appendChild(companion);
           var submit = el("button", "wm-btn primary", "Inspect cell & direct sources"); submit.type = "submit"; form.appendChild(submit);
           form.onsubmit = function (event) {
@@ -260,7 +260,7 @@
         }
         var explanations = {
           formula: "",
-          number: "This cell stores a number. Without its source policy, Wingman cannot say whether it should be a formula or an approved frozen value.",
+          number: "This cell stores a number. Without its source policy, Krow cannot say whether it should be a formula or an approved frozen value.",
           text: "This cell stores text. No formatting change is proposed.",
           blank: "The stored content is blank. This alone does not establish a broken link.",
           boolean: "This cell stores a boolean value, not a financial amount.",
@@ -481,5 +481,5 @@
   var api = { selection: selection, key: key, matches: matches, matchesSource: matchesSource, traceBlock: traceBlock,
     sourceWorkbookHint: sourceWorkbookHint, sourceSheetUrl: sourceSheetUrl, valueText: valueText, formatText: formatText, render: render, styles: styles };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
-  else root.WingmanInspector = api;
+  else root.KrowInspector = api;
 })(typeof globalThis !== "undefined" ? globalThis : this);

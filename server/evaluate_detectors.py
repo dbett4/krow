@@ -91,7 +91,7 @@ def evaluate(corpus, split="calibration"):
         count["recall"] = tp / (tp + fn) if tp + fn else None
         count["targets_met_on_sample"] = (tp + fn > 0 and tn + fp > 0 and count["precision"] is not None
                                           and count["precision"] >= .95 and count["recall"] >= .90)
-    return {"product": "Wingman", "generated_at": datetime.now(timezone.utc).isoformat(),
+    return {"product": "Krow", "generated_at": datetime.now(timezone.utc).isoformat(),
             "split": split, "case_count": len(selected), "cell_count": sum(len(cells) for _, cells, _ in selected),
             "label_provenance": provenance, "independence_verified": False, "release_acceptance_verified": False,
             "metrics": counts, "errors": errors, "excluded_findings_by_kind": excluded,

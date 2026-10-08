@@ -72,7 +72,7 @@ class DecisionStore:
             if self.path.stat().st_size:
                 tables = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
                 if tables != {"scopes", "runs", "findings", "events"}:
-                    raise ValueError("Not a Wingman review journal; unrelated databases are never adopted.")
+                    raise ValueError("Not a Krow review journal; unrelated databases are never adopted.")
             db.executescript("""
                 CREATE TABLE IF NOT EXISTS scopes (id TEXT PRIMARY KEY, labels TEXT NOT NULL, latest_run TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS runs (id TEXT PRIMARY KEY, scope TEXT NOT NULL, observed_at TEXT NOT NULL, complete INTEGER NOT NULL, source_hash TEXT NOT NULL);

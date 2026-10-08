@@ -326,7 +326,7 @@ def test_cap_boundary_unfetched_cell_skipped():
     """
     When the scan carries formula_fetched markers (partial enrichment past the cap), a cell we
     did NOT fetch a formula for must not be flagged as a literal -- it may be a real formula cell
-    beyond WINGMAN_FORMULA_FETCH_CAP whose formula was simply never retrieved.
+    beyond KROW_FORMULA_FETCH_CAP whose formula was simply never retrieved.
     """
     cells = [formula_cell(f"C{r}", val="1,000") for r in range(5, 12)]
     for c in cells:

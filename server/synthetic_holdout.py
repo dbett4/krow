@@ -35,7 +35,7 @@ def save(path, value):
 def prepare(folder):
     # Never reuses a run directory, dataset or tuning seed.
     folder.mkdir(mode=0o700)
-    plan = {"product": "Wingman", "prepared_at": datetime.now(timezone.utc).isoformat(),
+    plan = {"product": "Krow", "prepared_at": datetime.now(timezone.utc).isoformat(),
             "build_sha256": build(), "policy": POLICY,
             "calibration_sha256": sha((ROOT / "fixtures/detector-calibration.json").read_bytes()),
             "independence_verified": False, "release_acceptance_verified": False}
@@ -86,7 +86,7 @@ def generate(seed):
         add({"value": "", "fontColor": "#888888", "backgroundColor": "#888888"})
         cases.append({"id": f"prospective-{index:03}", "split": "held_out", "cells": cells, "expected": labels})
     return {"corpus_version": 1, "label_provenance": {
-        "author": "Wingman prospective synthetic protocol; same builder, not an independent labeler",
+        "author": "Krow prospective synthetic protocol; same builder, not an independent labeler",
         "method": "New random cases generated after build/protocol freeze. Declared observation grammar and WCAG reference supply labels; calibration labels are never copied. One-use receipt; no detector tuning on these results.",
         "independent": False}, "detector_kinds": KINDS, "cases": cases}
 

@@ -15,7 +15,7 @@ import wk_client as wk
 @pytest.fixture(autouse=True)
 def isolated_config(monkeypatch, tmp_path):
     for key in ("WORKIVA_CREDENTIALS_FILE", "WORKIVA_READ_SCOPE_FILE", "WORKIVA_CLIENT_ID",
-                "WORKIVA_CLIENT_SECRET", "WORKIVA_EXPECTED_ARID", "WINGMAN_READ_ONLY"):
+                "WORKIVA_CLIENT_SECRET", "WORKIVA_EXPECTED_ARID", "KROW_READ_ONLY"):
         monkeypatch.delenv(key, raising=False)
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(app, "_tok", {"value": None, "ts": 0})
@@ -140,7 +140,7 @@ def test_incomplete_commissioning_blocks_oauth_and_get(monkeypatch, read_scope, 
     if private_mode == "file":
         monkeypatch.setenv("WORKIVA_CREDENTIALS_FILE", "/never-read-in-this-test")
     else:
-        monkeypatch.setenv("WINGMAN_READ_ONLY", "1")
+        monkeypatch.setenv("KROW_READ_ONLY", "1")
         monkeypatch.setenv("WORKIVA_CLIENT_ID", "fictional-id")
         monkeypatch.setenv("WORKIVA_CLIENT_SECRET", "fictional-secret")
     if missing in ("scope", "both"):
@@ -165,14 +165,14 @@ def test_incomplete_commissioning_blocks_oauth_and_get(monkeypatch, read_scope, 
 @pytest.mark.parametrize("missing", [None, "scope", "account"])
 def test_commissioning_checker_uses_real_connection_contract(monkeypatch, read_scope, missing):
     spec = importlib.util.spec_from_file_location(
-        "wingman_connection_checker", Path(__file__).resolve().parents[1] / "deploy" / "check_connection.py")
+        "krow_connection_checker", Path(__file__).resolve().parents[1] / "deploy" / "check_connection.py")
     check_connection = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(check_connection)
 
-    monkeypatch.setenv("WINGMAN_READ_ONLY", "1")
+    monkeypatch.setenv("KROW_READ_ONLY", "1")
     monkeypatch.setenv("WORKIVA_CLIENT_ID", "fictional-id")
     monkeypatch.setenv("WORKIVA_CLIENT_SECRET", "fictional-secret")
-    monkeypatch.setattr(app, "WINGMAN_TOKEN", "fictional-pair-for-connection-checker")
+    monkeypatch.setattr(app, "KROW_TOKEN", "fictional-pair-for-connection-checker")
     monkeypatch.setattr(app, "_token", lambda: pytest.fail("Commissioning check must not call OAuth"))
     if missing == "scope":
         monkeypatch.delenv("WORKIVA_READ_SCOPE_FILE")
@@ -187,9 +187,9 @@ def test_commissioning_checker_uses_real_connection_contract(monkeypatch, read_s
         try:
             if missing:
                 with pytest.raises(ValueError, match="Connection contract"):
-                    check_connection.probe(app.WINGMAN_TOKEN, "present")
+                    check_connection.probe(app.KROW_TOKEN, "present")
             else:
-                result = check_connection.probe(app.WINGMAN_TOKEN, "present")
+                result = check_connection.probe(app.KROW_TOKEN, "present")
                 assert result["read_scope"] == "valid" and result["account_pin"] == "present"
                 assert result["repairs_and_exports"] == "rejected"
         finally:

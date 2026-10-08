@@ -25,7 +25,7 @@ const {
   blankDlGuidedTitle, guidedCompletionBadge,
   isFormulaGapKind, connectedReportingReadiness, reportMetaLines,
   operatorConfigWarningLines,
- } = require("./wingman-core.js");
+ } = require("./krow-core.js");
 
 let pass = 0, fail = 0;
 function eq(label, got, want) {
@@ -36,7 +36,7 @@ function eq(label, got, want) {
 
 // --- read-only inspector identity and lossless evidence ---
 (function () {
-  const wi = require("./wingman-inspector.js");
+  const wi = require("./krow-inspector.js");
   const href = "https://app.wdesk.com/a/workspace-a/spreadsheet/book-b/sheet/sheet-c";
   const target = { workspaceId: "workspace-a", spreadsheetId: "book-b", sheetId: "sheet-c", addr: "C12" };
   eq("inspector exact context", wi.selection(href, " C12 "), { target });
@@ -144,8 +144,8 @@ function eq(label, got, want) {
 
 // --- connection evidence is not Workiva access ---
 (function () {
-  const wc = require("./wingman-connection.js");
-  const data = { service: "wingman", protocol: 1, readOnly: true, authorization: "accepted",
+  const wc = require("./krow-connection.js");
+  const data = { service: "krow", protocol: 1, readOnly: true, authorization: "accepted",
     workivaCredentials: "present", workivaAccess: "not_tested" };
   eq("connection initially unchecked", wc.describe({}).code, "unchecked");
   eq("connection check loading", wc.describe({ loading: true }).code, "checking");
@@ -172,7 +172,7 @@ function eq(label, got, want) {
     [{ status: 500 }, "failed"], [{ reloaded: true }, "reloaded"]]) {
     eq("connection error " + expected, wc.describe({ error }).code, expected);
   }
-  const demo = { simulation: true, service: "wingman-demo" };
+  const demo = { simulation: true, service: "krow-demo" };
   eq("connection demo explicit", wc.describe({ data: demo }, true).code, "demo");
   eq("connection demo not live proof", wc.describe({ data: demo }, false).code, "incompatible");
   const state = { data: { ...data, token: "sensitive-marker", workbookId: "sensitive-marker" }, checkedAt: "2026-09-15T12:34:56Z" };
@@ -242,7 +242,7 @@ eq("garbage",        classifyAddress("US").status,    "drift-shape");
     ],
   };
   const r = buildReport(data);
-  eq("report title", /^# Wingman review/.test(r), true);
+  eq("report title", /^# Krow review/.test(r), true);
   eq("report summary", r.includes("3 findings · 3 sheets attempted"), true);
   eq("section header w/ count", r.includes("## Net Assets — 2 findings"), true);
   eq("fixable tag on safe-auto", r.includes("[fixable]"), true);
@@ -358,7 +358,7 @@ eq("garbage",        classifyAddress("US").status,    "drift-shape");
   eq("rollup sheet count", r.sheets.length, 2);
   eq("rollup groups on TB", r.sheets.find(function (s) { return s.name === "TB"; }).findingCount, 3);
   eq("rollup scan error", r.sheets.find(function (s) { return s.name === "Locked"; }).error, "HTTP 403");
-  eq("legacy coverage unknown", require("./wingman-core.js").coverageWarnings(r).length, 1);
+  eq("legacy coverage unknown", require("./krow-core.js").coverageWarnings(r).length, 1);
   const coverage = { complete: false, warnings: ["1 of 3 sheets were not scanned", "Partial: remaining pages unchecked"] };
   const complete = { complete: true, warnings: [] };
   const modern = { issueCount: 0, scanned: 2, sheetCount: 3, truncatedSheets: true, items: [], coverage,
@@ -600,7 +600,7 @@ eq("garbage",        classifyAddress("US").status,    "drift-shape");
 (function () {
   var {
     colIndexToLetter, tieoutCellAddr, tieoutCoordLabel, tieoutJumpContext,
-  } = require("./wingman-core.js");
+  } = require("./krow-core.js");
   eq("colIndexToLetter H", colIndexToLetter(8), "H");
   eq("colIndexToLetter L", colIndexToLetter(12), "L");
   var item = {
@@ -701,7 +701,7 @@ eq("garbage",        classifyAddress("US").status,    "drift-shape");
     buildCommandList, normalizeCommandQuery, filterCommands, groupCommands,
     commandSearchHaystack,
     shouldShowFormulaPartialChip, formulaPartialChipLabel, formulaPartialChipTooltip,
-  } = require("./wingman-core.js");
+  } = require("./krow-core.js");
   eq("panel width narrow", PANEL_WIDTH_NARROW, 372);
   eq("panel width wide", PANEL_WIDTH_WIDE, 480);
   eq("clampPanelWidth min", clampPanelWidth(100, 1200), PANEL_MIN_WIDTH);
@@ -729,7 +729,7 @@ eq("garbage",        classifyAddress("US").status,    "drift-shape");
   eq("shouldShowFormulaPartialChip missing meta", shouldShowFormulaPartialChip({}, "scan"), true);
   eq("formulaPartialChipLabel", formulaPartialChipLabel(), "Formula scan partial — literals only");
   eq("formulaPartialChipTooltip reason", formulaPartialChipTooltip({ reason: "flag off" }).includes("flag off"), true);
-  eq("formulaPartialChipTooltip default", formulaPartialChipTooltip(null).includes("WINGMAN_FORMULA_FETCH"), true);
+  eq("formulaPartialChipTooltip default", formulaPartialChipTooltip(null).includes("KROW_FORMULA_FETCH"), true);
 })();
 
 // --- extension context guard ---
@@ -744,9 +744,9 @@ eq("garbage",        classifyAddress("US").status,    "drift-shape");
 (function () {
   eq("RELOAD_TAB_PILL_TEXT", RELOAD_TAB_PILL_TEXT, "reload tab");
   eq("isReloadTabPrompt pill", isReloadTabPrompt("reload tab"), true);
-  eq("isReloadTabPrompt refresh workiva", isReloadTabPrompt("Refresh this Workiva tab, then reopen Wingman."), true);
+  eq("isReloadTabPrompt refresh workiva", isReloadTabPrompt("Refresh this Workiva tab, then reopen Krow."), true);
   eq("isReloadTabPrompt extension reloaded", isReloadTabPrompt("Extension reloaded — refresh tab"), true);
-  eq("isReloadTabPrompt unrelated", isReloadTabPrompt("Re-run Wingman scan after publish/cache refresh"), false);
+  eq("isReloadTabPrompt unrelated", isReloadTabPrompt("Re-run Krow scan after publish/cache refresh"), false);
   eq("shouldShowReloadTabButton invalidated", shouldShowReloadTabButton({ invalidated: true }), true);
   eq("shouldShowReloadTabButton prompt text", shouldShowReloadTabButton({ text: "refresh tab" }), true);
   eq("shouldShowReloadTabButton unrelated", shouldShowReloadTabButton({ text: "can't read cell" }), false);
@@ -788,7 +788,7 @@ eq("garbage",        classifyAddress("US").status,    "drift-shape");
 
 // --- rollup freshness + action receipt ---
 (function () {
-  var { isRollupStale, ROLLUP_STALE_MS, actionReceiptCopy } = require("./wingman-core.js");
+  var { isRollupStale, ROLLUP_STALE_MS, actionReceiptCopy } = require("./krow-core.js");
   var BASE = Date.parse("2026-06-26T12:00:00Z");
   eq("isRollupStale false when fresh", isRollupStale({ generated_at: "2026-06-26T11:50:00Z" }, BASE, ROLLUP_STALE_MS), false);
   eq("isRollupStale true when old", isRollupStale({ generated_at: "2026-06-26T09:00:00Z" }, BASE, ROLLUP_STALE_MS), true);
@@ -808,8 +808,8 @@ eq("garbage",        classifyAddress("US").status,    "drift-shape");
 (function () {
   eq("operator warning null safe", operatorConfigWarningLines(null), []);
   eq("operator warning passes redacted service warnings", operatorConfigWarningLines({
-    operator_config: { warnings: [" WINGMAN_TOKEN default "], workiva_client_id: "present", workiva_client_secret: "present" },
-  }), ["WINGMAN_TOKEN default"]);
+    operator_config: { warnings: [" KROW_TOKEN default "], workiva_client_id: "present", workiva_client_secret: "present" },
+  }), ["KROW_TOKEN default"]);
   eq("operator warning missing Workiva creds", operatorConfigWarningLines({
     operator_config: { warnings: [], workiva_client_id: "missing", workiva_client_secret: "present" },
   }).some(function (line) { return line.indexOf("Workiva credentials are missing") >= 0; }), true);

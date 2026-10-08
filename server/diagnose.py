@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Wingman issue→pathway diagnosis (Slice 1 foundation).
+Krow issue→pathway diagnosis (Slice 1 foundation).
 
 Maps detector output (findings / grouped scan rows) to explain/judge metadata using
 patterns from operational error/fix playbooks built up across live engagements.

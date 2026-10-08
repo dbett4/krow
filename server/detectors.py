@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Wingman API-grounded defect detectors (pure logic).
+Krow API-grounded defect detectors (pure logic).
 
 Operates on NORMALIZED cell dicts assembled by wk_client from the Workiva API
 (sheetdata + cells endpoints) — NOT on pixels. Pure + deterministic so it is unit

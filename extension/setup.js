@@ -4,12 +4,12 @@
   var body = document.getElementById("connection");
   var state = {}, generation = 0, timer;
   var style = document.createElement("style");
-  style.textContent = WingmanConnection.styles;
+  style.textContent = KrowConnection.styles;
   document.head.appendChild(style);
   document.getElementById("version").textContent = chrome.runtime.getManifest().version;
 
   function paint() {
-    WingmanConnection.render(body, state, false, check, cancel, function (text) {
+    KrowConnection.render(body, state, false, check, cancel, function (text) {
       navigator.clipboard.writeText(text).then(function () {
         document.getElementById("copy-status").textContent = "Redacted diagnostics copied.";
       }, function () {

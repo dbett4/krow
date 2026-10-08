@@ -17,7 +17,7 @@ time uv pip install --python .venv/bin/python -r server/requirements.txt pytest
 
 # Amp and supervised services use separate non-interactive login shells.
 # Scope activation to this checkout, including commands run in subdirectories.
-marker='# Wingman orb virtual environment'
+marker='# Krow orb virtual environment'
 if ! grep -Fqx "$marker" "$HOME/.bash_profile" 2>/dev/null; then
   cat >> "$HOME/.bash_profile" <<EOF
 

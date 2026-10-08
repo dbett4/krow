@@ -3,7 +3,7 @@ const { readFileSync } = require("node:fs");
 const vm = require("node:vm");
 const assert = require("node:assert/strict");
 const { test } = require("node:test");
-const connection = require("./wingman-connection.js");
+const connection = require("./krow-connection.js");
 const source = readFileSync(require.resolve("./setup.js"), "utf8");
 
 function setup() {
@@ -26,7 +26,7 @@ function setup() {
     window: { addEventListener: (event, fn) => { events[event] = fn; } },
     setTimeout: (fn, ms) => { assert.equal(ms, 8500); clocks.push(fn); return clocks.length - 1; },
     clearTimeout: id => cleared.add(id),
-    WingmanConnection: { styles: "", render: (_body, state, _demo, check, cancel) => {
+    KrowConnection: { styles: "", render: (_body, state, _demo, check, cancel) => {
       screen = { state, check, cancel }; paints++;
     } },
   });
@@ -35,7 +35,7 @@ function setup() {
     get code() { return connection.describe(screen.state, false).code; },
   };
 }
-const connected = { ok: true, data: { service: "wingman", protocol: 1, readOnly: true,
+const connected = { ok: true, data: { service: "krow", protocol: 1, readOnly: true,
   authorization: "accepted", workivaAccess: "not_tested", workivaCredentials: "present" } };
 
 test("a cancelled reply cannot replace a newer check or clear its deadline", () => {

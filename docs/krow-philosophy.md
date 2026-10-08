@@ -1,6 +1,6 @@
-# Wingman visual notes
+# Krow visual notes
 
-The Wingman mark is an abstract wing, drawn for a small browser-toolbar icon before
+The Krow mark is an abstract wing, drawn for a small browser-toolbar icon before
 any larger use. It should read clearly at 16 pixels and avoid looking like a letter or
 a generic bird silhouette.
 

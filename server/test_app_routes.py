@@ -35,8 +35,8 @@ class ApiErrorPayloadTests(unittest.TestCase):
 class HandlerRouteTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.original_token = app.WINGMAN_TOKEN
-        app.WINGMAN_TOKEN = "wingman-test-token"
+        cls.original_token = app.KROW_TOKEN
+        app.KROW_TOKEN = "krow-test-token"
         cls.server = ThreadingHTTPServer(("127.0.0.1", 0), app.Handler)
         cls.base = f"http://127.0.0.1:{cls.server.server_address[1]}"
         cls.thread = threading.Thread(target=cls.server.serve_forever, daemon=True)
@@ -45,12 +45,12 @@ class HandlerRouteTests(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls.server.shutdown()
-        app.WINGMAN_TOKEN = cls.original_token
+        app.KROW_TOKEN = cls.original_token
 
     def _request(self, path, *, method="GET", token=None, body=None):
         headers = {}
         if token is not False:
-            headers["X-Wingman-Token"] = app.WINGMAN_TOKEN
+            headers["X-Krow-Token"] = app.KROW_TOKEN
         data = None
         if body is not None:
             data = json.dumps(body).encode()
@@ -83,7 +83,7 @@ class HandlerRouteTests(unittest.TestCase):
         from unittest.mock import patch
 
         with patch.object(app, "_token", side_effect=AssertionError("OAuth must not run")) as oauth:
-            for headers in ({}, {"X-Wingman-Token": "incorrect-synthetic-token"}):
+            for headers in ({}, {"X-Krow-Token": "incorrect-synthetic-token"}):
                 request = urllib.request.Request(self.base + "/api/connection", headers=headers)
                 with self.assertRaises(urllib.error.HTTPError) as failure:
                     urllib.request.urlopen(request, timeout=5)
@@ -100,26 +100,26 @@ class HandlerRouteTests(unittest.TestCase):
                 with patch.dict(app.os.environ, {"WORKIVA_CLIENT_ID": client_id, "WORKIVA_CLIENT_SECRET": secret}):
                     code, data = self._request("/api/connection")
                 self.assertEqual(code, 200)
-                self.assertEqual(data, {"service": "wingman", "protocol": 1, "readOnly": True,
+                self.assertEqual(data, {"service": "krow", "protocol": 1, "readOnly": True,
                                        "authorization": "accepted", "workivaAccess": "not_tested",
                                        "serviceMode": "standard",
                                        "workivaReadScope": "unrestricted", "workivaAccountPin": "missing",
                                        "workivaCredentials": expected})
                 self.assertNotIn("fictional", json.dumps(data))
             oauth.assert_not_called()
-        request = urllib.request.Request(self.base + "/api/connection", headers={"X-Wingman-Token": app.WINGMAN_TOKEN})
+        request = urllib.request.Request(self.base + "/api/connection", headers={"X-Krow-Token": app.KROW_TOKEN})
         with urllib.request.urlopen(request, timeout=5) as response:
             self.assertEqual(response.headers["Cache-Control"], "no-store")
 
     def test_read_only_rejects_post_before_parsing_or_upstream_calls(self):
         from unittest.mock import patch
 
-        with patch.dict(app.os.environ, {"WINGMAN_READ_ONLY": "1"}), \
+        with patch.dict(app.os.environ, {"KROW_READ_ONLY": "1"}), \
              patch.object(app, "_token", side_effect=AssertionError("No OAuth")) as oauth, \
              patch.object(app, "_table_id", side_effect=AssertionError("No table lookup")) as table:
             for path in ("/apply", "/apply/", "/fix", "/scan", "/api/queue", "/api/review-packet", "/unknown"):
                 request = urllib.request.Request(self.base + path, data=b"not-json",
-                                                 headers={"X-Wingman-Token": app.WINGMAN_TOKEN})
+                                                 headers={"X-Krow-Token": app.KROW_TOKEN})
                 with self.assertRaises(urllib.error.HTTPError) as failure:
                     urllib.request.urlopen(request, timeout=2)
                 self.assertEqual(failure.exception.code, 403, path)
@@ -133,7 +133,7 @@ class HandlerRouteTests(unittest.TestCase):
     def test_zero_display_repair_is_disabled_even_in_write_enabled_mode(self):
         from unittest.mock import patch
 
-        with patch.dict(app.os.environ, {"WINGMAN_READ_ONLY": "0"}), \
+        with patch.dict(app.os.environ, {"KROW_READ_ONLY": "0"}), \
              patch.object(app, "_token", side_effect=AssertionError("No OAuth")) as oauth, \
              patch.object(app, "_table_id", side_effect=AssertionError("No table lookup")) as table:
             body = {"spreadsheetId": "book", "sheetId": "sheet", "addr": "C8",
@@ -149,7 +149,7 @@ class HandlerRouteTests(unittest.TestCase):
     def test_read_only_blocks_get_side_effects_and_external_checks(self):
         from unittest.mock import patch
 
-        with patch.dict(app.os.environ, {"WINGMAN_READ_ONLY": "1"}), \
+        with patch.dict(app.os.environ, {"KROW_READ_ONLY": "1"}), \
              patch.object(app, "_token", side_effect=AssertionError("No OAuth")) as oauth, \
              patch.object(app, "_run_checks_only", side_effect=AssertionError("No subprocess")) as checks, \
              patch.object(app, "_run_review_packet", side_effect=AssertionError("No export")) as packet:
@@ -166,7 +166,7 @@ class HandlerRouteTests(unittest.TestCase):
     def test_read_only_keeps_authenticated_inspection_and_metadata_reads(self):
         from unittest.mock import patch
 
-        with patch.dict(app.os.environ, {"WINGMAN_READ_ONLY": "1"}), \
+        with patch.dict(app.os.environ, {"KROW_READ_ONLY": "1"}), \
              patch.object(app, "_token", return_value="synthetic") as oauth, \
              patch.object(app.inspector, "inspect_cell", return_value={"observed": "fictional"}) as inspect:
             code, data = self._request("/api/connection")
@@ -187,23 +187,23 @@ class HandlerRouteTests(unittest.TestCase):
         from unittest.mock import patch
 
         for value, enabled in [("1", True), ("true", True), ("treu", True), ("", False), ("0", False), ("false", False)]:
-            with patch.dict(app.os.environ, {"WINGMAN_READ_ONLY": value}):
-                self.assertEqual(app.wingman_config.read_only_enabled(), enabled)
-                self.assertEqual(bool(app.wingman_config.service_config()["safe_fix_kinds"]), not enabled)
+            with patch.dict(app.os.environ, {"KROW_READ_ONLY": value}):
+                self.assertEqual(app.krow_config.read_only_enabled(), enabled)
+                self.assertEqual(bool(app.krow_config.service_config()["safe_fix_kinds"]), not enabled)
 
     def test_status_operator_config_shape_no_secret_values(self):
         code, payload = self._request("/api/status", token=False)
         self.assertEqual(code, 200)
         oc = payload.get("operator_config")
         self.assertIsNotNone(oc, "operator_config missing from /api/status")
-        for key in ("wingman_token", "extension_origin", "workiva_client_id", "workiva_client_secret"):
+        for key in ("krow_token", "extension_origin", "workiva_client_id", "workiva_client_secret"):
             self.assertIn(key, oc, f"operator_config missing field: {key}")
         values_text = str(list(oc.values()))
         for forbidden in ("Bearer ",):
             self.assertNotIn(forbidden, values_text, f"operator_config must not expose credential values: {forbidden}")
         for field in ("workiva_client_id", "workiva_client_secret"):
             self.assertIn(oc.get(field), ("present", "missing"), f"{field} must be present/missing not a value")
-        self.assertIn(oc["wingman_token"], ("configured", "missing"))
+        self.assertIn(oc["krow_token"], ("configured", "missing"))
         self.assertIn(oc["extension_origin"], ("custom", "default-packaged"))
         self.assertIsInstance(oc.get("warnings"), list)
 
@@ -220,7 +220,7 @@ class HandlerRouteTests(unittest.TestCase):
     def test_root_allows_local_probe_without_token(self):
         code, payload = self._request("/", token=False)
         self.assertEqual(code, 200)
-        self.assertEqual(payload.get("service"), "wingman")
+        self.assertEqual(payload.get("service"), "krow")
         self.assertIn("guarded_endpoints", payload)
 
     def test_queue_still_requires_token(self):
@@ -257,7 +257,7 @@ class HandlerRouteTests(unittest.TestCase):
                 self.assertEqual(self._request("/api/inspect-source?" + query)[0], 400, query)
             token.assert_not_called()
         with patch.object(app, "_token", return_value="synthetic"), \
-             patch.object(app.wingman_config, "read_only_enabled", return_value=True), \
+             patch.object(app.krow_config, "read_only_enabled", return_value=True), \
              patch.object(app.inspector, "inspect_source", return_value={"readOnly": True}) as inspect:
             self.assertEqual(self._request(path), (200, {"readOnly": True}))
             inspect.assert_called_once_with("source", "rev-7", "C12", "synthetic", app._ctx, workbook_hint=None)
@@ -281,7 +281,7 @@ class HandlerRouteTests(unittest.TestCase):
                 self.assertEqual(self._request(invalid)[0], 400, invalid)
             token.assert_not_called()
         with patch.object(app, "_token", return_value="fictional"), \
-             patch.object(app.wingman_config, "read_only_enabled", return_value=True), \
+             patch.object(app.krow_config, "read_only_enabled", return_value=True), \
              patch.object(app.inspector, "document_tables", return_value={"readOnly": True}) as tables, \
              patch.object(app.inspector, "inspect_document", return_value={"readOnly": True}) as inspect:
             self.assertEqual(self._request(catalog), (200, {"readOnly": True}))
@@ -290,12 +290,12 @@ class HandlerRouteTests(unittest.TestCase):
             inspect.assert_called_once_with("doc", "sec", "table", "rev", "C12", "fictional", app._ctx)
 
     def test_guarded_route_rejects_when_service_token_missing(self):
-        original = app.WINGMAN_TOKEN
-        app.WINGMAN_TOKEN = ""
+        original = app.KROW_TOKEN
+        app.KROW_TOKEN = ""
         try:
             code, payload = self._request("/api/queue?spreadsheetId=x")
         finally:
-            app.WINGMAN_TOKEN = original
+            app.KROW_TOKEN = original
         self.assertEqual(code, 403)
         self.assertIn("not authorized", payload.get("error", ""))
 
@@ -311,18 +311,18 @@ class HandlerRouteTests(unittest.TestCase):
     def test_digest_route(self):
         import os
         import tempfile
-        import wingman_log
+        import krow_log
         with tempfile.TemporaryDirectory() as td:
-            os.environ["WINGMAN_LOG_DIR"] = td
+            os.environ["KROW_LOG_DIR"] = td
             try:
-                wingman_log.log_event({"event": "scan", "findingCount": 2, "byKind": {"low-contrast": 2}})
+                krow_log.log_event({"event": "scan", "findingCount": 2, "byKind": {"low-contrast": 2}})
                 code, payload = self._request("/digest")
                 self.assertEqual(code, 200)
                 self.assertEqual(payload.get("scanCount"), 1)
                 self.assertIn("findingsByKind", payload)
                 self.assertIn("flags", payload)
             finally:
-                os.environ.pop("WINGMAN_LOG_DIR", None)
+                os.environ.pop("KROW_LOG_DIR", None)
 
     def test_review_packet_requires_spreadsheet_id(self):
         code, payload = self._request("/api/review-packet")
@@ -380,7 +380,7 @@ class OriginAndApplySafetyTests(unittest.TestCase):
                 json.dump({"protected_source_ids": {"spreadsheet": "source-ss"}}, fh)
             with open(dummy, "w", encoding="utf-8") as fh:
                 json.dump({"dummy_ids": [{"id": "dummy-ss", "kind": "Spreadsheet"}]}, fh)
-            env = {"WINGMAN_SAFETY_JSON": safety, "WINGMAN_DUMMY_IDS_JSON": dummy, "WINGMAN_APPLY_ALLOWLIST": ""}
+            env = {"KROW_SAFETY_JSON": safety, "KROW_DUMMY_IDS_JSON": dummy, "KROW_APPLY_ALLOWLIST": ""}
             with patch.dict(os.environ, env, clear=False):
                 self.assertEqual(app._assert_apply_safety("dummy-ss"), "dummy-allowlisted")
                 with self.assertRaises(RuntimeError):
@@ -391,7 +391,7 @@ class OriginAndApplySafetyTests(unittest.TestCase):
     def test_apply_safety_missing_config_fails_closed(self):
         import os
         from unittest.mock import patch
-        with patch.dict(os.environ, {"WINGMAN_SAFETY_JSON": "/tmp/wingman-no-such-safety.json", "WINGMAN_APPLY_ALLOWLIST": "dummy"}, clear=False):
+        with patch.dict(os.environ, {"KROW_SAFETY_JSON": "/tmp/krow-no-such-safety.json", "KROW_APPLY_ALLOWLIST": "dummy"}, clear=False):
             with self.assertRaises(RuntimeError):
                 app._assert_apply_safety("dummy")
 

@@ -23,7 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 @pytest.fixture(scope="module")
 def demo_url(tmp_path_factory):
     tmp = tmp_path_factory.mktemp("demo")
-    env = {k: v for k, v in os.environ.items() if not k.startswith(("WORKIVA_", "WINGMAN_"))}
+    env = {k: v for k, v in os.environ.items() if not k.startswith(("WORKIVA_", "KROW_"))}
     # Inherited credentials/region must not turn the demo into a live integration.
     env.update(WORKIVA_CLIENT_ID="not-real", WORKIVA_CLIENT_SECRET="not-real", WORKIVA_REGION="eu")
     with (tmp / "server.log").open("w+") as log:
@@ -63,7 +63,7 @@ class Browser:
         request = urllib.request.Request(
             self.url + path, data=None if body is None else json.dumps(body).encode(),
             method=method,
-            headers={"X-Wingman-Demo": "1", "Content-Type": "application/json", **(headers or {})},
+            headers={"X-Krow-Demo": "1", "Content-Type": "application/json", **(headers or {})},
         )
         with self.opener.open(request, timeout=10) as response:
             return json.load(response)
@@ -194,13 +194,13 @@ def test_live_only_features_and_arbitrary_files_are_unavailable(browser, path):
 
 def test_auth_and_cross_origin_boundary(browser, demo_url):
     with pytest.raises(urllib.error.HTTPError) as caught:
-        browser.request("/apply", FIXES[0], headers={"X-Wingman-Demo": ""})
+        browser.request("/apply", FIXES[0], headers={"X-Krow-Demo": ""})
     assert caught.value.code == 403
     with pytest.raises(urllib.error.HTTPError) as caught:
         browser.request("/apply", method="OPTIONS", headers={"Origin": "https://foreign.example"})
     assert caught.value.code == 403
     with pytest.raises(urllib.error.HTTPError) as caught:
-        urllib.request.urlopen(urllib.request.Request(demo_url + "/demo/state", headers={"X-Wingman-Demo": "1"}), timeout=5)
+        urllib.request.urlopen(urllib.request.Request(demo_url + "/demo/state", headers={"X-Krow-Demo": "1"}), timeout=5)
     assert caught.value.code == 403  # Header without session cookie is not sufficient.
     assert browser.state()["events"] == []
 

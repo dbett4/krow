@@ -27,7 +27,7 @@ def test_extracted_packet_handoff_replay_fresh_review_and_restart(tmp_path):
     private = tmp_path / "private"
     runtime_env = {"PATH": "/usr/bin:/bin", "HOME": str(home), "PYTHONDONTWRITEBYTECODE": "1", "LANG": "C.UTF-8"}
     executable = shutil.which("agent-browser"); assert executable
-    session = "wingman-pilot-" + uuid.uuid4().hex[:8]
+    session = "krow-pilot-" + uuid.uuid4().hex[:8]
     env = {**os.environ, "AGENT_BROWSER_ENGINE": "chrome"}
     interaction_count = 0
     def run(*args):

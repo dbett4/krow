@@ -14,7 +14,7 @@ from test_csv_review import csv_url  # noqa: F401,E402
 def test_csv_review_browser(csv_url, tmp_path):
     executable = shutil.which("agent-browser")
     assert executable
-    session = "wingman-csv-" + uuid.uuid4().hex[:8]
+    session = "krow-csv-" + uuid.uuid4().hex[:8]
     env = {**os.environ, "AGENT_BROWSER_ENGINE": "chrome"}
 
     def run(*args):
@@ -175,7 +175,7 @@ def test_native_configuration_and_outage_are_not_access_or_write_acceptance(tmp_
     worker = threading.Thread(target=server.serve_forever, daemon=True); worker.start()
     url = "http://127.0.0.1:" + str(server.server_port)
     executable = shutil.which("agent-browser"); assert executable
-    session = "wingman-capabilities-" + uuid.uuid4().hex[:8]
+    session = "krow-capabilities-" + uuid.uuid4().hex[:8]
     env = {**os.environ, "AGENT_BROWSER_ENGINE": "chrome"}
 
     def run(*args):

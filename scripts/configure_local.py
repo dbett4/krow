@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create Wingman's per-install local token without printing the secret."""
+"""Create Krow's per-install local token without printing the secret."""
 
 from __future__ import annotations
 
@@ -12,14 +12,14 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_ENV = REPO_ROOT / ".env"
 DEFAULT_EXTENSION_CONFIG = REPO_ROOT / "extension" / "local-config.js"
-TOKEN_KEY = "WINGMAN_TOKEN"
+TOKEN_KEY = "KROW_TOKEN"
 
 
 def _read_lines(path: Path) -> list[str]:
     if path.exists():
         return path.read_text(encoding="utf-8").splitlines()
     return [
-        "# Wingman local configuration. Never commit this file.",
+        "# Krow local configuration. Never commit this file.",
         "WORKIVA_CLIENT_ID=",
         "WORKIVA_CLIENT_SECRET=",
         "",
@@ -71,7 +71,7 @@ def configure(env_path: Path, extension_config_path: Path, service_token_path: P
     extension_config_path.parent.mkdir(parents=True, exist_ok=True)
     extension_config_path.write_text(
         "// Generated locally by scripts/configure_local.py; gitignored.\n"
-        f"globalThis.WINGMAN_LOCAL_CONFIG = Object.freeze({payload});\n",
+        f"globalThis.KROW_LOCAL_CONFIG = Object.freeze({payload});\n",
         encoding="utf-8",
     )
     os.chmod(extension_config_path, 0o600)
@@ -91,7 +91,7 @@ def main() -> int:
     parser.add_argument("--service-token-file", type=Path, help="Also write the paired raw token for systemd LoadCredential")
     args = parser.parse_args()
     status = configure(args.env, args.extension_config, args.service_token_file)
-    print(f"Wingman local token {status}; extension config synchronized (secret not printed).")
+    print(f"Krow local token {status}; extension config synchronized (secret not printed).")
     return 0
 
 

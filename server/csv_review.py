@@ -35,7 +35,7 @@ def review(arguments):
     canonical_schema = json.dumps({"columns": arguments["columns"], "key_columns": arguments["key_columns"]},
                                   sort_keys=True, ensure_ascii=True, separators=(",", ":"))
     packet = {
-        "product": "Wingman", "packet_version": 1,
+        "product": "Krow", "packet_version": 1,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "validator": "lockfield-csv-v0.4.0",
         "validator_sha256": hashlib.sha256((ROOT / "server/csv_checks.py").read_bytes()).hexdigest(),
@@ -110,10 +110,10 @@ class Handler(BaseHTTPRequestHandler):
         if self.command == "POST" and (
             self.headers.get("Origin") != "http://" + authority
             or self.headers.get("Content-Type") != "application/json"
-            or self.headers.get("X-Wingman-Review") != "1"
+            or self.headers.get("X-Krow-Review") != "1"
             or self.headers.get("Transfer-Encoding") is not None
         ):
-            self.reply(403, {"error": "Only same-origin Wingman review requests are accepted."})
+            self.reply(403, {"error": "Only same-origin Krow review requests are accepted."})
             return False
         return True
 
@@ -226,7 +226,7 @@ def main():
                 raise ValueError("Replay input too large")
             result = verify_packet(json.loads(raw_packet.decode("utf-8")), raw_csv.decode("utf-8"))
         except (OSError, ValueError, UnicodeError):
-            print(json.dumps({"status": "invalid_input", "error": "Supply a supported Wingman packet and bounded original UTF-8 CSV."}))
+            print(json.dumps({"status": "invalid_input", "error": "Supply a supported Krow packet and bounded original UTF-8 CSV."}))
             return 2
         print(json.dumps(result))
         return 0 if result["status"] == "reproduced" else 1
@@ -242,7 +242,7 @@ def main():
             parser.error("Review database unavailable. Use an existing private owner-only directory and a regular owner-only database, or omit --review-db. No recovery overwrite is performed.")
     else:
         server.decision_store = None
-    print(f"Wingman CSV review ready on port {server.server_port}; loopback only, no stored inputs.", flush=True)
+    print(f"Krow CSV review ready on port {server.server_port}; loopback only, no stored inputs.", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

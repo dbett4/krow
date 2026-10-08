@@ -24,7 +24,7 @@ def test_browser_workflow(demo_url, tmp_path):
         assert result.returncode == 0, result.stdout + result.stderr
         return result.stdout
 
-    root = "document.getElementById('__wk_wingman__').shadowRoot"
+    root = "document.getElementById('__wk_krow__').shadowRoot"
     ready = "!document.getElementById('reset').disabled"
     group = f"[...{root}.querySelectorAll('.wm-grp')].find(g=>g.querySelector('.wm-kind').textContent==='label hygiene')"
 
@@ -105,13 +105,13 @@ def test_browser_workflow(demo_url, tmp_path):
         # Portal embedding opts in explicitly. Normal extension frames still exit.
         run("eval", "(() => {var f=document.createElement('iframe'); f.id='demo-frame'; f.src='/'; document.body.appendChild(f);})()")
         frame = "document.getElementById('demo-frame').contentDocument"
-        run("wait", "--fn", f"!!{frame}?.getElementById('__wk_wingman__')?.shadowRoot.querySelector('.wi-inspector')")
+        run("wait", "--fn", f"!!{frame}?.getElementById('__wk_krow__')?.shadowRoot.querySelector('.wi-inspector')")
         check(f"{frame}.documentElement.getAttribute('data-copilot-loaded') === 'iframe'")
         run("eval", "document.getElementById('demo-frame').remove()")
-        run("eval", "(() => {var f=document.createElement('iframe'); f.id='plain-frame'; f.srcdoc='<script src=\"/wingman-core.js\"></script><script src=\"/wingman-panel.js\"></script>'; document.body.appendChild(f);})()")
+        run("eval", "(() => {var f=document.createElement('iframe'); f.id='plain-frame'; f.srcdoc='<script src=\"/krow-core.js\"></script><script src=\"/krow-panel.js\"></script>'; document.body.appendChild(f);})()")
         frame = "document.getElementById('plain-frame').contentDocument"
         run("wait", "--fn", f"{frame}?.documentElement.getAttribute('data-copilot-loaded') === 'iframe'")
-        check(f"!{frame}.getElementById('__wk_wingman__')")
+        check(f"!{frame}.getElementById('__wk_krow__')")
         run("eval", "document.getElementById('plain-frame').remove()")
         assert not run("errors").strip(), "Browser reported uncaught JavaScript errors"
     finally:
@@ -129,7 +129,7 @@ def test_inspector_evidence_and_navigation(demo_url):
         assert result.returncode == 0, result.stdout + result.stderr
         return result.stdout
 
-    root = "document.getElementById('__wk_wingman__').shadowRoot"
+    root = "document.getElementById('__wk_krow__').shadowRoot"
     ready = "!document.getElementById('reset').disabled"
 
     def check(expression):
@@ -372,7 +372,7 @@ def test_source_trail_and_return(demo_url, tmp_path):
     executable = shutil.which("agent-browser")
     assert executable, "Install agent-browser and Chromium first"
     session = "wm-trail-" + uuid.uuid4().hex[:8]
-    root = "document.getElementById('__wk_wingman__').shadowRoot"
+    root = "document.getElementById('__wk_krow__').shadowRoot"
 
     def run(*args):
         result = subprocess.run([executable, "--session", session, *args], capture_output=True, text=True, timeout=45)
@@ -413,7 +413,7 @@ def test_source_trail_and_return(demo_url, tmp_path):
         check(f"{root}.querySelector('.wi-evidence .wi-row:nth-child(2) dd').textContent === '2023'")
         check(f"{root}.querySelector('.wi-trail').textContent === 'Selected B2→D6→E11'")
         for theme, width in [("light", 1280), ("dark", 390)]:
-            run("eval", f"document.getElementById('__wk_wingman__').setAttribute('data-theme', '{theme}'); {root}.querySelector('.wm-body').scrollTop=0")
+            run("eval", f"document.getElementById('__wk_krow__').setAttribute('data-theme', '{theme}'); {root}.querySelector('.wm-body').scrollTop=0")
             run("set", "viewport", str(width), "1000", "2")
             check("document.documentElement.scrollWidth <= innerWidth")
             check(f"{root}.querySelector('.wi-inspector').scrollWidth <= {root}.querySelector('.wi-inspector').clientWidth")
@@ -504,7 +504,7 @@ def test_connection_check_and_recovery(demo_url):
     executable = shutil.which("agent-browser")
     assert executable, "Install agent-browser and Chromium first"
     session = "wm-connect-" + uuid.uuid4().hex[:8]
-    root = "document.getElementById('__wk_wingman__').shadowRoot"
+    root = "document.getElementById('__wk_krow__').shadowRoot"
 
     def run(*args):
         result = subprocess.run([executable, "--session", session, *args],
@@ -546,13 +546,13 @@ def test_connection_check_and_recovery(demo_url):
         click(".wc-check")
         check(f"{root}.querySelector('.wc-check').textContent === 'Stop waiting'")
         click(".wc-check")
-        run("eval", "pending.shift().cb({ok:true,data:{simulation:true,service:'wingman-demo'}})")
+        run("eval", "pending.shift().cb({ok:true,data:{simulation:true,service:'krow-demo'}})")
         check(f"{root}.querySelector('.wc-status h3').textContent === 'Check stopped'")
 
         click(".wc-check")
         click(".wc-toggle")
         click(".wc-toggle")
-        run("eval", "pending.shift().cb({ok:true,data:{simulation:true,service:'wingman-demo'}})")
+        run("eval", "pending.shift().cb({ok:true,data:{simulation:true,service:'krow-demo'}})")
         check(f"{root}.querySelector('.wc-status h3').textContent === 'Not checked'")
         for reply, title in [
             ("{ok:false,configError:true,error:'sensitive-marker'}", "Extension setup needed"),
@@ -560,8 +560,8 @@ def test_connection_check_and_recovery(demo_url):
             ("{ok:false,status:403,data:{error:'sensitive-marker'}}", "Service access rejected"),
             ("{ok:false,status:500,data:{error:'<img src=x>'}}", "Connection check failed"),
             ("{ok:true,data:null}", "Service update needed"),
-            ("{ok:true,data:{service:'wingman',protocol:1,readOnly:true,authorization:'accepted',workivaCredentials:'missing',workivaAccess:'not_tested'}}", "Workiva setup incomplete"),
-            ("{ok:true,data:{service:'wingman',protocol:1,readOnly:true,authorization:'accepted',workivaCredentials:'present',workivaAccess:'not_tested'}}", "Service connected"),
+            ("{ok:true,data:{service:'krow',protocol:1,readOnly:true,authorization:'accepted',workivaCredentials:'missing',workivaAccess:'not_tested'}}", "Workiva setup incomplete"),
+            ("{ok:true,data:{service:'krow',protocol:1,readOnly:true,authorization:'accepted',workivaCredentials:'present',workivaAccess:'not_tested'}}", "Service connected"),
         ]:
             click(".wc-check")
             run("eval", f"pending.shift().cb({reply})")
@@ -571,11 +571,11 @@ def test_connection_check_and_recovery(demo_url):
         # The missing-callback deadline is real; late success cannot undo a timeout.
         click(".wc-check")
         run("wait", "--fn", f"{root}.querySelector('.wc-status h3').textContent === 'Connection timed out'")
-        run("eval", "pending.shift().cb({ok:true,data:{simulation:true,service:'wingman-demo'}})")
+        run("eval", "pending.shift().cb({ok:true,data:{simulation:true,service:'krow-demo'}})")
         check(f"{root}.querySelector('.wc-status h3').textContent === 'Connection timed out'")
         click(".wc-check")
         run("click", "#open-panel")
-        run("eval", "pending.shift().cb({ok:true,data:{simulation:true,service:'wingman-demo'}})")
+        run("eval", "pending.shift().cb({ok:true,data:{simulation:true,service:'krow-demo'}})")
         run("click", "#open-panel")
         click(".wc-toggle")
         check(f"{root}.querySelector('.wc-status h3').textContent === 'Not checked'")
@@ -585,7 +585,7 @@ def test_connection_check_and_recovery(demo_url):
         click(".wc-check")
         run("eval", "chrome.runtime.id=undefined")
         run("wait", "--fn", f"{root}.querySelector('.wc-status h3').textContent === 'Extension reloaded'")
-        run("eval", "pending.shift().cb({ok:true,data:{simulation:true,service:'wingman-demo'}})")
+        run("eval", "pending.shift().cb({ok:true,data:{simulation:true,service:'krow-demo'}})")
         check(f"{root}.querySelector('.wc-check').disabled && {root}.querySelector('.wc-status h3').textContent === 'Extension reloaded'")
         assert not run("errors").strip(), "Browser reported uncaught JavaScript errors"
     finally:

@@ -1,7 +1,7 @@
 {
   "corpus_version": 1,
   "label_provenance": {
-    "author": "Wingman implementation session T-01a1181d-9e5f-74a8-89f3-3bad452d8ca6",
+    "author": "Krow implementation session T-01a1181d-9e5f-74a8-89f3-3bad452d8ca6",
     "method": "Developer-authored fictional observed-error/blank-link/contrast cases and legitimate lookalikes. Calibration only; not independent accounting or native error-type adjudication.",
     "independent": false
   },
