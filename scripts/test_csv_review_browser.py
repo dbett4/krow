@@ -154,3 +154,57 @@ def test_csv_review_browser(csv_url, tmp_path):
         assert not run("errors").strip()
     finally:
         run("close")
+
+
+def test_native_configuration_and_outage_are_not_access_or_write_acceptance(tmp_path):
+    from http.server import ThreadingHTTPServer
+    import threading
+    from csv_native import NativeSchema
+    from csv_review import Handler
+
+    class OutageHandler(Handler):
+        def do_GET(self):
+            if self.path == "/api/review-config" and self.server.config_unavailable:
+                self.reply(503, {"error": "Test configuration outage"})
+            else:
+                super().do_GET()
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), OutageHandler)
+    server.config_unavailable = False
+    server.native_schema = None
+    worker = threading.Thread(target=server.serve_forever, daemon=True); worker.start()
+    url = "http://127.0.0.1:" + str(server.server_port)
+    executable = shutil.which("agent-browser"); assert executable
+    session = "wingman-capabilities-" + uuid.uuid4().hex[:8]
+    env = {**os.environ, "AGENT_BROWSER_ENGINE": "chrome"}
+
+    def run(*args):
+        result = subprocess.run([executable, "--session", session, *args], env=env,
+                                capture_output=True, text=True, timeout=45)
+        assert result.returncode == 0, result.stdout + result.stderr
+        return result.stdout
+
+    def check(expression):
+        run("eval", "(() => { if (!(" + expression + ")) throw new Error('Capability assertion'); return true; })()")
+
+    try:
+        for state, text in (("unconfigured", "No native sandbox configured"),
+                            ("configured", "Access is not yet verified"),
+                            ("outage", "Service configuration unavailable")):
+            # Construction performs no native request. Never load this fictional ID.
+            server.native_schema = NativeSchema("a" * 32) if state == "configured" else None
+            server.config_unavailable = state == "outage"
+            run("open", url)
+            run("wait", "--fn", "document.getElementById('native-availability').textContent.includes(" + json.dumps(text) + ")")
+            check("document.getElementById('load-native').disabled===" + ("false" if state == "configured" else "true"))
+            check("document.getElementById('durable-options').hidden && document.getElementById('schema-status').textContent.startsWith('Not loaded') && document.getElementById('native-availability').textContent.includes('writes are disabled')")
+            run("eval", "document.getElementById('load-native').closest('details').open=true")
+            run("set", "viewport", "1440", "1000"); run("set", "media", "light")
+            run("screenshot", str(tmp_path / (state + ".png")), "--full")
+            if state == "outage":
+                # Failure is confined to optional setup; actual local inspection works.
+                run("click", "#sample"); run("focus", "#check"); run("press", "Enter")
+                run("wait", "--fn", "!document.getElementById('download').disabled")
+                check("document.querySelector('#results code').textContent==='1200.15'")
+    finally:
+        run("close"); server.shutdown(); server.server_close(); worker.join(timeout=5)

@@ -187,3 +187,10 @@ def test_http_replay_reuses_offline_contract_without_import_storage_or_authority
         assert request(csv_url, path="/api/replay", body={**arguments, **extra})[0] == 400
     assert request(csv_url, path="/api/replay", body=arguments, headers={"Origin": "https://foreign.invalid"})[0] == 403
     assert request(csv_url, path="/api/replay", body={**arguments, "packet": {}})[0] == 400
+
+
+def test_default_capabilities_are_explicit_not_access_or_mutation_authority(csv_url):
+    status, headers, raw = request(csv_url, path="/api/review-config", method="GET")
+    assert status == 200 and headers["Cache-Control"] == "no-store"
+    assert json.loads(raw) == {"durable_review_enabled": False, "native_schema_configured": False,
+                               "native_access_verified": False, "native_mutation_enabled": False}

@@ -121,7 +121,9 @@ class Handler(BaseHTTPRequestHandler):
         if not self.local_request():
             return
         if self.path == "/api/review-config":
-            self.reply(200, {"durable_review_enabled": getattr(self.server, "decision_store", None) is not None})
+            self.reply(200, {"durable_review_enabled": getattr(self.server, "decision_store", None) is not None,
+                             "native_schema_configured": getattr(self.server, "native_schema", None) is not None,
+                             "native_access_verified": False, "native_mutation_enabled": False})
             return
         if self.path not in STATIC:
             self.reply(404, {"error": "Not found."})

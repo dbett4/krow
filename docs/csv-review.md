@@ -162,6 +162,13 @@ This profile additionally requires the adopted `wk` command and its existing LSL
 read grant on the VPS. Do not copy credentials into Wingman, the browser or a bundle.
 Use exact loopback port 8782 (or an approved SSH forward) as above.
 
+Setup status reads local configuration only, not Workiva. Default mode disables
+native loading and explains that declared schema/packet review needs no grant.
+Configured mode says **access is not yet verified**; it does not test credentials
+until you explicitly load. Configuration failure leaves optional loading/journaling
+unavailable, not approved; local CSV checks remain usable. Confirm the service and
+retain any pasted source outside Wingman before reloading the page to retry setup.
+
 Open **Optional native LSL sandbox schema**, then **Load configured sandbox schema**.
 Wingman proves the account through `wk`, reads only the configured ID, checks its
 native account/table binding and unshared synthetic name, and locks the schema.

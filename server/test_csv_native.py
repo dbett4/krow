@@ -87,10 +87,14 @@ def test_real_http_rechecks_staleness_and_denies_extra_authority(native):
     worker.start()
     url = "http://127.0.0.1:" + str(server.server_port)
     try:
+        import json
+        config = json.loads(request(url, path="/api/review-config", method="GET")[2])
+        assert config == {"durable_review_enabled": False, "native_schema_configured": True,
+                          "native_access_verified": False, "native_mutation_enabled": False}
+        assert native["calls"] == []
         snapshot = native["provider"].read()
         args = {"csv_text": "id,amount\n001,1001\n1,-2\n", "columns": project(snapshot),
                 "key_columns": ["id"], "native_schema_sha256": snapshot["schema_sha256"]}
-        import json
         status, _, raw = request(url, body=args)
         assert status == 200 and json.loads(raw)["native_schema_observed"] is True
         native["calls"].clear()

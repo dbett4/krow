@@ -20,6 +20,7 @@ FILES = (
     "docs/receipts/durable-review-20261008.md",
     "docs/receipts/private-readiness-20261008.md",
     "docs/receipts/private-handoff-20261008.md",
+    "docs/receipts/configuration-readiness-20261008.md",
 )
 
 

@@ -187,12 +187,21 @@ explicit local confirmation and restart readback passed with zero Workiva reques
 Same-builder automation, not independent unaided/clean-machine acceptance.
 See [handoff receipt](receipts/private-handoff-20261008.md).
 
+**Goal 13 implemented:** optional native setup advertises configuration separately
+from verified access, disables the load action when unconfigured/unavailable and
+leaves local checks usable during a configuration outage. HTTP and Chromium checks
+cover unconfigured/configured/outage states without Workiva requests. Current
+endpoint-specific sheet-update/table-edit references and actual legacy repair code
+still do not establish atomic native repair/restore safety; no mutation enabled.
+See [configuration and integration receipt](receipts/configuration-readiness-20261008.md).
+
 **Next goals/dependencies:** independent held-out detector labels and unaided
 reviewer/handoff/clean-machine acceptance are not recovered or claimed. Native
 schema is still read-only: live table and endpoint reference were checked, but no
 atomic Wdata precondition/conditional-restoration proof is established. Obtain that
 contract before enabling native actions, or explicitly scope the private release
 read-only. These are real gates, not license to tune developer cases or overwrite
-collaborators. Dave authorized LSL
-sandbox and local commits only. No push, deployment, merge or change to port 8770
-is authorized. The installed read-only service is unchanged.
+collaborators. Dave authorized the LSL sandbox and subsequently authorized commit,
+push and safe integration into GitHub main. The first eleven local commits
+were fast-forwarded through the handoff commit; GitHub CI passed. Deployment or
+change to port 8770 remains unauthorized. The installed read-only service is unchanged.

@@ -115,9 +115,18 @@
     } catch (error) { if (request === generation) $("replay-status").textContent = "Replay unavailable. " + error.message + " Your source remains; confirm the service or packet, then retry."; }
     finally { if (request === generation) $("replay").disabled = !importedPacket || !$("csv").value; }
   });
-  fetch("/api/review-config", { cache: "no-store" }).then((response) => response.json()).then((config) => {
+  fetch("/api/review-config", { cache: "no-store", signal: AbortSignal.timeout(10000) }).then((response) => {
+    if (!response.ok) throw new Error("Configuration unavailable");
+    return response.json();
+  }).then((config) => {
     $("durable-options").hidden = !config.durable_review_enabled;
-  }).catch(() => { /* Persistence stays unavailable; do not imply it is enabled. */ });
+    $("load-native").disabled = config.native_schema_configured !== true;
+    $("native-availability").textContent = config.native_schema_configured === true
+      ? "One operator-bound synthetic table configured. Access is not yet verified; load its schema explicitly. Native writes are disabled."
+      : "No native sandbox configured. Continue with a declared schema or imported packet; no Workiva grant is needed. Native writes are disabled.";
+  }).catch(() => {
+    $("native-availability").textContent = "Service configuration unavailable. Native reads and journal saving remain unavailable; local CSV inputs are kept. Confirm the service and reload this page before starting a check. Native writes are disabled.";
+  });
   function reviewMode(enabled) {
     $("save-review").checked = enabled;
     $("review-scope").disabled = !enabled;
