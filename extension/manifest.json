@@ -5,11 +5,16 @@
   "description": "Inspect Workiva cell values and their sources, review workbook findings, and preview narrow repairs.",
   "icons": {
     "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
   "action": {
-    "default_title": "Krow for Workiva"
+    "default_title": "Krow for Workiva",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
   },
   "options_ui": {
     "page": "setup.html",
@@ -47,7 +52,9 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "icons/icon128.png"
+        "icons/icon128.png",
+        "fonts/geist-latin-wght-normal.woff2",
+        "fonts/geist-mono-latin-wght-normal.woff2"
       ],
       "matches": [
         "https://*.wdesk.com/*",

@@ -272,7 +272,9 @@ ASSETS = {"/": "demo/index.html", "/demo/demo.css": "demo/demo.css", "/demo/demo
           "/krow-inspector.js": "extension/krow-inspector.js",
           "/krow-connection.js": "extension/krow-connection.js",
           "/krow-core.js": "extension/krow-core.js", "/krow-panel.js": "extension/krow-panel.js",
-          "/icons/icon128.png": "extension/icons/icon128.png"}
+          "/icons/icon128.png": "extension/icons/icon128.png",
+          "/fonts/geist-latin-wght-normal.woff2": "extension/fonts/geist-latin-wght-normal.woff2",
+          "/fonts/geist-mono-latin-wght-normal.woff2": "extension/fonts/geist-mono-latin-wght-normal.woff2"}
 GET_ROUTES = {"/config", "/api/inspect", "/api/inspect-source", "/api/document-tables", "/api/inspect-document",
               "/api/queue", "/api/review-packet"}
 POST_ROUTES = {"/fix", "/apply", "/demo/reset", "/demo/failure"}
