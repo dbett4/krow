@@ -284,7 +284,7 @@ def test_inspector_evidence_and_navigation(demo_url):
 
         # URL-only navigation with unchanged A1 must clear evidence without another read.
         run("eval", "history.replaceState(null, '', '#/spreadsheet/de00/sheet/de02')")
-        run("wait", "--fn", f"!{root}.querySelector('.wi-evidence') && {root}.querySelector('.wi-sheet').textContent === 'Sheet de02'")
+        run("wait", "--fn", f"!{root}.querySelector('.wi-evidence') && {root}.querySelector('.wi-sheet').dataset.sheetId === 'de02'")
         check("pending.length === 0")
         run("eval", "history.replaceState(null, '', '#/spreadsheet/abcd/sheet/de02')")
         click(".wi-inspect")

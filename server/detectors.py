@@ -453,7 +453,7 @@ def detect_year_automatic_coercion(cell):
         "kind": "year-automatic-coercion",
         "addr": cell["addr"],
         "severity": "medium",
-        "detail": f"year {yr} under AUTOMATIC format renders a thousands separator in doc links — use PERIOD",
+        "detail": f"year {yr} under AUTOMATIC format renders a thousands separator in doc links; use PERIOD",
         "fixable": bool(is_plain),
         "fix_lane": "safe-auto" if is_plain else "surfaced",
         "target": {"valueFormat": {"valueFormatType": "PERIOD"}},

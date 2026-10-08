@@ -101,7 +101,7 @@ def build_type_fetch_meta(*, enabled, cell_count, enriched_count, table_id_prese
             "enabled": False,
             "partial": True,
             "reason": (
-                "KROW_TYPE_FETCH off — sheetdata has no cell.type; "
+                "KROW_TYPE_FETCH off: sheetdata has no cell.type; "
                 "contrast lane stays surfaced until types are known"
             ),
         }
@@ -109,7 +109,7 @@ def build_type_fetch_meta(*, enabled, cell_count, enriched_count, table_id_prese
         return {
             "enabled": True,
             "partial": True,
-            "reason": "No content table id — type enrichment skipped",
+            "reason": "No content table id; type enrichment skipped",
             "cell_count": cell_count,
         }
     capped = cell_count > cap

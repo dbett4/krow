@@ -42,12 +42,12 @@ _PATHWAY_BY_CAUSE: dict[str, dict[str, str]] = {
         ),
         "suggested_action": (
             "Open AcctMap; search STMT_LINE for this row; add or retag GL codes for "
-            "the fund column. Re-run the tieout scorecard after mapping — do not patch the face formula first."
+            "the fund column. Re-run the tieout scorecard after mapping: do not patch the face formula first."
         ),
     },
     CAUSE_RECLASS: {
         "pathway_id": "tieout.acfr-reclass",
-        "title": "Large variance — Adjustments / reclass",
+        "title": "Large variance; Adjustments / reclass",
         "explain": (
             "Variance exceeds the 50K critic threshold with no scaling or double-count pattern. "
             "Often a missing Adjustments entry or GASB reclass not yet seated."
@@ -61,7 +61,7 @@ _PATHWAY_BY_CAUSE: dict[str, dict[str, str]] = {
         "pathway_id": "tieout.acfr-sign-flip",
         "title": "Sign convention mismatch",
         "explain": (
-            "Variance pattern matches 2× workbook magnitude — typical of $A sign-column "
+            "Variance pattern matches 2× workbook magnitude: typical of $A sign-column "
             "or AcctMap SIGN_CONVENTION drift on expense/liability rows."
         ),
         "suggested_action": (
@@ -77,7 +77,7 @@ _PATHWAY_BY_CAUSE: dict[str, dict[str, str]] = {
     },
     CAUSE_UNKNOWN: {
         "pathway_id": "tieout.acfr-unknown",
-        "title": "Tieout break — investigate",
+        "title": "Tieout break; investigate",
         "explain": "The scorecard critic heuristics did not classify this break.",
         "suggested_action": "Compare calc vs pub at the jumped cell; trace formula inputs fund-by-fund.",
     },

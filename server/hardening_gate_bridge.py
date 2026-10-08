@@ -130,7 +130,7 @@ def evaluation_to_fail_rows(ev: dict[str, Any]) -> list[dict[str, Any]]:
         rows.append({
             "check": "hardening_gate_criteria_bank",
             "detail": (
-                f"BA200:BB207 criteria bank has {ba} non-empty cell(s) — "
+                f"BA200:BB207 criteria bank has {ba} non-empty cell(s); "
                 "retire before hardening green"
             ),
             "hits": ba,
@@ -200,7 +200,7 @@ def run_hardening_gate_suite(
 
     if not is_acfr_preset_spreadsheet(spreadsheet_id):
         meta["skipped"] = (
-            "The hardening gate is ACFR-preset only — open the preset prod workbook "
+            "The hardening gate is ACFR-preset only: open the preset prod workbook "
             f"({_ACFR_PRESET_SS[:8]}…)"
         )
         meta["elapsed_s"] = round(time.time() - t0, 2)
@@ -209,7 +209,7 @@ def run_hardening_gate_suite(
     script = resolve_hardening_script()
     if script is None:
         meta["skipped"] = (
-            "workiva_hardening_gate.py not found — set KROW_HARDENING_REPO_ROOT or "
+            "workiva_hardening_gate.py not found: set KROW_HARDENING_REPO_ROOT or "
             "KROW_HARDENING_SCRIPT"
         )
         meta["elapsed_s"] = round(time.time() - t0, 2)

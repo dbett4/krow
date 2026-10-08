@@ -322,7 +322,7 @@ def detect_round_wrapper(cell: dict) -> dict | None:
     return {
         "kind": "round-wrapper-workaround",
         "addr": cell["addr"],
-        "detail": "ROUND(...,-N) display rounding — use valueFormat (shownIn) instead",
+        "detail": "ROUND(...,-N) display rounding; use valueFormat (shownIn) instead",
         "severity": "medium",
         "fixable": False,
         "fix_lane": "surfaced",
@@ -370,7 +370,7 @@ def detect_unbounded_sumifs(cell: dict) -> dict | None:
         "kind": "unbounded-full-column-sumifs",
         "addr": cell["addr"],
         # fixed signature -> all flagged cells on a sheet collapse to one per-sheet Review row
-        "detail": "unbounded full-column range in SUMIFS-family call — #VALUE! on xlsx "
+        "detail": "unbounded full-column range in SUMIFS-family call; #VALUE! on xlsx "
                   "reimport/roll-forward; bind ranges to rows ($1:$N)",
         "severity": "medium",
         "fixable": False,
@@ -424,7 +424,7 @@ def detect_dead_functions(cell: dict) -> dict | None:
         "addr": cell["addr"],
         # signature names the function SET -> identical-pattern cells on a sheet collapse to one
         # Review row (thousands of FALSE() calls -> a single line, not thousands of per-cell noise)
-        "detail": f"dead/unsupported function(s) in formula: {', '.join(uniq)} — "
+        "detail": f"dead/unsupported function(s) in formula: {', '.join(uniq)}; "
                   "#NAME? on xlsx import/roll-forward",
         "severity": "high",
         "fixable": False,
@@ -491,7 +491,7 @@ def detect_degenerate_placeholder_formula(cell: dict) -> dict | None:
     return {
         "kind": "degenerate-placeholder-formula",
         "addr": cell["addr"],
-        "detail": "degenerate placeholder formula (=0 or constant-only arithmetic) — "
+        "detail": "degenerate placeholder formula (=0 or constant-only arithmetic); "
                   "replace with governed pull/formula or documented input",
         "severity": "medium",
         "fixable": False,

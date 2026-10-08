@@ -601,10 +601,10 @@ def test_installed_connection(tmp_path, monkeypatch, token):
                     report = page.evaluate("navigator.clipboard.readText()")
                     assert "4 of 5 sheets attempted" in report
                     assert "1 of 5 sheets were not scanned" in report
-                    assert "## Statement detail — 0 findings (coverage incomplete)" in report
+                    assert "## Statement detail · 0 findings (coverage incomplete)" in report
                     assert "remaining pages were not checked" in report
                     assert "Content cell read failed or incomplete" in report
-                    assert "## Review notes — 0 findings\n" in report
+                    assert "## Review notes · 0 findings\n" in report
                     assert "Generated:" in report and "Scan scope: workbook" in report
                     # Legacy/empty payloads stay visibly unknown, even with zero items.
                     source_patch.setattr(app, "_run_workbook_queue", lambda *_a: {

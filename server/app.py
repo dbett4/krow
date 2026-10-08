@@ -158,21 +158,21 @@ def _api_error_payload(exc):
     if "NO_CREDENTIALS" in msg:
         return {
             "error": (
-                "Workiva credentials unavailable — check the configured service credential file "
+                "Workiva credentials unavailable: check the configured service credential file "
                 "or WORKIVA_CLIENT_ID + WORKIVA_CLIENT_SECRET in the service environment"
             ),
         }
     if "HTTPError 404" in msg or "404: 'Not Found'" in msg:
         return {
             "error": (
-                "Workiva returned 404 — spreadsheet or sheet not found "
+                "Workiva returned 404: spreadsheet or sheet not found "
                 "(check service credentials and that the open workbook is accessible)"
             ),
             "detail": msg,
         }
     if "HTTPError 403" in msg or "403: 'Forbidden'" in msg:
         return {
-            "error": "Workiva returned 403 — service credentials cannot access this spreadsheet",
+            "error": "Workiva returned 403; service credentials cannot access this spreadsheet",
             "detail": msg,
         }
     return {"error": msg}

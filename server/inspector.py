@@ -264,5 +264,4 @@ def inspect_cell(spreadsheet_id, sheet_id, addr, token, ctx, *, include_sources=
         result[key]["status"] == "observed" for key in ("content", "calculated", "nativeFormat")
     ) else "partial"
     result["observedAt"] = datetime.now(timezone.utc).isoformat()
-    result["warnings"].append("Not an atomic snapshot of cells and links. Report correctness is not assessed.")
     return result

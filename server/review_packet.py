@@ -108,22 +108,22 @@ def disposition_reason(item: dict[str, Any], disposition: str) -> str:
     kind = item.get("kind") or ""
     dx = item.get("diagnosis") or {}
     if disposition == ACCEPT:
-        return "Safe-auto fix — Krow applies with readback + automatic revert on mismatch."
+        return "Safe-auto fix: Krow applies with readback + automatic revert on mismatch."
     if disposition == BLOCKED:
         if kind == "scan-error":
-            return "Sheet scan failed — restore access / clear the lock before review."
+            return "Sheet scan failed: restore access / clear the lock before review."
         if item.get("check"):
-            return "Tie-out / check exception — reconcile at source; Krow never auto-writes tie-out."
+            return "Tie-out / check exception: reconcile at source; Krow never auto-writes tie-out."
         if dx.get("guided_lane") == "export-proof":
-            return "Source fix is not client-visible — guided publish + export-proof required."
+            return "Source fix is not client-visible: guided publish + export-proof required."
         if dx.get("guided_steps") or dx.get("guided_lane"):
-            return "Guided fix — a human runs the checklist; no Krow auto-write."
+            return "Guided fix: a human runs the checklist; no Krow auto-write."
         if kind == "broken-ref":
-            return "Formula error — needs manual formula repair; no safe auto-fix."
+            return "Formula error: needs manual formula repair; no safe auto-fix."
         if bool(item.get("fixable")):
-            return "Fix available but outside the safe-auto lane — needs confirmation before write."
+            return "Fix available but outside the safe-auto lane: needs confirmation before write."
         return "Needs human action before any write."
-    return "Surfaced heuristic — verify against the live source / export before acting."
+    return "Surfaced heuristic: verify against the live source / export before acting."
 
 
 def rollback_path(item: dict[str, Any], disposition: str) -> str:
@@ -137,14 +137,14 @@ def rollback_path(item: dict[str, Any], disposition: str) -> str:
         )
     if disposition == BLOCKED:
         if kind == "scan-error":
-            return "n/a — no change proposed; resolve sheet access first."
+            return "n/a: no change proposed; resolve sheet access first."
         if item.get("check") or (item.get("diagnosis") or {}).get("guided_lane") == "export-proof":
-            return "No Krow write performed — revert any manual source change via Workiva version history."
+            return "No Krow write performed: revert any manual source change via Workiva version history."
         return (
-            "No Krow write performed — if a human applies the fix, revert via Workiva version "
+            "No Krow write performed: if a human applies the fix, revert via Workiva version "
             "history or the guided checklist."
         )
-    return "n/a — surfaced only, no change proposed."
+    return "n/a: surfaced only, no change proposed."
 
 
 def _redact_finding(item: dict[str, Any], *, addr_cap: int, redact: bool) -> dict[str, Any]:
@@ -263,7 +263,7 @@ def render_packet_md(packet: dict[str, Any]) -> str:
     """Human-readable markdown rendering of the packet (BLOCKED first — act on these)."""
     title = packet.get("label") or f"workbook {packet.get('workbookHash')}"
     lines = [
-        f"# Krow review packet — {title}",
+        f"# Krow review packet: {title}",
         "",
         f"- **Overall:** {packet.get('overall')}  ·  **Client-ready:** "
         f"{'yes' if packet.get('clientReady') else 'no'}",
@@ -288,9 +288,9 @@ def render_packet_md(packet: dict[str, Any]) -> str:
     lines += ["", f"> {packet.get('caveat')}", ""]
 
     sections = [
-        (BLOCKED, "🛑 BLOCKED — needs human action / source / authority"),
-        (UNVERIFIED, "❓ UNVERIFIED — verify against live source before acting"),
-        (ACCEPT, "✅ ACCEPT — Krow can apply (safe-auto + readback/revert)"),
+        (BLOCKED, "🛑 BLOCKED: needs human action / source / authority"),
+        (UNVERIFIED, "❓ UNVERIFIED: verify against live source before acting"),
+        (ACCEPT, "✅ ACCEPT: Krow can apply (safe-auto + readback/revert)"),
     ]
     dispositions = packet.get("dispositions") or {}
     for key, header in sections:

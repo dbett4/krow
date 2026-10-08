@@ -113,10 +113,10 @@ def build_digest(events: list[dict]) -> dict:
         refused_rate = h["refused"] / decided if decided else 0.0
         if bad_rate >= _BAD_RATE_FLAG:
             flags.append({"kind": kind, "signal": "high-revert", "rate": round(bad_rate, 2),
-                          "hint": "writes fail verification — review the detector's target or the fixer guard"})
+                          "hint": "writes fail verification; review the detector's target or the fixer guard"})
         if refused_rate >= _REFUSED_RATE_FLAG:
             flags.append({"kind": kind, "signal": "high-refused", "rate": round(refused_rate, 2),
-                          "hint": "often refused (richText/merged/linked/style-locked) — tighten the detector so it stops flagging unfixable cells"})
+                          "hint": "often refused (richText/merged/linked/style-locked); tighten the detector so it stops flagging unfixable cells"})
 
     return {
         "scanCount": len(scans),
@@ -152,9 +152,9 @@ def render(digest: dict) -> str:
     lines += ["", "Flags (act on these next):"]
     if digest["flags"]:
         for fl in digest["flags"]:
-            lines.append(f"  [{fl['signal']}] {fl['kind']} ({fl['rate']:.0%}) — {fl['hint']}")
+            lines.append(f"  [{fl['signal']}] {fl['kind']} ({fl['rate']:.0%}); {fl['hint']}")
     else:
-        lines.append("  none — nothing crossed the review threshold")
+        lines.append("  none: nothing crossed the review threshold")
     return "\n".join(lines)
 
 

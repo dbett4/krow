@@ -186,7 +186,7 @@ class RenderTests(unittest.TestCase):
         self.assertIn("Overall:** BLOCKED", self.md)
 
     def test_blocked_section_before_accept(self):
-        self.assertLess(self.md.index("BLOCKED —"), self.md.index("ACCEPT —"))
+        self.assertLess(self.md.index("BLOCKED:"), self.md.index("ACCEPT:"))
 
     def test_rollback_rendered(self):
         self.assertIn("Rollback:", self.md)

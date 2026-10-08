@@ -151,7 +151,7 @@ def detect_heuristic(entry: dict[str, Any]) -> dict[str, Any]:
             "cause": CAUSE_DOUBLE_AGG,
             "confidence": "high",
             "notes": (
-                f"wb={wb:.0f}K ≈ 2×pdf={pdf:.0f}K — Total column may double-count "
+                f"wb={wb:.0f}K ≈ 2×pdf={pdf:.0f}K; Total column may double-count "
                 f"one activity column; compare Gov vs BTA components."
             ),
         }
@@ -161,7 +161,7 @@ def detect_heuristic(entry: dict[str, Any]) -> dict[str, Any]:
             "cause": CAUSE_TB_SOURCE_GAP,
             "confidence": "medium",
             "notes": (
-                f"wb≈0 but PDF={pdf:.0f}K — GL likely absent from AcctMap or "
+                f"wb≈0 but PDF={pdf:.0f}K; GL likely absent from AcctMap or "
                 f"tagged to wrong STMT_LINE."
             ),
         }
@@ -170,21 +170,21 @@ def detect_heuristic(entry: dict[str, Any]) -> dict[str, Any]:
         return {
             "cause": CAUSE_TB_SOURCE_GAP,
             "confidence": "medium",
-            "notes": f"wb≈0 but PDF={pdf:.0f}K — check AcctMap routing.",
+            "notes": f"wb≈0 but PDF={pdf:.0f}K; check AcctMap routing.",
         }
 
     if abs(wb) > 1.0 and abs(abs_var - 2 * abs(wb)) < max(1.0, abs_var * 0.02):
         return {
             "cause": CAUSE_SIGN_FLIP,
             "confidence": "high",
-            "notes": f"var({var:+.0f}K) ≈ 2×wb — check $A sign-column convention.",
+            "notes": f"var({var:+.0f}K) ≈ 2×wb; check $A sign-column convention.",
         }
 
     if abs_var < 1.0:
         return {
             "cause": CAUSE_SCALING,
             "confidence": "high",
-            "notes": f"|var|={abs_var:.3f}K — within THOUSANDS rounding tolerance.",
+            "notes": f"|var|={abs_var:.3f}K; within THOUSANDS rounding tolerance.",
         }
 
     if abs_var > 50.0:
@@ -192,7 +192,7 @@ def detect_heuristic(entry: dict[str, Any]) -> dict[str, Any]:
             "cause": CAUSE_RECLASS,
             "confidence": "low",
             "notes": (
-                f"|var|={abs_var:.0f}K (>50K). Likely missing Adjustments entry — "
+                f"|var|={abs_var:.0f}K (>50K). Likely missing Adjustments entry: "
                 f"check Adj sheet for STMT_LINE + fund."
             ),
         }
@@ -200,7 +200,7 @@ def detect_heuristic(entry: dict[str, Any]) -> dict[str, Any]:
     return {
         "cause": CAUSE_UNKNOWN,
         "confidence": "low",
-        "notes": f"wb={wb:.0f}K, pdf={pdf:.0f}K, var={var:+.0f}K — no heuristic matched.",
+        "notes": f"wb={wb:.0f}K, pdf={pdf:.0f}K, var={var:+.0f}K; no heuristic matched.",
     }
 
 

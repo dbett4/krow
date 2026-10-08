@@ -51,7 +51,7 @@ def formula_references(content):
             elif kind in ("external", "structured"):
                 unresolved.append(text)
             elif kind == "function" and text.strip().upper() in ("INDIRECT", "OFFSET", "INDEX"):
-                unresolved.append(text.strip() + "(…) — computed reference not resolved")
+                unresolved.append(text.strip() + "(…): computed reference not resolved")
             pos = token.end()
             continue
         reference = _REFERENCE.match(formula, pos)

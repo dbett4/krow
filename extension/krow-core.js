@@ -131,7 +131,7 @@
       lines.push("Formula architecture: formulas fetched for scanned cells; formula-gap count " + t.formulaGaps + ".");
     } else if (formula && formula.enabled && formula.partial) {
       gaps.push("formula scan partial");
-      lines.push("Formula architecture: partial formula fetch — treat unmapped formula gaps as unproven.");
+      lines.push("Formula architecture: partial formula fetch. Unmapped formula gaps are unproven.");
     } else {
       gaps.push("formula evidence missing");
       lines.push("Formula architecture: formula fetch not proven in this scan.");
@@ -152,13 +152,13 @@
     }
     if (_n(lf && lf.emptyLinkedBlocks)) gaps.push("empty linked document ranges");
     if (_n(lf && lf.dlSourceNumericFormulas)) {
-      gaps.push("DL source cells with numeric formulas — document receives raw digits");
+      gaps.push("numeric DL source cells render raw digits");
       lines.push("DL numeric source: " + _n(lf.dlSourceNumericFormulas) + " source link" +
-        (_n(lf.dlSourceNumericFormulas) === 1 ? "" : "s") +
-        " have ACCOUNTING/NUMBER/CURRENCY numeric formulas — document links will render raw digits; wrap with TEXT() before linking.");
+        (_n(lf.dlSourceNumericFormulas) === 1 ? " has" : "s have") +
+        " ACCOUNTING/NUMBER/CURRENCY numeric formulas, so linked document cells render raw digits. Keep the source numeric and give the destination table a native number format.");
     }
     if (checks && checks.requested && checks.applied) {
-      lines.push("Publish/export proof: " + (checks.fail_count ? checks.fail_count + " check FAIL rows remain" : "checks green") + " — still not a rendered PDF proof.");
+      lines.push("Publish/export proof: " + (checks.fail_count ? checks.fail_count + " check FAIL rows remain" : "checks green") + "; no rendered PDF proof.");
       if (checks.fail_count) gaps.push("check FAIL rows");
     } else {
       gaps.push("publish/export proof not run");
@@ -221,7 +221,7 @@
     var coverage = data && data.coverage;
     if (coverage && coverage.warnings && coverage.warnings.length) return coverage.warnings.slice();
     if (coverage && coverage.complete === true) return [];
-    return ["Coverage unavailable — rerun with an updated service before relying on this result."];
+    return ["Coverage unavailable. Rerun with an updated service."];
   }
 
   function workbookSummary(data) {
@@ -245,7 +245,7 @@
     data.sheets.slice()
       .sort(function (a, b) { return (b.findingCount || 0) - (a.findingCount || 0); })
       .forEach(function (s) {
-        lines.push("", "## " + (s.name || "(unnamed sheet)") + " — " +
+        lines.push("", "## " + (s.name || "(unnamed sheet)") + " · " +
           (s.error ? "scan error" : (s.findingCount + " finding" + (s.findingCount === 1 ? "" : "s"))) +
           (coverageWarnings(s).length ? " (coverage incomplete)" : ""));
         if (s.error) { lines.push("- ERROR: " + s.error); return; }
@@ -256,7 +256,7 @@
             var linkHealth = g.linkHealthStatus || g.link_health_status || g.status;
             lines.push("- " + g.kind.replace(/-/g, " ") + " (" + g.severity + ") ×" + g.count + ": " +
               g.signature + (linkHealth ? " [link-health: " + linkHealth + "]" : "") +
-              (g.fix_lane === "safe-auto" ? " [fixable]" : "") + " — " + shown);
+              (g.fix_lane === "safe-auto" ? " [fixable]" : "") + " at " + shown);
           });
       });
     if (!data.findingTotal) lines.push("", "No findings in the completed checks. This is not a clean-workbook verdict.");
@@ -625,25 +625,7 @@
     return /TEXT\s*\(\s*\)/i.test(String(r.reason || ""));
   }
   function textTrapAlertCopy() {
-    return "TEXT() trap — rebuild numeric layer, never valueFormat";
-  }
-  function exportProofChecklistFooter() {
-    return "grep pass ≠ page flow / clipping / raster proof still required.";
-  }
-  function exportProofChecklistIntro() {
-    return (
-      "Manual proof checklist — complete each step in Workiva (publish links, export PDF, grep), " +
-      "then check it off here. Krow does not publish or export for you."
-    );
-  }
-  function exportProofFilterBanner() {
-    return (
-      "Export proof items need client-visible verification: publish in Workiva → binary PDF export → " +
-      "pdftotext grep. Open each row’s checklist below — there is no one-click export button."
-    );
-  }
-  function exportProofVerdictHint() {
-    return "After all five steps are checked, mark Proven or Not proven below.";
+    return "TEXT() trap: rebuild the numeric layer, not valueFormat.";
   }
   function shouldShowThermoAlert(spreadsheetId, checks) {
     if (!isAcfrPreset(spreadsheetId) || !checks || !checks.applied) return false;
@@ -931,7 +913,7 @@
     return ff.partial !== false || ff.enabled === false;
   }
   function formulaPartialChipLabel() {
-    return "Formula scan partial — literals only";
+    return "Formula scan partial: literals only";
   }
   function formulaPartialChipTooltip(ff) {
     if (ff && ff.reason) {
@@ -989,10 +971,7 @@
     presetLabel: presetLabel, TAB_IDS: TAB_IDS, TAB_LABELS: TAB_LABELS,
     tabLabel: tabLabel, isAcfrPreset: isAcfrPreset,
     formatTieoutBadges: formatTieoutBadges, isTextTrapRefusal: isTextTrapRefusal,
-    textTrapAlertCopy: textTrapAlertCopy, exportProofChecklistFooter: exportProofChecklistFooter,
-    exportProofChecklistIntro: exportProofChecklistIntro,
-    exportProofFilterBanner: exportProofFilterBanner,
-    exportProofVerdictHint: exportProofVerdictHint,
+    textTrapAlertCopy: textTrapAlertCopy,
     shouldShowThermoAlert: shouldShowThermoAlert, thermoAlertCopy: thermoAlertCopy,
     isDragPassthrough: isDragPassthrough,
     SCORECARD_STALE_MS: SCORECARD_STALE_MS,

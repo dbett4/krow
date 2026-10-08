@@ -19,7 +19,7 @@ import cell_sources as sources
     ("=Sheet1:Sheet3!B2+'Sheet 1:Sheet 3'!C7+D4", ["D4"], [], ["Sheet1:Sheet3!B2", "'Sheet 1:Sheet 3'!C7"]),
     ("=#REF!+A1#", [], [], ["#REF!", "A1#"]),
     ('=INDIRECT("B7")+OFFSET(C2,1,0)', ["C2"], ["1", "0"],
-     ["INDIRECT(…) — computed reference not resolved", "OFFSET(…) — computed reference not resolved"]),
+     ["INDIRECT(…): computed reference not resolved", "OFFSET(…): computed reference not resolved"]),
 ])
 def test_reference_text_not_strings_functions_or_names(formula, refs, numbers, unresolved):
     assert sources.formula_references({"status": "observed", "formula": formula}) == {

@@ -355,7 +355,7 @@ def build_workbook_queue(workbook_scan: dict[str, Any]) -> dict[str, Any]:
                     "pathway_id": "scan.error",
                     "title": "Sheet scan failed",
                     "explain": sheet["error"],
-                    "judgment": "surfaced — API read failed for this sheet; other sheets may still be valid.",
+                    "judgment": "surfaced; API read failed for this sheet; other sheets may still be valid.",
                     "suggested_action": "Retry scan or inspect sheet access; fix auth/lock errors first.",
                     "trap_refs": [],
                     "fix_refs": [],

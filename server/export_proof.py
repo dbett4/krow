@@ -45,7 +45,7 @@ EXPORT_PROOF_GUIDED_STEPS: list[dict[str, Any]] = [
         "id": "export-pdf",
         "title": "Export PDF (binary-safe)",
         "detail": (
-            "Export the client-facing document as PDF using binary-safe download — not text-mode "
+            "Export the client-facing document as PDF using binary-safe download: not text-mode "
             "fetch. Save to a proof folder; note path and export timestamp for the receipt."
         ),
     },
@@ -62,7 +62,7 @@ EXPORT_PROOF_GUIDED_STEPS: list[dict[str, Any]] = [
         "title": "Mark export-proven vs NOT_PROVEN_VISUAL",
         "detail": (
             "Record EXPORT_PROVEN only when grep confirms the client-visible render matches the "
-            "target of record. Otherwise mark NOT_PROVEN_VISUAL — source fix alone is not done."
+            "target of record. Otherwise mark NOT_PROVEN_VISUAL: source fix alone is not done."
         ),
     },
 ]
@@ -128,9 +128,9 @@ def attach_export_proof_to_diagnosis(
         diagnosis["explain"] = (
             "The workbook calculation may differ from what the published document renders. "
             "Fixed at source is not client-ready until republished, re-exported, and grep-confirmed "
-            "in a fresh PDF — never trust prior Corrected/PASS status without this proof."
+            "in a fresh PDF: never trust prior Corrected/PASS status without this proof."
         )
-        diagnosis["judgment"] = "surfaced — RED export-proof gate; user publishes and exports in Workiva UI."
+        diagnosis["judgment"] = "surfaced: RED export-proof gate; user publishes and exports in Workiva UI."
         diagnosis["suggested_action"] = (
             "Follow the export-proof checklist: ownLinks → allLinks → binary PDF export → "
             "pdftotext grep → mark EXPORT_PROVEN or NOT_PROVEN_VISUAL."

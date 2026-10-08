@@ -192,7 +192,8 @@ class DlSourceNumericFormulaTests(unittest.TestCase):
         self.assertEqual(f["linkId"], "L1")
         self.assertEqual(f["valueFormatType"], "ACCOUNTING")
         self.assertIn("raw digits", f["detail"])
-        self.assertIn("TEXT()", f["detail"])
+        self.assertIn("native number format", f["detail"])
+        self.assertNotIn("TEXT()", f["detail"])
         self.assertIn("1234567.89", f["detail"])
 
     def test_fires_for_number_format(self):

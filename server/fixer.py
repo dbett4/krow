@@ -254,7 +254,7 @@ def preflight_no_text_wrapper(formula_text):
         return None
     if _TEXT_FORMULA.search(formula_text):
         return (
-            "formula contains TEXT() — valueFormat write can rewrite scale (W21 trap); "
+            "formula contains TEXT(): valueFormat write can rewrite scale (W21 trap); "
             "fix in Workiva UI"
         )
     return None
@@ -424,15 +424,15 @@ def fix_format_copy(
         return {"status": "refused", "addr": addr, "type": ctype, "reason": text_block}
     if ctype == "richText":
         return {"status": "refused", "addr": addr, "type": ctype,
-                "reason": "richText cell — valueFormat write may not affect runs; fix in Workiva UI"}
+                "reason": "richText cell; valueFormat write may not affect runs; fix in Workiva UI"}
     if meta["merged"]:
         return {"status": "refused", "addr": addr, "type": ctype, "reason": "merged cell - skipped"}
     if meta.get("linked"):
         return {"status": "refused", "addr": addr, "type": ctype,
-                "reason": "linked cell — format write blocked; fix in Workiva UI"}
+                "reason": "linked cell; format write blocked; fix in Workiva UI"}
     if not target_vf:
         return {"status": "refused", "addr": addr,
-                "reason": "no target valueFormat — re-scan or fix in Workiva UI"}
+                "reason": "no target valueFormat; re-scan or fix in Workiva UI"}
     cell, found = read_cell_sheetdata(ss, sheet_id, row, col, token, ctx)
     if not found:
         return {"status": "not-in-scan-page", "addr": addr,
@@ -621,12 +621,12 @@ def fix_negative_parens(ss, sheet_id, table_id, addr, token, ctx, confirm=False,
         return {"status": "refused", "addr": addr, "type": ctype, "reason": text_block}
     if ctype == "richText":
         return {"status": "refused", "addr": addr, "type": ctype,
-                "reason": "richText cell — valueFormat write may not affect runs; fix in Workiva UI"}
+                "reason": "richText cell; valueFormat write may not affect runs; fix in Workiva UI"}
     if meta["merged"]:
         return {"status": "refused", "addr": addr, "type": ctype, "reason": "merged cell - skipped"}
     if meta.get("linked"):
         return {"status": "refused", "addr": addr, "type": ctype,
-                "reason": "linked cell — format write blocked; fix in Workiva UI"}
+                "reason": "linked cell; format write blocked; fix in Workiva UI"}
     cell, found = read_cell_sheetdata(ss, sheet_id, row, col, token, ctx)
     if not found:
         return {"status": "not-in-scan-page", "addr": addr,
@@ -716,7 +716,7 @@ def fix_junk_decimal(ss, sheet_id, table_id, addr, token, ctx, confirm=False, ta
         target_vf = jd.neighbor_consensus_format(addr, cells_by_addr)
         if not target_vf:
             return {"status": "refused", "addr": addr,
-                    "reason": "no column neighbor format consensus — fix in Workiva UI"}
+                    "reason": "no column neighbor format consensus; fix in Workiva UI"}
 
     def _no_fix(before_vf, _cell):
         try:
@@ -829,7 +829,7 @@ def fix_contrast(ss, sheet_id, table_id, addr, target_hex, token, ctx, confirm=F
                     "warning": "cell may be left in the written state", **plan}
         if style_locked:
             return {"status": "style-locked", "expected": target_hex, "readback": after,
-                    "reason": "font color is set by a conditional format or named style — "
+                    "reason": "font color is set by a conditional format or named style; "
                               "change the rule in Workiva, not the cell", **plan}
         return {"status": "mismatch-reverted", "expected": target_hex, "readback": after, **plan}
     return {"status": "applied", "readback": after, **plan}
@@ -845,15 +845,15 @@ def fix_label_trim(ss, sheet_id, table_id, addr, token, ctx, confirm=False):
     ctype = meta["type"]
     if ctype == "richText":
         return {"status": "refused", "addr": addr, "type": ctype,
-                "reason": "richText cell — value write would destroy formatting; fix in Workiva UI"}
+                "reason": "richText cell; value write would destroy formatting; fix in Workiva UI"}
     if ctype == "formula" or meta.get("formula"):
         return {"status": "refused", "addr": addr, "type": ctype,
-                "reason": "formula cell — cannot trim stored formula text"}
+                "reason": "formula cell; cannot trim stored formula text"}
     if meta["merged"]:
         return {"status": "refused", "addr": addr, "type": ctype, "reason": "merged cell - skipped"}
     if meta.get("linked"):
         return {"status": "refused", "addr": addr, "type": ctype,
-                "reason": "linked cell — value write blocked; fix in Workiva UI"}
+                "reason": "linked cell; value write blocked; fix in Workiva UI"}
     before, value, cell, found = read_effective_fontcolor(ss, sheet_id, row, col, token, ctx)
     if not found:
         return {"status": "not-in-scan-page", "addr": addr,

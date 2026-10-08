@@ -212,10 +212,10 @@ def detect_dl_source_numeric_formula(cells: list[dict]) -> list[dict]:
             "severity": "high",
             "detail": (
                 f"DL source link {lid!r}: {cell_word} "
-                f"({first.get('addr')}) have {vft.lower()} numeric formulas — "
-                f"document links copy calculatedValue ({sample_cv!r}), not the formatted text; "
-                f"the linked document will render raw digits. "
-                f"Wrap each source cell with TEXT() before linking."
+                f"({first.get('addr')}) have {vft.lower()} numeric formulas. "
+                f"Document links copy calculatedValue ({sample_cv!r}), not the formatted text, "
+                f"so the linked document renders raw digits. "
+                f"Keep the source numeric and give the destination table a native number format."
             ),
             "fixable": False,
             "fix_lane": "surfaced",
@@ -273,7 +273,7 @@ def analyze_links(cells: list[dict], links: list[dict], *, truncated: bool = Fal
                 "kind": "empty-linked-range",
                 "addr": anchor,
                 "severity": "high",
-                "detail": f"linked block {range_a1} is entirely blank — the destination "
+                "detail": f"linked block {range_a1} is entirely blank; the destination "
                           f"document table will render empty",
                 "fixable": False,
                 "fix_lane": "surfaced",
@@ -299,7 +299,7 @@ def analyze_links(cells: list[dict], links: list[dict], *, truncated: bool = Fal
             "detail": (
                 f"linked range {row.get('range') or '(unknown range)'} has source revision "
                 f"{','.join(row.get('source_revisions') or ['?'])} but destination revision "
-                f"{','.join(row.get('destination_revisions') or ['?'])} — publish links before export"
+                f"{','.join(row.get('destination_revisions') or ['?'])}: publish links before export"
             ),
             "fixable": False,
             "fix_lane": "surfaced",

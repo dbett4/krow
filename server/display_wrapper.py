@@ -242,7 +242,7 @@ def detect_display_wrapper(cell: dict[str, Any]) -> dict[str, Any] | None:
         target["valueFormatType"] = (value_format or {}).get("valueFormatType")
         if "ACCOUNTING_DOLLAR_INERT" not in target["patterns"]:
             target["patterns"] = [*target["patterns"], "ACCOUNTING_DOLLAR_INERT"]
-        detail = f"{detail} — ACCOUNTING $ format inert (string formula bypasses it)"
+        detail = f"{detail}: ACCOUNTING $ format inert (string formula bypasses it)"
     return {
         "kind": "display-wrapper",
         "addr": cell["addr"],

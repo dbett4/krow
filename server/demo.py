@@ -413,7 +413,7 @@ def main():
         server.sessions = sessions
         thread = threading.Thread(target=upstream.serve_forever, daemon=True)
         thread.start()
-        print(f"Krow demo ready on port {server.server_port} — fictional data, no Workiva connection", flush=True)
+        print(f"Krow demo ready on port {server.server_port}: fictional data, no Workiva connection", flush=True)
         try:
             server.serve_forever()
         except KeyboardInterrupt:

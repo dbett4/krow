@@ -238,7 +238,7 @@ def ingest_scorecard(
 
     if path is None:
         meta["skipped"] = (
-            "no tieout scorecard JSON found — set KROW_TIEOUT_SCORECARD to the scorecard path"
+            "no tieout scorecard JSON found: set KROW_TIEOUT_SCORECARD to the scorecard path"
         )
         meta["elapsed_s"] = round(time.time() - t0, 2)
         return meta
@@ -297,7 +297,7 @@ def _scorecard_fallback(
         return None
     fb = ingest_scorecard(spreadsheet_id, suite=suite, project=project, working_dir=working_dir)
     if fb.get("applied"):
-        fb["live_skipped"] = f"{reason} — surfaced existing scorecard JSON instead"
+        fb["live_skipped"] = f"{reason}: surfaced existing scorecard JSON instead"
         return fb
     return None
 
@@ -349,7 +349,7 @@ def run_checks_suite(
         if fb is not None:
             return fb
         meta["skipped"] = (
-            "external checks CLI not found — set KROW_CHECKS_SCRIPTS to its scripts/ dir"
+            "external checks CLI not found: set KROW_CHECKS_SCRIPTS to its scripts/ dir"
         )
         meta["elapsed_s"] = round(time.time() - t0, 2)
         return meta
@@ -362,7 +362,7 @@ def run_checks_suite(
         if fb is not None:
             return fb
         meta["skipped"] = (
-            "no client working dir for this spreadsheet — set KROW_CHECKS_WORKING_DIR "
+            "no client working dir for this spreadsheet: set KROW_CHECKS_WORKING_DIR "
             "or KROW_CHECKS_SS_MAP"
         )
         meta["elapsed_s"] = round(time.time() - t0, 2)

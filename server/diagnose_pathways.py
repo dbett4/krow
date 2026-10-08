@@ -26,7 +26,7 @@ BLANK_DL_GUIDED_STEPS: list[dict[str, Any]] = [
         "title": "Verify the linked source cell",
         "detail": (
             "Jump to a flagged cell, then trace its destination link to the source anchor in Workiva. "
-            "Confirm the source shows the expected value — empty cached text can mean stale publish, "
+            "Confirm the source shows the expected value: empty cached text can mean stale publish, "
             "anchor revision pinning, or a broken source (not always cache lag)."
         ),
     },
@@ -36,7 +36,7 @@ BLANK_DL_GUIDED_STEPS: list[dict[str, Any]] = [
         "detail": (
             "Publish this spreadsheet's links so destination caches pull current source values. "
             "Workiva UI: File → Publish links → own links. API: POST "
-            "/spreadsheets/{ss}/links/publication {\"publishType\":\"ownLinks\"} — poll operation to completion."
+            "/spreadsheets/{ss}/links/publication {\"publishType\":\"ownLinks\"}; poll operation to completion."
         ),
     },
     {
@@ -45,14 +45,14 @@ BLANK_DL_GUIDED_STEPS: list[dict[str, Any]] = [
         "detail": (
             "Publish the linked document's links so doc-table cells refresh. Workiva UI: open the "
             "document → Publish links → all links. API: POST /documents/{doc}/links/publication "
-            "{\"publishType\":\"allLinks\"} — poll to completion."
+            "{\"publishType\":\"allLinks\"}; poll to completion."
         ),
     },
     {
         "id": "re-walk-cache",
         "title": "Re-verify cache (empty-cached-text walk)",
         "detail": (
-            "Final verification: walk the document for destination links with empty cached text — "
+            "Final verification: walk the document for destination links with empty cached text; "
             "do NOT rely on resolve-based scope (15–25% false negatives at scale). Re-scan this sheet "
             "in Krow; flagged cells should clear once caches refresh."
         ),
@@ -75,12 +75,12 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "Text/background contrast is below WCAG AA (4.5:1). The cell is plainText, so a "
             "font-color write via applyFormats is safe when preceded by a full pre-read."
         ),
-        "judgment": "safe-auto — mechanical color correction; reversible by re-writing before-state.",
+        "judgment": "safe-auto; mechanical color correction; reversible by re-writing before-state.",
         "suggested_action": "Preview the computed AA-passing color, then confirm Apply in Krow.",
         "trap_refs": [
             _trap(
                 "applyFormats-richText-noop",
-                "applyFormats textFormat on richText-populated cells silently no-ops — "
+                "applyFormats textFormat on richText-populated cells silently no-ops: "
                 "type guard required before any write.",
             ),
         ],
@@ -93,9 +93,9 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "title": "Low contrast on rich or unknown cell type",
         "explain": (
             "Contrast fails AA, but the cell is richText (or type unknown from sheetdata). "
-            "Font color writes silently no-op on richText runs — restyle requires Values rewrite or UI."
+            "Font color writes silently no-op on richText runs: restyle requires Values rewrite or UI."
         ),
-        "judgment": "surfaced — UI-required; auto-write would silently fail.",
+        "judgment": "surfaced; UI-required; auto-write would silently fail.",
         "suggested_action": "Open the cell in Workiva; restyle via Style Guide or rewrite richText value.",
         "trap_refs": [
             _trap(
@@ -112,17 +112,17 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "title": "Blank destination-linked cell",
         "explain": (
             "Cell carries a destination link but renders empty cached text. Causes include stale "
-            "publish, anchor revision pinning, or a broken source — not always a simple cache lag."
+            "publish, anchor revision pinning, or a broken source: not always a simple cache lag."
         ),
-        "judgment": "surfaced — RED structural/link integrity risk; no reliable API undo.",
+        "judgment": "surfaced; RED structural/link integrity risk; no reliable API undo.",
         "suggested_action": (
             "Verify source value + publish (ownLinks + allLinks). If still blank, walk empty-cached-text "
-            "scan — do not naive re-link without structural pre-screen."
+            "scan: do not naive re-link without structural pre-screen."
         ),
         "trap_refs": [
             _trap(
                 "dl-resolve-unreliable",
-                "GET /content/destinationLinks/{id} misses 15–25% at scale — use empty-cached-text walk.",
+                "GET /content/destinationLinks/{id} misses 15–25% at scale: use empty-cached-text walk.",
             ),
             _trap(
                 "blank-dl-auto-fix-risk",
@@ -143,7 +143,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "table it feeds will render empty. Detected at the link level from "
             "GET /content/tables/{tid}/rangeLinks (block-level ranges, not per-cell)."
         ),
-        "judgment": "surfaced — fixing the source/relinking is judgment; no reliable API undo.",
+        "judgment": "surfaced; fixing the source/relinking is judgment; no reliable API undo.",
         "suggested_action": (
             "Confirm the source range should carry data; populate it, then publish "
             "(SS ownLinks + doc allLinks) so the destination refreshes. If the block is intentionally "
@@ -153,7 +153,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             _trap(
                 "range-link-block-level",
                 "Range links cover a rectangular block; a blank spacer cell inside a populated block "
-                "is NOT a defect — only a wholly-empty block is flagged.",
+                "is NOT a defect: only a wholly-empty block is flagged.",
             ),
         ],
         "fix_refs": [
@@ -164,7 +164,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "pathway_id": "formula.broken-ref",
         "title": "Broken reference (#REF!)",
         "explain": "Formula points at a deleted/moved range or a sheet renamed outside API formula update.",
-        "judgment": "surfaced — judgment fix; diagnose source of broken pointer before rewrite.",
+        "judgment": "surfaced; judgment fix; diagnose source of broken pointer before rewrite.",
         "suggested_action": "Trace the referenced range/sheet; repair formula text or restore the missing source.",
         "trap_refs": [
             _trap(
@@ -180,15 +180,15 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "pathway_id": "formula.unsupported-name",
         "title": "Unsupported name (#NAME?)",
         "explain": (
-            "Workiva rejected a function or reference — common: INDIRECT, internal HYPERLINK anchors, "
+            "Workiva rejected a function or reference: common: INDIRECT, internal HYPERLINK anchors, "
             "or dynamic sheet names."
         ),
-        "judgment": "surfaced — requires formula rewrite or UI hyperlink.",
+        "judgment": "surfaced; requires formula rewrite or UI hyperlink.",
         "suggested_action": "Replace unsupported patterns with explicit sheet refs; use UI Insert Link for drill-downs.",
         "trap_refs": [
             _trap(
                 "indirect-hyperlink-unsupported",
-                "INDIRECT and internal-sheet-anchor HYPERLINK evaluate to #NAME? — hardcode sheet names or UI link.",
+                "INDIRECT and internal-sheet-anchor HYPERLINK evaluate to #NAME?: hardcode sheet names or UI link.",
             ),
         ],
         "fix_refs": [],
@@ -197,12 +197,12 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "pathway_id": "formula.value-error",
         "title": "Formula value error (#VALUE!)",
         "explain": "Arguments or range syntax incompatible with Workiva's formula engine (array constants, bad ranges).",
-        "judgment": "surfaced — guided rewrite; not a one-click safe fix.",
+        "judgment": "surfaced; guided rewrite; not a one-click safe fix.",
         "suggested_action": "Inspect formula shape; split SUMPRODUCT/array patterns into chained SUMIFS.",
         "trap_refs": [
             _trap(
                 "cross-sheet-range-qualifier",
-                "SUM(STMT!B22:STMT!B25) returns #VALUE! — qualifier once: SUM(STMT!B22:B25).",
+                "SUM(STMT!B22:STMT!B25) returns #VALUE!; qualifier once: SUM(STMT!B22:B25).",
             ),
             _trap(
                 "sumproduct-array",
@@ -215,7 +215,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "pathway_id": "formula.missing-sheet",
         "title": "Missing sheet (#SHEET!)",
         "explain": "Formula references a sheet that does not exist in the workbook.",
-        "judgment": "surfaced — create sheet + re-PUT formula, or repoint reference.",
+        "judgment": "surfaced; create sheet + re-PUT formula, or repoint reference.",
         "suggested_action": "Create the missing sheet or rewrite formula to an existing sheet name.",
         "trap_refs": [],
         "fix_refs": [],
@@ -224,7 +224,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "pathway_id": "formula.error-other",
         "title": "Formula error",
         "explain": "Formula evaluates to an Excel-style error token.",
-        "judgment": "surfaced — diagnose root cause before any write.",
+        "judgment": "surfaced; diagnose root cause before any write.",
         "suggested_action": "Read formula text (content cells endpoint) and trace upstream inputs.",
         "trap_refs": [],
         "fix_refs": [],
@@ -236,7 +236,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "Display label has invisible leading/trailing or double internal spaces. The cell is "
             "plainText, so a trim write via the Values API is safe with readback/revert."
         ),
-        "judgment": "safe-auto — mechanical trim; reversible by re-writing before-state.",
+        "judgment": "safe-auto; mechanical trim; reversible by re-writing before-state.",
         "suggested_action": "Preview trimmed label, then confirm Apply in Krow.",
         "trap_refs": [],
         "fix_refs": [
@@ -247,10 +247,10 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "pathway_id": "format.label-hygiene",
         "title": "Label whitespace defect",
         "explain": (
-            "Display label has leading, trailing, or internal double spaces — invisible on screen but "
+            "Display label has leading, trailing, or internal double spaces: invisible on screen but "
             "shows in exports and breaks alignment."
         ),
-        "judgment": "surfaced — cosmetic; safe trim write is a future fast-follow, not v1 auto-fix.",
+        "judgment": "surfaced; cosmetic; safe trim write is a future fast-follow, not v1 auto-fix.",
         "suggested_action": "Trim the label in Workiva UI or via a confirmed Values write after preview.",
         "trap_refs": [],
         "fix_refs": [],
@@ -263,12 +263,12 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "The column is homogeneous (all negatives use minus-prefix), so applyFormats valueFormat "
             "is safe with readback/revert."
         ),
-        "judgment": "safe-auto — ACCOUNTING format with useParensForNegatives; not TEXT or NUMBER.",
+        "judgment": "safe-auto; ACCOUNTING format with useParensForNegatives; not TEXT or NUMBER.",
         "suggested_action": "Preview the planned ACCOUNTING format, then confirm Apply in Krow.",
         "trap_refs": [
             _trap(
                 "accounting-prefix-string-bypass",
-                "ACCOUNTING prefix applies only to numeric calculatedValue — TEXT()-wrapped "
+                "ACCOUNTING prefix applies only to numeric calculatedValue: TEXT()-wrapped "
                 "strings bypass valueFormat.",
             ),
         ],
@@ -284,10 +284,10 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "pathway_id": "format.negative-accounting-mixed",
         "title": "Negative format inconsistency",
         "explain": (
-            "Negative values in this column mix minus-prefix and parentheses display — common when "
+            "Negative values in this column mix minus-prefix and parentheses display: common when "
             "a partial format paste missed some rows. Auto-fix is unsafe until the column is homogeneous."
         ),
-        "judgment": "surfaced — mixed column; judgment fix in Workiva UI or batch after review.",
+        "judgment": "surfaced; mixed column; judgment fix in Workiva UI or batch after review.",
         "suggested_action": (
             "Review the full column in Workiva; when homogenized, use Krow "
             "\"Apply column format\" or apply ACCOUNTING + parentheses for negatives consistently."
@@ -305,15 +305,15 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "title": "Junk decimal precision (neighbor copy)",
         "explain": (
             "Cell uses absurd fixed decimal precision (formatting-audit junk pattern). "
-            "Column neighbors agree on a sane valueFormat — applyFormats copy is safe when TEXT() "
+            "Column neighbors agree on a sane valueFormat: applyFormats copy is safe when TEXT() "
             "preflight passes."
         ),
-        "judgment": "safe-auto — copy neighbor valueFormat; readback/revert; TEXT() cells refused.",
+        "judgment": "safe-auto; copy neighbor valueFormat; readback/revert; TEXT() cells refused.",
         "suggested_action": "Preview before/after format, then confirm Apply in Krow.",
         "trap_refs": [
             _trap(
                 "w21-native-valueformat-scale-rewrite",
-                "TEXT()-wrapped display mirrors rewrite scale on valueFormat apply — W21 1000× trap.",
+                "TEXT()-wrapped display mirrors rewrite scale on valueFormat apply: W21 1000× trap.",
             ),
         ],
         "fix_refs": [
@@ -328,9 +328,9 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "title": "Junk decimal precision (no neighbor consensus)",
         "explain": (
             "Absurd precision.value on this cell, but column neighbors do not agree on a replacement "
-            "format — auto-copy would propagate ambiguity."
+            "format: auto-copy would propagate ambiguity."
         ),
-        "judgment": "surfaced — batch format paste in Workiva after column review.",
+        "judgment": "surfaced; batch format paste in Workiva after column review.",
         "suggested_action": (
             "Review the column in Workiva; when homogenized, use Krow "
             "\"Apply column format\" (gated dry-run → confirm → apply) or batch paste in Workiva."
@@ -338,7 +338,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "trap_refs": [
             _trap(
                 "w21-native-valueformat-scale-rewrite",
-                "Never apply valueFormat on TEXT() display-mirror bands — rebuild numeric layer instead.",
+                "Never apply valueFormat on TEXT() display-mirror bands: rebuild numeric layer instead.",
             ),
         ],
         "fix_refs": [],
@@ -350,12 +350,12 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "Numeric value ≥ 1000 displays without comma grouping while column neighbors use "
             "showThousandsSeparator. Neighbor format consensus (2-of-3) makes applyFormats copy safe."
         ),
-        "judgment": "safe-auto — copy neighbor valueFormat; readback/revert; TEXT() cells refused.",
+        "judgment": "safe-auto; copy neighbor valueFormat; readback/revert; TEXT() cells refused.",
         "suggested_action": "Preview before/after format, then confirm Apply in Krow.",
         "trap_refs": [
             _trap(
                 "w21-native-valueformat-scale-rewrite",
-                "TEXT()-wrapped display mirrors rewrite scale on valueFormat apply — W21 1000× trap.",
+                "TEXT()-wrapped display mirrors rewrite scale on valueFormat apply: W21 1000× trap.",
             ),
         ],
         "fix_refs": [
@@ -369,10 +369,10 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "pathway_id": "format.missing-thousands-manual",
         "title": "Missing thousands separator (no consensus)",
         "explain": (
-            "Value should show comma grouping but column neighbors disagree on format — "
+            "Value should show comma grouping but column neighbors disagree on format: "
             "auto-copy would propagate ambiguity."
         ),
-        "judgment": "surfaced — batch format paste in Workiva after column review.",
+        "judgment": "surfaced; batch format paste in Workiva after column review.",
         "suggested_action": (
             "Review the column; when homogenized, use Krow "
             "\"Apply column format\" or apply thousands separator consistently in Workiva."
@@ -387,12 +387,12 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "Cell uses NUMBER/AUTOMATIC while homogeneous column neighbors use ACCOUNTING. "
             "Copying neighbor format preserves ACFR presentation without formula mutation."
         ),
-        "judgment": "safe-auto — copy neighbor ACCOUNTING valueFormat; TEXT() cells refused.",
+        "judgment": "safe-auto; copy neighbor ACCOUNTING valueFormat; TEXT() cells refused.",
         "suggested_action": "Preview planned ACCOUNTING format, then confirm Apply in Krow.",
         "trap_refs": [
             _trap(
                 "accounting-prefix-string-bypass",
-                "ACCOUNTING prefix applies only to numeric calculatedValue — TEXT()-wrapped "
+                "ACCOUNTING prefix applies only to numeric calculatedValue: TEXT()-wrapped "
                 "strings bypass valueFormat.",
             ),
         ],
@@ -404,10 +404,10 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "pathway_id": "format.number-on-accounting-manual",
         "title": "NUMBER in mixed-format column",
         "explain": (
-            "Cell uses NUMBER but column neighbors do not agree on ACCOUNTING — "
+            "Cell uses NUMBER but column neighbors do not agree on ACCOUNTING: "
             "may be intentional (variance row, percent band)."
         ),
-        "judgment": "surfaced — review before batch format paste.",
+        "judgment": "surfaced; review before batch format paste.",
         "suggested_action": (
             "Confirm column intent; use Krow \"Apply column format\" after homogenizing, "
             "or apply ACCOUNTING in Workiva if appropriate."
@@ -420,9 +420,9 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "title": "Decimal precision drift (neighbor copy)",
         "explain": (
             "Cell uses fixed decimal precision (1–4 places) while column neighbors use integer "
-            "precision. Non-junk band — distinct from absurd junk-decimal precision."
+            "precision. Non-junk band: distinct from absurd junk-decimal precision."
         ),
-        "judgment": "safe-auto — copy neighbor integer precision; readback/revert.",
+        "judgment": "safe-auto; copy neighbor integer precision; readback/revert.",
         "suggested_action": "Preview before/after format, then confirm Apply in Krow.",
         "trap_refs": [
             _trap(
@@ -439,9 +439,9 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "title": "Decimal precision drift (no consensus)",
         "explain": (
             "Cell decimal precision differs from neighbors but column lacks 2-of-3 integer "
-            "precision agreement — may be intentional detail row."
+            "precision agreement: may be intentional detail row."
         ),
-        "judgment": "surfaced — review column before batch format paste.",
+        "judgment": "surfaced; review column before batch format paste.",
         "suggested_action": (
             "Review the column; use Krow \"Apply column format\" after homogenizing, "
             "or align precision in Workiva if appropriate."
@@ -457,12 +457,12 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "the same prefix on ACCOUNTING/NUMBER formats. Copying neighbor valueFormat preserves "
             "ACFR presentation without formula mutation."
         ),
-        "judgment": "safe-auto — copy neighbor valueFormat; readback/revert; TEXT() cells refused.",
+        "judgment": "safe-auto; copy neighbor valueFormat; readback/revert; TEXT() cells refused.",
         "suggested_action": "Preview before/after format, then confirm Apply in Krow.",
         "trap_refs": [
             _trap(
                 "accounting-prefix-string-bypass",
-                "ACCOUNTING prefix applies only to numeric calculatedValue — TEXT()-wrapped "
+                "ACCOUNTING prefix applies only to numeric calculatedValue: TEXT()-wrapped "
                 "strings bypass valueFormat.",
             ),
             _trap(
@@ -478,10 +478,10 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "pathway_id": "format.prefix-mismatch-manual",
         "title": "Missing prefix (no neighbor consensus)",
         "explain": (
-            "Amount cell lacks a prefix but column neighbors disagree — may be intentional "
+            "Amount cell lacks a prefix but column neighbors disagree: may be intentional "
             "(PERCENT/CURRENCY variance row, non-$ band)."
         ),
-        "judgment": "surfaced — review before batch format paste.",
+        "judgment": "surfaced; review before batch format paste.",
         "suggested_action": (
             "Confirm column intent; use Krow \"Apply column format\" after homogenizing, "
             "or apply prefix in Workiva if appropriate."
@@ -496,7 +496,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "Zero numeric value renders as literal 0 while homogeneous ACCOUNTING column neighbors "
             "use displayZeroAs EM DASH. Copying neighbor valueFormat aligns ACFR zero presentation."
         ),
-        "judgment": "safe-auto — copy neighbor ACCOUNTING zero format; TEXT() cells refused.",
+        "judgment": "safe-auto; copy neighbor ACCOUNTING zero format; TEXT() cells refused.",
         "suggested_action": "Preview before/after format, then confirm Apply in Krow.",
         "trap_refs": [
             _trap(
@@ -514,15 +514,15 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "explain": (
             "A 4-digit year stored as a number under AUTOMATIC value format is rendered with a "
             "thousands separator (2025 → '2.025' / '2,025') in document destination links. "
-            "valueFormatType=PERIOD suppresses the separator — reversible, no value rescale."
+            "valueFormatType=PERIOD suppresses the separator: reversible, no value rescale."
         ),
-        "judgment": "safe-auto — PERIOD valueFormat write; readback/revert; richText surfaced.",
+        "judgment": "safe-auto; PERIOD valueFormat write; readback/revert; richText surfaced.",
         "suggested_action": "Preview before/after format, then confirm Apply in Krow.",
         "trap_refs": [
             _trap(
                 "year-period-consumer-propagation",
                 "A formula year cell needs PERIOD on the cell itself; fix every coerced consumer, "
-                "not only the source — each is flagged independently.",
+                "not only the source: each is flagged independently.",
             ),
         ],
         "fix_refs": [
@@ -533,10 +533,10 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "pathway_id": "format.year-period-richtext",
         "title": "Year coercion on a richText cell",
         "explain": (
-            "Same AUTOMATIC-year coercion, but on a richText cell — a valueFormat write may not "
+            "Same AUTOMATIC-year coercion, but on a richText cell: a valueFormat write may not "
             "affect the styled runs, so it is surfaced for a manual fix in the Workiva UI."
         ),
-        "judgment": "surfaced — set the value format to PERIOD in Workiva.",
+        "judgment": "surfaced; set the value format to PERIOD in Workiva.",
         "suggested_action": "In Workiva, set the cell's number format to PERIOD (no separator).",
         "trap_refs": [],
         "fix_refs": [],
@@ -545,10 +545,10 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "pathway_id": "format.zero-display-manual",
         "title": "Zero display drift (no consensus)",
         "explain": (
-            "Zero renders as 0 but column neighbors do not agree on em-dash zero display — "
+            "Zero renders as 0 but column neighbors do not agree on em-dash zero display: "
             "may be intentional detail row."
         ),
-        "judgment": "surfaced — review column before batch format paste.",
+        "judgment": "surfaced; review column before batch format paste.",
         "suggested_action": (
             "Review the column; use Krow \"Apply column format\" after homogenizing, "
             "or set display zero as em-dash in Workiva if appropriate."
@@ -560,10 +560,10 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "pathway_id": "formula.evaluates-blank",
         "title": "Formula evaluates to blank",
         "explain": (
-            "Cell has a formula string but calculatedValue is empty — not an error token (#REF!, etc.). "
+            "Cell has a formula string but calculatedValue is empty: not an error token (#REF!, etc.). "
             "Often a silent SUM/IF gap, empty source range, or DL cache lag; requires judgment."
         ),
-        "judgment": "surfaced — no auto-fix; trace formula dependencies in Workiva.",
+        "judgment": "surfaced; no auto-fix; trace formula dependencies in Workiva.",
         "suggested_action": (
             "Open the formula bar; verify referenced ranges and linked sources; fix upstream blank "
             "or republish links if DL-related."
@@ -571,7 +571,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "trap_refs": [
             _trap(
                 "dl-cache-empty-cached-text",
-                "Blank display on linked cells may be stale cache — verify source before rewriting formula.",
+                "Blank display on linked cells may be stale cache: verify source before rewriting formula.",
             ),
         ],
         "fix_refs": [],
@@ -580,10 +580,10 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "pathway_id": "format.clipped-text-review",
         "title": "Clipped or overflowing text (vision)",
         "explain": (
-            "Vision detected label or amount text clipped by row height or column width — "
+            "Vision detected label or amount text clipped by row height or column width: "
             "sheetdata cannot see pixel overflow. Resize row/column or shorten text in Workiva."
         ),
-        "judgment": "surfaced — layout fix in Workiva UI; no safe-auto write.",
+        "judgment": "surfaced; layout fix in Workiva UI; no safe-auto write.",
         "suggested_action": (
             "Select the cell; drag row height or column width until full text is visible; "
             "re-export PDF to confirm."
@@ -596,18 +596,18 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "title": "TEXT(ROUND(.../1000)) display mirror",
         "explain": (
             "Formula converts a numeric source into formatted text via TEXT(ROUND(.../1000)). "
-            "Presentation belongs in valueFormat or a same-scale helper layer — not a TEXT() band."
+            "Presentation belongs in valueFormat or a same-scale helper layer: not a TEXT() band."
         ),
-        "judgment": "surfaced — RED structural; native valueFormat on TEXT bands rewrites scale (W21 canary).",
+        "judgment": "surfaced; RED structural; native valueFormat on TEXT bands rewrites scale (W21 canary).",
         "suggested_action": (
             "Replace wrapper with numeric =src or =src/1000 plus Entered In/Shown In valueFormat; "
-            "require fresh XLSX/export proof after any cleanup — do not trust content API alone."
+            "require fresh XLSX/export proof after any cleanup: do not trust content API alone."
         ),
         "trap_refs": [
             _trap(
                 "w21-native-valueformat-scale-rewrite",
                 "Applying NUMBER enteredIn=ONES shownIn=THOUSANDS to TEXT(B21/1000,...) rewrote "
-                "divisor to /1 — e.g. exporting 12,340,000 instead of 12,340 (the W21 canary incident).",
+                "divisor to /1: e.g. exporting 12,340,000 instead of 12,340 (the W21 canary incident).",
             ),
             _trap(
                 "display-mirror-xlsx-readback",
@@ -621,9 +621,9 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "title": "TEXT(.../1000) scaled display mirror",
         "explain": (
             "Formula wraps a source with TEXT(.../1000) for thousands presentation. "
-            "valueFormat auto-fix on this band is unsafe — Workiva may rewrite the formula divisor."
+            "valueFormat auto-fix on this band is unsafe: Workiva may rewrite the formula divisor."
         ),
-        "judgment": "surfaced — RED; never apply valueFormat auto-fix on existing TEXT mirror bands.",
+        "judgment": "surfaced; RED; never apply valueFormat auto-fix on existing TEXT mirror bands.",
         "suggested_action": (
             "Rebuild as numeric formula + valueFormat (Entered In/Shown In) or a proven helper block; "
             "verify with XLSX export, not content API effectiveValue alone."
@@ -631,7 +631,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "trap_refs": [
             _trap(
                 "w21-native-valueformat-scale-rewrite",
-                "Native valueFormat on TEXT(.../1000) cells can change /1000 to /1 — 1000× export error.",
+                "Native valueFormat on TEXT(.../1000) cells can change /1000 to /1: 1000× export error.",
             ),
         ],
         "fix_refs": [],
@@ -640,10 +640,10 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "pathway_id": "formula.display-wrapper-isnumber-scaled",
         "title": "ISNUMBER→TEXT scaled display mirror",
         "explain": (
-            "IF(ISNUMBER(src), TEXT(ROUND(src/1000,...), ...)) band — the display-mirror screenshot pattern. "
+            "IF(ISNUMBER(src), TEXT(ROUND(src/1000,...), ...)) band: the display-mirror screenshot pattern. "
             "Breaks the numeric-formula contract; DL/tieout need numeric calculatedValue."
         ),
-        "judgment": "surfaced — RED structural formula judgment; no Krow auto-fix.",
+        "judgment": "surfaced; RED structural formula judgment; no Krow auto-fix.",
         "suggested_action": (
             "Replace mirror column with =src or scaled numeric ref; apply presentation via valueFormat "
             "on a separate layer. Do not mutate valueFormat on the TEXT band."
@@ -651,11 +651,11 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "trap_refs": [
             _trap(
                 "w21-native-valueformat-scale-rewrite",
-                "valueFormat writes on TEXT mirror bands rewrite formula scale — W21 canary proved 1000× export.",
+                "valueFormat writes on TEXT mirror bands rewrite formula scale: W21 canary proved 1000× export.",
             ),
             _trap(
                 "accounting-prefix-string-bypass",
-                "ACCOUNTING valueFormat applies only to numeric calculatedValue — TEXT()-wrapped "
+                "ACCOUNTING valueFormat applies only to numeric calculatedValue: TEXT()-wrapped "
                 "strings bypass valueFormat.",
             ),
         ],
@@ -668,15 +668,15 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "IF(ISNUMBER(src), TEXT(...)) converts numeric output to display text for commas/parens. "
             "The house architecture expects numeric cells with native valueFormat handling presentation."
         ),
-        "judgment": "surfaced — RED; formula rewrite required, not format auto-fix.",
+        "judgment": "surfaced; RED; formula rewrite required, not format auto-fix.",
         "suggested_action": (
             "Point face/mirror cell at numeric source (=src) and set valueFormat in Workiva UI or "
-            "a scoped applyFormats pass on the numeric layer — not on the TEXT wrapper."
+            "a scoped applyFormats pass on the numeric layer: not on the TEXT wrapper."
         ),
         "trap_refs": [
             _trap(
                 "accounting-prefix-string-bypass",
-                "TEXT()-wrapped strings bypass valueFormat — format-only fixes silently fail or corrupt scale.",
+                "TEXT()-wrapped strings bypass valueFormat: format-only fixes silently fail or corrupt scale.",
             ),
         ],
         "fix_refs": [],
@@ -686,9 +686,9 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "title": "Literal numeric string formula",
         "explain": (
             "Cell stores a hardcoded numeric display as a string formula (=\"12345\"). "
-            "Not live-linked — breaks tieout and the numeric-formula contract."
+            "Not live-linked: breaks tieout and the numeric-formula contract."
         ),
-        "judgment": "surfaced — RED; replace with numeric source or link.",
+        "judgment": "surfaced; RED; replace with numeric source or link.",
         "suggested_action": (
             "Replace literal string with a formula pointing at the live source cell; "
             "never substitute valueFormat on a string literal."
@@ -706,7 +706,7 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
             "is silently inert and the cell/linked doc renders the raw string."
         ),
         "judgment": (
-            "surfaced — RED; strip the wrapper so ACCOUNTING renders natively. Confirm the "
+            "surfaced: RED; strip the wrapper so ACCOUNTING renders natively. Confirm the "
             "upstream ref is numeric first (pre-write safety)."
         ),
         "suggested_action": (
@@ -717,13 +717,13 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
         "trap_refs": [
             _trap(
                 "w21-native-valueformat-scale-rewrite",
-                "Never apply a valueFormat auto-fix on a TEXT mirror band (W21 canary) — "
+                "Never apply a valueFormat auto-fix on a TEXT mirror band (W21 canary): "
                 "strip the wrapper instead.",
             ),
             _trap(
                 "strip-then-residual-renders",
                 "After stripping, single-value Total-col-only rows can render `$—` and "
-                "doc-linked cells may still need a follow-up presentation pass — the strip alone is "
+                "doc-linked cells may still need a follow-up presentation pass: the strip alone is "
                 "insufficient on those.",
             ),
         ],
@@ -734,8 +734,8 @@ PATHWAYS: dict[tuple[str, str, str | None], dict[str, Any]] = {
     ("display-wrapper", "surfaced", "other"): {
         "pathway_id": "formula.display-wrapper-other",
         "title": "Display-wrapper formula",
-        "explain": "Formula uses TEXT/ISNUMBER display mirroring — review before any write.",
-        "judgment": "surfaced — RED; no valueFormat auto-fix on TEXT bands.",
+        "explain": "Formula uses TEXT/ISNUMBER display mirroring; review before any write.",
+        "judgment": "surfaced; RED; no valueFormat auto-fix on TEXT bands.",
         "suggested_action": "Inspect formula text; rebuild on numeric layer with export proof.",
         "trap_refs": [
             _trap(
@@ -964,12 +964,12 @@ CHECK_PATHWAYS: dict[str, dict[str, Any]] = {
             "Trial balance GL codes with material balances are not mapped in AcctMap. "
             "Statement tieouts and rollforwards will miss these amounts until mapped."
         ),
-        "judgment": "surfaced — data integrity; map GL → SLC/SAE in AcctMap before tieout green.",
+        "judgment": "surfaced; data integrity; map GL → SLC/SAE in AcctMap before tieout green.",
         "suggested_action": "Open AcctMap; add rows for listed GL codes; re-run data suite.",
         "trap_refs": [
             _trap(
                 "acctmap-per-fund-miss",
-                "Per-fund AcctMap gaps often hide behind aggregate TB green — scan by fund.",
+                "Per-fund AcctMap gaps often hide behind aggregate TB green: scan by fund.",
             ),
         ],
         "fix_refs": [
@@ -981,9 +981,9 @@ CHECK_PATHWAYS: dict[str, dict[str, Any]] = {
         "title": "Formula consistency deviants",
         "explain": (
             "Rows on a statement sheet use a different formula pattern than their peers in the "
-            "same column — often a copy/paste miss or a partial remap."
+            "same column: often a copy/paste miss or a partial remap."
         ),
-        "judgment": "surfaced — structural formula judgment; not a safe auto-fix.",
+        "judgment": "surfaced; structural formula judgment; not a safe auto-fix.",
         "suggested_action": "Compare deviant rows to the dominant pattern; align formula text or restore source links.",
         "trap_refs": [
             _trap(
@@ -1000,9 +1000,9 @@ CHECK_PATHWAYS: dict[str, dict[str, Any]] = {
         "title": "Reconciliation validation FAIL",
         "explain": (
             "A recon sheet section total does not tie to its detail lines, or hardcoded values "
-            "replace live formulas — common after manual overrides."
+            "replace live formulas: common after manual overrides."
         ),
-        "judgment": "surfaced — recon integrity; requires formula/source review.",
+        "judgment": "surfaced; recon integrity; requires formula/source review.",
         "suggested_action": "Open the recon sheet; fix section formulas or replace hardcoded cells with links.",
         "trap_refs": [],
         "fix_refs": [],
@@ -1014,12 +1014,12 @@ CHECK_PATHWAYS: dict[str, dict[str, Any]] = {
             "TieoutSuite compared calculated workbook values to published document targets and "
             "found |delta| above the configured WARN threshold."
         ),
-        "judgment": "surfaced — financial tieout break; diagnose before any write.",
+        "judgment": "surfaced; financial tieout break; diagnose before any write.",
         "suggested_action": "Inspect FAIL rows in tieout scorecard; trace calc vs pub for largest deltas first.",
         "trap_refs": [
             _trap(
                 "tieout-publish-lag",
-                "Stale publish can mimic tieout FAIL — verify ownLinks + doc allLinks before rewriting formulas.",
+                "Stale publish can mimic tieout FAIL: verify ownLinks + doc allLinks before rewriting formulas.",
             ),
         ],
         "fix_refs": [
@@ -1030,10 +1030,10 @@ CHECK_PATHWAYS: dict[str, dict[str, Any]] = {
         "pathway_id": "checks.master-gate",
         "title": "CHECKS sheet master gate",
         "explain": (
-            "The in-workbook CHECKS master gate is non-zero — structural validation flags are "
+            "The in-workbook CHECKS master gate is non-zero: structural validation flags are "
             "blocking delivery until cleared."
         ),
-        "judgment": "surfaced — layer-0 gate; fix underlying CHECKS rows before tieout/export.",
+        "judgment": "surfaced; layer-0 gate; fix underlying CHECKS rows before tieout/export.",
         "suggested_action": "Open CHECKS sheet; resolve flagged rows; confirm MASTER_GATE reads 0.",
         "trap_refs": [],
         "fix_refs": [],
@@ -1042,10 +1042,10 @@ CHECK_PATHWAYS: dict[str, dict[str, Any]] = {
         "pathway_id": "config.no-xlsx",
         "title": "Snapshot not resolved",
         "explain": (
-            "run_checks could not resolve an xlsx snapshot for data/formula suites — "
+            "run_checks could not resolve an xlsx snapshot for data/formula suites: "
             "projects.json or the snapshot-loader path may be misconfigured."
         ),
-        "judgment": "surfaced — config blocker; data/formula checks did not run.",
+        "judgment": "surfaced; config blocker; data/formula checks did not run.",
         "suggested_action": "Run pull_snapshot / load_live in the client repo; confirm projects.json client slug.",
         "trap_refs": [],
         "fix_refs": [],
@@ -1053,8 +1053,8 @@ CHECK_PATHWAYS: dict[str, dict[str, Any]] = {
     "unknown": {
         "pathway_id": "checks.unknown",
         "title": "run_checks FAIL",
-        "explain": "A run_checks suite reported FAIL — see detail line.",
-        "judgment": "surfaced — review run_checks report.",
+        "explain": "A run_checks suite reported FAIL; see detail line.",
+        "judgment": "surfaced; review run_checks report.",
         "suggested_action": "Open the run_checks report for full context.",
         "trap_refs": [],
         "fix_refs": [],
@@ -1065,14 +1065,14 @@ CHECK_PATHWAYS: dict[str, dict[str, Any]] = {
         "title": "Hardening gate parity FAIL",
         "explain": (
             "A parity anchor cell on the local snapshot does not match the expected post-"
-            "migration value — hardening would break tieout if applied blindly."
+            "migration value: hardening would break tieout if applied blindly."
         ),
-        "judgment": "surfaced — value parity gate; diagnose before CONFIRM=1 hardening.",
+        "judgment": "surfaced; value parity gate; diagnose before CONFIRM=1 hardening.",
         "suggested_action": "Trace the anchor cell formula inputs; fix root cause, re-pull snapshot, re-run.",
         "trap_refs": [
             _trap(
                 "hardening-gate-parity-stale-snap",
-                "Stale xlsx snapshot mimics parity FAIL — run pull_snapshot before evaluate.",
+                "Stale xlsx snapshot mimics parity FAIL: run pull_snapshot before evaluate.",
             ),
         ],
         "fix_refs": [],
@@ -1081,10 +1081,10 @@ CHECK_PATHWAYS: dict[str, dict[str, Any]] = {
         "pathway_id": "hardening-gate.patch-refs",
         "title": "Formulas still reference retired patch zone",
         "explain": (
-            "Face formulas still reference cells in the retired helper patch bands — "
+            "Face formulas still reference cells in the retired helper patch bands: "
             "criteria must move to the row-local criteria columns before hardening."
         ),
-        "judgment": "surfaced — structural hardening-gate migration debt.",
+        "judgment": "surfaced; structural hardening-gate migration debt.",
         "suggested_action": "Open listed region; remap criteria to the row-local criteria columns; clear the patch bank.",
         "trap_refs": [],
         "fix_refs": [
@@ -1098,10 +1098,10 @@ CHECK_PATHWAYS: dict[str, dict[str, Any]] = {
         "pathway_id": "hardening-gate.criteria-bank",
         "title": "Criteria bank not retired",
         "explain": (
-            "The combining statement still has non-empty cells in the legacy criteria-bank range — "
+            "The combining statement still has non-empty cells in the legacy criteria-bank range: "
             "it must be cleared after row-local GL splits are wired."
         ),
-        "judgment": "surfaced — helper-block retirement gate.",
+        "judgment": "surfaced; helper-block retirement gate.",
         "suggested_action": "Confirm row-local criteria on affected rows; clear the legacy criteria-bank range.",
         "trap_refs": [],
         "fix_refs": [],
@@ -1110,10 +1110,10 @@ CHECK_PATHWAYS: dict[str, dict[str, Any]] = {
         "pathway_id": "hardening-gate.no-snapshot",
         "title": "ACFR preset snapshot missing",
         "explain": (
-            "The hardening-gate evaluate() could not read the local xlsx snapshot — the snapshot pull "
+            "The hardening-gate evaluate() could not read the local xlsx snapshot: the snapshot pull "
             "must run in the ACFR preset repo before a hardening dry-run is meaningful."
         ),
-        "judgment": "surfaced — config blocker; evaluate did not run.",
+        "judgment": "surfaced; config blocker; evaluate did not run.",
         "suggested_action": "Run the snapshot pull in the ACFR preset repo; re-run the hardening gate.",
         "trap_refs": [],
         "fix_refs": [],
@@ -1185,8 +1185,8 @@ def lookup_pathway(
         meta = {
             "pathway_id": f"unknown.{kind}",
             "title": kind.replace("-", " ").title(),
-            "explain": "Unclassified detector finding — review manually.",
-            "judgment": f"{fix_lane} — no playbook mapping yet.",
+            "explain": "Unclassified detector finding; review manually.",
+            "judgment": f"{fix_lane}; no playbook mapping yet.",
             "suggested_action": "Inspect in Workiva and classify before fix.",
             "trap_refs": [],
             "fix_refs": [],

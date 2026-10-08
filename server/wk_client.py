@@ -310,7 +310,7 @@ def build_formula_fetch_meta(*, enabled, cell_count, enriched_count, table_id_pr
             "partial": True,
             "mode": mode or "off",
             "reason": (
-                "KROW_FORMULA_FETCH off — sheetdata literals only; "
+                "KROW_FORMULA_FETCH off: sheetdata literals only; "
                 "TEXT()/wrapper heuristics need the content cells API"
             ),
         }
@@ -320,7 +320,7 @@ def build_formula_fetch_meta(*, enabled, cell_count, enriched_count, table_id_pr
             "enabled": True,
             "partial": True,
             "mode": mode or "full",
-            "reason": "No content table id — formula enrichment skipped",
+            "reason": "No content table id; formula enrichment skipped",
             "cell_count": cell_count,
         }
     capped = cell_count > cap
@@ -359,7 +359,7 @@ def fetch_range_links(table_id, token, ctx, *, api_version="2026-01-01", max_pag
     meta = meta if meta is not None else {}
     meta.update(enabled=True, partial=False)
     if not table_id:
-        meta.update(partial=True, reason="No content table id — link read skipped")
+        meta.update(partial=True, reason="No content table id: link read skipped")
         return []
     out = []
     path = f"/content/tables/{table_id}/rangeLinks"
@@ -669,7 +669,7 @@ def scan_sheet(spreadsheet_id, sheet_id, token=None, ctx=None, max_pages=MAX_SCA
         findings, vision_meta = apply_vision_layer(findings, cell_images, cells_by_addr)
     truncated = bool(last and last.get("@nextLink"))  # stopped at the cap with more pages left
     link_meta = {"enabled": link_fetch_enabled(), "partial": True,
-                 "reason": "Link checks disabled" if not link_fetch_enabled() else "No content table id — link read skipped"}
+                 "reason": "Link checks disabled" if not link_fetch_enabled() else "No content table id; link read skipped"}
     if table_id and link_fetch_enabled():
         import link_lane
         fetch_meta = {}
@@ -683,7 +683,7 @@ def scan_sheet(spreadsheet_id, sheet_id, token=None, ctx=None, max_pages=MAX_SCA
 def _sheet_inventory(spreadsheet_id, token, ctx):
     raw = _get(f"/spreadsheets/{spreadsheet_id}/sheets?$maxperpage=500", token, ctx, version="2026-01-01")
     if isinstance(raw, dict) and raw.get("@nextLink"):
-        raise ValueError("Sheet inventory incomplete — sheet listing limit reached")
+        raise ValueError("Sheet inventory incomplete: sheet listing limit reached")
     rows = raw.get("data") if isinstance(raw, dict) else raw
     if not isinstance(rows, list) or any(not isinstance(s, dict) or not s.get("id") for s in rows):
         raise ValueError("Sheet inventory unavailable or malformed")

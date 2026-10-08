@@ -238,7 +238,7 @@ async function gotoCellOnTarget(target, rawAddr) {
   const addr = String(rawAddr || "").trim().split(":")[0].toUpperCase().replace(/\$/g, "");
   if (!/^[A-Z]{1,3}[1-9][0-9]{0,6}$/.test(addr)) throw new Error("invalid address: " + rawAddr);
   const nb = await evalJS(target, JS_NAMEBOX_HIT);
-  if (!nb || !nb.found) throw new Error("name box not found — open a spreadsheet first");
+  if (!nb || !nb.found) throw new Error("Name box not found. Open a spreadsheet first.");
   if ((nb.cell || "").toUpperCase() === addr) return { ok: true, landed: addr };
   if (!nb.hittable) throw new Error("name box not clickable (covered)");
 
