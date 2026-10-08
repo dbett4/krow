@@ -163,6 +163,12 @@ checker outcome is unchanged. The Mac extension folder was updated in place and 
 file intact and the previous package kept as `extension-before-brand-3f798e4`. The single pending extension reload
 now picks up both the rename and the brand.
 
+Copy update, same day: release `25b0adddd51c028552a69d3e2f58f641f4cced7a` (copy and style pass to the owner's
+design rules; CI green again after browser tests scroll controls into view) was verified file by file (169 of 169)
+and adopted as `/opt/krow/current`; after the restart the checker outcome matched the pre-switch run exactly. The
+Mac extension's 17 package files were replaced in place and hash-verified, the pairing file is byte-identical, and
+the previous package is kept as `extension-before-copy-25b0add`. The same single extension reload picks this up.
+
 Rollback: stop and disable `krow-readonly`, enable and start `wingman-readonly` (its release, unit,
 drop-in and `/etc/wingman` files are untouched), restore the Mac folder from `extension-before-krow-52f925d`
 and the `com.wingman.vps-tunnel` launch agent from its backup, then reload the extension.
