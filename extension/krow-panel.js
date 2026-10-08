@@ -89,7 +89,7 @@
   // Service calls go through the background worker so they carry the extension origin.
   function svc(path, opts) {
     if (!guardExtensionContext()) {
-      return Promise.reject(new Error("Extension reloaded — refresh this Workiva tab"));
+      return Promise.reject(new Error("Extension reloaded. Refresh this Workiva tab."));
     }
     return new Promise(function (resolve, reject) {
       try {
@@ -263,8 +263,8 @@
         var cb = document.createElement("input");
         cb.type = "checkbox";
         cb.checked = !!progress[step.id];
-        cb.title = "Mark step done (manual — Krow does not run this step)";
-        cb.setAttribute("aria-label", (step.title || step.id) + " — mark complete");
+        cb.title = "Mark step done (manual step)";
+        cb.setAttribute("aria-label", (step.title || step.id) + ": mark complete");
         cb.onclick = function (ev) { ev.stopPropagation(); };
         li.appendChild(cb);
         var body = el("div");
@@ -472,7 +472,7 @@
               }).then(function (applied) {
                 var ok = applied.filter(function (a) { return a.res.status === "applied"; }).length;
                 applyBtn.textContent = ok ? ("Applied " + ok) : "Apply finished";
-                flash(ok ? ("Applied " + ok + " gated format" + (ok === 1 ? "" : "s")) : "Gated apply finished — check rows");
+                flash(ok ? ("Applied " + ok + " gated format" + (ok === 1 ? "" : "s")) : "Gated apply finished. Check rows.");
               });
             },
           );
@@ -556,7 +556,7 @@
         if (chrome.runtime.lastError) {
           if (isExtensionContextError(chrome.runtime.lastError)) markExtensionInvalidated();
           if (srcEl) srcEl.classList.add("err");
-          flash("Extension reloaded — refresh tab", true);
+          flash("Extension reloaded. Refresh the tab.", true);
           return;
         }
         if (!resp || !resp.ok) {
@@ -570,13 +570,13 @@
       if (srcEl) srcEl.classList.remove("busy");
       if (isExtensionContextError(e)) markExtensionInvalidated();
       if (srcEl) srcEl.classList.add("err");
-      flash("Extension reloaded — refresh tab", true);
+      flash("Extension reloaded. Refresh the tab.", true);
     }
   }
   function shortErr(e) {
     e = String(e || "");
     if (/name box|spreadsheet/i.test(e)) return "Open a spreadsheet first";
-    if (/dialog|did not land|accept/i.test(e)) return "Jump failed — try again";
+    if (/dialog|did not land|accept/i.test(e)) return "Jump failed. Try again.";
     if (/cancelled|debugg/i.test(e)) return "Jump blocked (debugger)";
     return e ? e.slice(0, 44) : "Couldn't jump";
   }
@@ -622,7 +622,7 @@
     if (jc && jc.isCurrent === false) {
       line.classList.add("offsheet");
       s.classList.add("offsheet");
-      line.title = "On “" + (jc.name || "another sheet") + "” — open that sheet to jump";
+      line.title = "On “" + (jc.name || "another sheet") + "”. Open that sheet to jump.";
       line.onclick = function (ev) { ev.stopPropagation(); flash("Open “" + (jc.name || "that sheet") + "” to jump to " + info.addr); };
     } else {
       line.title = jumpTip;
@@ -765,7 +765,7 @@
     ".wm-guided-badge{margin-left:auto;font-size:10px;font-weight:500;color:var(--accent-text);white-space:nowrap}" +
     ".wm-start-checklist{margin:6px 0 4px;width:100%}" +
     ".wm-gated-format{margin-top:8px;padding-top:8px;border-top:1px solid var(--border-soft)}" +
-    ".wm-gated-hd{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}" +
+    ".wm-gated-hd{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;}" +
     ".wm-gated-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:4px}" +
     ".wm-gated-preview{font-size:11px;color:var(--muted)}" +
     ".wm-col-apply{font-size:11px}" +
@@ -794,7 +794,7 @@
     ".wm-cmd-input{width:100%;font:inherit;font-size:13px;color:var(--fg);background:transparent;border:0;outline:none;padding:0}" +
     ".wm-cmd-input::placeholder{color:var(--muted)}" +
     ".wm-cmd-list{overflow:auto;padding:6px 0 8px;flex:1}" +
-    ".wm-cmd-group{padding:4px 10px 2px;font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}" +
+    ".wm-cmd-group{padding:4px 10px 2px;font-size:10px;font-weight:500;color:var(--muted);}" +
     ".wm-cmd-item{display:flex;align-items:center;gap:8px;width:100%;font:inherit;font-size:12px;text-align:left;color:var(--fg);background:transparent;border:0;border-radius:6px;padding:7px 10px;margin:0 6px;cursor:pointer;transition:background-color .1s ease}" +
     ".wm-cmd-item:hover,.wm-cmd-item.active{background:var(--surface2)}" +
     ".wm-cmd-item-hint{margin-left:auto;font-size:11px;color:var(--muted)}" +
@@ -1022,7 +1022,7 @@
     var list = el("div", "wm-cmd-list");
     box.appendChild(list);
     var foot = el("div", "wm-cmd-foot");
-    foot.appendChild(el("span", null, "↑↓ navigate · Enter run · Esc close"));
+    foot.appendChild(el("span", null, ""));
     foot.appendChild(el("span", null, "⌘K"));
     box.appendChild(foot);
     overlay.appendChild(box);
@@ -1218,7 +1218,7 @@
       inspectState = state;
       paintInspection();
     }
-    var timer = setTimeout(function () { finish({error: "Table read timed out. Retry when ready; late replies are ignored."}); }, 30000);
+    var timer = setTimeout(function () { finish({error: "Table read timed out. Retry."}); }, 30000);
     svc("/api/document-tables?documentId=" + encodeURIComponent(target.documentId) + "&sectionId=" + encodeURIComponent(target.sectionId),
       {cache: "no-store"}).then(function (data) {
       if (!data.target || data.target.documentId !== target.documentId || data.target.sectionId !== target.sectionId ||
@@ -1226,7 +1226,7 @@
         throw new Error("Document table metadata unavailable");
       }
       finish({catalog: data});
-    }).catch(function () { finish({error: "Could not verify the tables in this section. Check the connection and retry. No cell read."}); });
+    }).catch(function () { finish({error: "Could not verify this section's tables. Check the connection and retry."}); });
   }
   function chooseDocumentCell(choice) {
     syncInspection();
@@ -1241,7 +1241,7 @@
       inspectState.chosen = Object.assign({}, inspectContext.document, choice);
       inspectSelectedCell(true);
     } else {
-      if (stopped) inspectState.error = "Stopped waiting. Any late reply will be ignored.";
+      if (stopped) inspectState.error = "Stopped waiting.";
       paintInspection();
     }
   }
@@ -1249,7 +1249,7 @@
     syncInspection();
     inspectRequest++;
     inspectState.trail = (inspectState.trail || []).slice(0, depth);
-    if (inspectState.traceLoading) inspectState.traceError = "Stopped waiting. The read may finish in the background; late evidence will be ignored.";
+    if (inspectState.traceLoading) inspectState.traceError = "Stopped waiting.";
     else delete inspectState.traceError;
     delete inspectState.traceLoading;
     paintInspection();
@@ -1280,7 +1280,7 @@
       if (!stillCurrent()) return;
       inspectRequest++;
       delete inspectState.traceLoading;
-      inspectState.traceError = "Source read timed out. Earlier evidence is retained; a late reply will not replace it.";
+      inspectState.traceError = "Source read timed out. Earlier evidence kept.";
       paintInspection();
     }, 30000);
     svc("/api/inspect-source?" + query, { cache: "no-store" }).then(function (data) {
@@ -1297,7 +1297,7 @@
     }).catch(function () {
       if (!stillCurrent()) return;
       delete inspectState.traceLoading;
-      inspectState.traceError = "Could not verify this source at the requested revision. Earlier evidence is retained; no latest-revision substitute. You can retry or return.";
+      inspectState.traceError = "Source not verified at the recorded revision. Earlier evidence kept. Retry or return.";
       paintInspection();
     }).finally(function () { clearTimeout(timer); });
   }
@@ -1325,7 +1325,7 @@
     var timer = documentCell ? setTimeout(function () {
       if (!stillCurrent()) return;
       inspectRequest++;
-      inspectState = Object.assign({}, retained, {error: "Cell read timed out. Retry or choose another cell; late replies are ignored."});
+      inspectState = Object.assign({}, retained, {error: "Cell read timed out. Retry or choose another cell."});
       paintInspection();
     }, 30000) : null;
     svc((documentCell ? "/api/inspect-document?" : "/api/inspect?") + query, { cache: "no-store" }).then(function (data) {
@@ -1340,7 +1340,7 @@
       paintInspection();
     }).catch(function (error) {
       if (!stillCurrent()) return;
-      inspectState = Object.assign({}, retained, { error: error.offline ? "Krow service is unavailable. No cell was inspected." : error.message });
+      inspectState = Object.assign({}, retained, { error: error.offline ? "Krow service unavailable." : error.message });
       paintInspection();
     }).finally(function () { clearTimeout(timer); });
   }
@@ -1421,9 +1421,9 @@
   }
 
   function emptyTabMessage(tabId) {
-    if (tabId === "checks") return { big: "No checks run yet", sub: "Run Tieout or Hardening Gate to merge FAIL rows." };
-    if (tabId === "workbook") return { big: "No workbook scan yet", sub: "Click All sheets to roll up findings across every sheet." };
-    return { big: "Scan the open sheet", sub: "Click Scan to run Krow detectors on the current sheet." };
+    if (tabId === "checks") return { big: "No checks run yet", sub: "" };
+    if (tabId === "workbook") return { big: "No workbook scan yet", sub: "" };
+    return { big: "No scan yet", sub: "" };
   }
 
   function restoreTabView() {
@@ -1630,7 +1630,7 @@
       stateMsg(ui.body, "Workiva can't reach this workbook",
         "Confirm the open spreadsheet is accessible to the Krow service credentials.");
     } else if (/HTTP 404/i.test(msg)) {
-      stateMsg(ui.body, "Krow service returned 404", msg + " — restart ./run-service.sh if routes look stale.");
+      stateMsg(ui.body, "Krow service returned 404", msg + ". Restart ./run-service.sh if routes look stale.");
     } else stateMsg(ui.body, "Scan failed", msg);
   }
 
@@ -1646,12 +1646,12 @@
       renderConnectedReadinessCard(ui.body, data);
       var sub = "This sheet is clean.";
       if (data.vision && data.vision.applied && data.vision.netNew === 0) {
-        sub = "Vision ran — no new defects beyond the API pass.";
-      } else if (data.vision && data.vision.applied) sub = "Vision layer ran — no defects found.";
+        sub = "Vision found nothing beyond the API pass.";
+      } else if (data.vision && data.vision.applied) sub = "Vision found no defects.";
       else if (data.vision && data.vision.skipped) sub = "API scan clean · " + data.vision.skipped;
       else if (data.checks && data.checks.skipped) sub = "No scan issues · " + data.checks.skipped;
       else if (data.checks && data.checks.applied && !data.checks.fail_count) {
-        sub = (data.checks.suite || "checks") + " green — no FAIL rows.";
+        sub = (data.checks.suite || "checks") + " passed with no FAIL rows.";
       }
       var empty = el("div", "wm-state");
       empty.appendChild(el("b", null, "No issues found"));
@@ -1861,7 +1861,7 @@
         fixAllChecked = results;
         syncFixAllBtn();
         var ok = results.filter(function (x) { return x.r.status === "dry-run"; }).length;
-        flash(ok ? ok + " safe fix" + (ok === 1 ? "" : "es") + " ready — click to apply" : "No safe fixes found");
+        flash(ok ? ok + " safe fix" + (ok === 1 ? "" : "es") + " ready to apply" : "No safe fixes found");
       });
     }
     function runFixAllApply() {
@@ -1876,7 +1876,7 @@
       }).then(function (applied) {
         var ok = applied.filter(function (a) { return a.res.status === "applied"; }).length;
         syncFixAllBtn();
-        flash(ok ? "Applied " + ok + " safe fix" + (ok === 1 ? "" : "es") : "Apply finished — check rows");
+        flash(ok ? "Applied " + ok + " safe fix" + (ok === 1 ? "" : "es") : "Apply finished. Check rows.");
       });
     }
     fixAllBtn.onclick = function () {
@@ -1927,8 +1927,8 @@
     var missing = rollup.sheetCount == null ? null : rollup.sheetCount - rollup.scanned;
     if (missing > 0) coverage.appendChild(el("p", "", missing + " of " + rollup.sheetCount + " sheets were not scanned."));
     coverage.appendChild(el("p", "", warnings.length ?
-      "Results cover only completed checks. Expand a sheet for limits; resolve missing access or read limits and scan again." :
-      "No findings means no flags in these checks—not proof of accounting accuracy or publication."));
+      "" :
+      ""));
     if (!rollup.sheets.length && warnings.length) coverage.appendChild(el("p", "", warnings.join(" · ")));
     ui.body.appendChild(coverage);
     var bar = el("div", "wm-wbbar");
@@ -1947,7 +1947,7 @@
     setActiveTab("workbook");
     var ids = parseIds();
     if (!ids) { stateMsg(ui.body, "Open a Workiva spreadsheet", "then click All sheets."); return; }
-    stateMsg(ui.body, "Scanning workbook…", "every sheet — this can take a few seconds.");
+    stateMsg(ui.body, "Scanning every sheet…", "");
     svc("/api/queue?spreadsheetId=" + encodeURIComponent(ids.spreadsheetId))
       .then(function (data) {
         if (!reviewIsCurrent(ui, ids, "workbook")) return;
@@ -2026,7 +2026,7 @@
       var tj = g.kind === "check-tieout" ? tieoutJumpContext(g, jc) : null;
       var jumpAddr = tj && tj.addr ? tj.addr : (g.addrs && g.addrs.length ? g.addrs[0] : null);
       if (jumpAddr && (tj ? tj.canJump : onSheet)) {
-        var jump = el("button", "wm-jump", "↗");
+        var jump = el("button", "wm-jump", "Go to");
         jump.title = "Jump to " + jumpAddr + (g.addrs && g.addrs.length > 1 ? " (first of " + g.addrs.length + ")" : "");
         jump.onclick = function (ev) { ev.stopPropagation(); gotoCell(jumpAddr, jump); };
         row.appendChild(jump);
@@ -2035,7 +2035,7 @@
         offHint.title = "Open “" + (tj.sheetName || "target sheet") + "” to jump to " + jumpAddr;
         row.appendChild(offHint);
       } else if (onSheet && g.addrs && g.addrs.length) {
-        var jump2 = el("button", "wm-jump", "↗");
+        var jump2 = el("button", "wm-jump", "Go to");
         jump2.title = "Jump to " + g.addrs[0] + (g.addrs.length > 1 ? " (first of " + g.addrs.length + ")" : "");
         jump2.onclick = function (ev) { ev.stopPropagation(); gotoCell(g.addrs[0], jump2); };
         row.appendChild(jump2);
@@ -2114,7 +2114,7 @@
             x._apply = null; ap.disabled = true; ap.textContent = "…";
             post("/apply", fixPostBody(jc, x.addr, g)).then(function (res) {
               if (res.status === "applied") ap.replaceWith(el("span", "wm-done", "fixed"));
-              else if (res.status === "style-locked") { var sl = el("span", "wm-note", "conditional format — fix rule in Workiva"); sl.title = res.reason || ""; ap.replaceWith(sl); }
+              else if (res.status === "style-locked") { var sl = el("span", "wm-note", "Conditional format: fix the rule in Workiva"); sl.title = res.reason || ""; ap.replaceWith(sl); }
               else if (res.status === "mismatch-reverted") ap.replaceWith(el("span", "wm-err", "reverted (no change)"));
               else ap.replaceWith(el("span", "wm-err", res.warning || res.reason || res.error || res.status || "failed"));
             }).catch(function (e) { ap.replaceWith(el("span", "wm-err", e.message)); });
@@ -2124,14 +2124,14 @@
           if (isTextTrapRefusal(x.r)) {
             appendTextTrapAlert(fr);
           } else if (/rich\s*text/i.test(String(x.r.reason || ""))) {
-            fr.appendChild(el("span", "wm-note", "rich text — fix in Workiva UI"));
+            fr.appendChild(el("span", "wm-note", "Rich text: fix in Workiva"));
           } else {
             fr.appendChild(el("span", "wm-note", x.r.reason || "refused"));
           }
         } else if (x.r.status === "no-fix-needed") {
           fr.appendChild(el("span", "wm-note", x.r.reason || "no fix needed"));
         } else if (x.r.status === "not-in-scan-page") {
-          fr.appendChild(el("span", "wm-err", x.r.reason || "cell not readable — re-scan sheet"));
+          fr.appendChild(el("span", "wm-err", x.r.reason || "Cell not readable. Re-scan the sheet."));
         } else {
           fr.appendChild(el("span", "wm-err", x.r.error || x.r.reason || "error"));
         }

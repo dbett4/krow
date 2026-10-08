@@ -153,10 +153,10 @@ function eq(label, got, want) {
   eq("connection accepted", wc.describe({ data }).code, "connected");
   eq("connection credential presence is not access", wc.facts({ data }), [
     ["Service authorization", "Accepted"], ["Workiva credentials", "Configured, not validated"],
-    ["Workbook access", "Not tested"], ["Workbook changes", "None — connection check only"],
+    ["Workbook access", "Not tested"], ["Workbook changes", "None"],
   ]);
   eq("read-only backend mode is separate from diagnostic readOnly", wc.facts({ data: { ...data, serviceMode: "read-only" } })[0],
-    ["Service mode", "Read-only — repairs disabled"]);
+    ["Service mode", "Read-only"]);
   eq("incompatible response cannot claim read-only service", wc.facts({ data: { ...data, service: "other", serviceMode: "read-only" } })
     .some(row => row[0] === "Service mode"), false);
   eq("connection missing backend credentials", wc.describe({ data: { ...data, workivaCredentials: "missing" } }).code, "credentials");

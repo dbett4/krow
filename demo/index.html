@@ -16,46 +16,39 @@
 <body>
   <header class="topbar">
     <a class="brand" href="/"><img src="/icons/icon128.png" width="28" height="28" alt="">Krow</a>
-    <span class="badge">INTERACTIVE DEMO</span>
-    <a href="https://github.com/dbett4/krow" target="_blank" rel="noreferrer">View source ↗</a>
+    <span class="demo-label">Demo</span>
+    <a href="https://github.com/dbett4/krow" target="_blank" rel="noreferrer">Source</a>
   </header>
   <main>
     <section class="intro" aria-labelledby="headline">
-      <div><p class="eyebrow">FINANCIAL WORKBOOK REVIEW</p><h1 id="headline">Understand the cell first.</h1>
-        <p>Separate what is stored, what calculates, and what still needs evidence.</p></div>
-      <div class="simulation"><strong>Real detectors. Fictional workbook.</strong><br>No account, installation, or Workiva connection.<br>Your session is isolated and resets after an hour.</div>
+      <h1 id="headline">Krow on a fictional workbook</h1>
+      <p class="simulation">Fictional data and a simulated Workiva API. Sessions reset after an hour.</p>
     </section>
     <div class="workspace">
       <div class="workbook-column">
         <section class="workbook" aria-labelledby="workbook-title">
-          <div class="workbook-heading"><div><p class="eyebrow">CITY OF RIVERTON</p><h2 id="workbook-title">FY2025 financial statements</h2></div><span class="local-label">Simulated editor</span></div>
+          <div class="workbook-heading"><h2 id="workbook-title">City of Riverton FY2025 financial statements</h2></div>
           <div class="formula-bar"><div class="dt-formula-cell-indicator" id="address">B2</div><span aria-hidden="true">ƒx</span><output id="formula" aria-label="Selected cell content">2025</output></div>
           <div class="grid-scroll" tabindex="0" role="region" aria-label="Fictional workbook cells"><table id="grid"><caption>Loading fictional workbook…</caption></table></div>
           <nav id="sheets" aria-label="Workbook sheets"></nav>
-          <p class="sheet-note">Select a cell to inspect its stored value or formula. Results are seeded; this is not a formula engine.</p>
         </section>
         <section class="guide" aria-labelledby="guide-title">
-          <h2 id="guide-title">A two-minute review</h2>
-          <ol><li><strong>Inspect one cell.</strong> Select B7, then “Inspect selected cell.” Compare the formula with its calculated result.</li>
-            <li><strong>Know the limits.</strong> Source policy and downstream reports are not connected. A stored number alone is not a defect.</li>
-            <li><strong>Try the existing scanner.</strong> Open Scan and click Scan. Its preview/apply workflow remains separate from the read-only inspector.</li></ol>
-          <div class="demo-actions"><button id="failure" type="button">Make next write mismatch</button><button id="reset" type="button">Reset my workbook</button><button id="report" type="button">Download review packet</button></div>
+          <h2 id="guide-title">Session</h2>
+          <div class="demo-actions"><button id="failure" type="button">Make next write mismatch</button><button id="reset" type="button">Reset workbook</button><button id="report" type="button">Download review packet</button></div>
           <p id="demo-status" role="status">Loading your session…</p>
         </section>
         <section class="receipt" aria-labelledby="receipt-title">
           <div class="section-heading"><h2 id="receipt-title">What happened</h2><span id="request-count">0 simulated API requests</span></div>
-          <p id="outcome" role="status">No changes yet. A scan reads; a preview plans; only Apply writes.</p>
+          <p id="outcome" role="status">No changes yet.</p>
           <div id="trace"></div>
-          <p class="limitation">This demonstrates the current readback and best-effort restore path—not atomic writes or guaranteed undo. Live collaboration, OAuth, rate limits, async jobs, vision, external checks, and publishing are not simulated.</p>
         </section>
       </div>
       <aside class="review-column" aria-label="Krow review panel">
-        <div class="review-heading"><span class="eyebrow">THE ACTUAL EXTENSION PANEL</span><button id="open-panel" type="button">Show / hide review</button></div>
+        <div class="review-heading"><h2>Panel</h2><button id="open-panel" type="button">Show panel</button></div>
         <div id="panel-slot"></div>
-        <p class="panel-note">Same panel, service routes, and detection/fix code as the extension. Browser messaging and the Workiva API are simulated.</p>
       </aside>
     </div>
   </main>
-  <footer>Built by <a href="https://davebettner.com" target="_blank" rel="noreferrer">Dave Bettner</a> · Fictional data only · Not affiliated with Workiva</footer>
+  <footer>Built by <a href="https://davebettner.com" target="_blank" rel="noreferrer">Dave Bettner</a> · Not affiliated with Workiva</footer>
 </body>
 </html>

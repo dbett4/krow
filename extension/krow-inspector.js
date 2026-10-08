@@ -59,7 +59,7 @@
   function traceBlock(origin, trail, target) {
     var seen = [{ tableId: origin.tableId, revision: origin.contentRevision, addr: origin.target.addr }]
       .concat(trail.map(function (data) { return data.target; }));
-    if (seen.some(function (prior) { return matchesSource(target, prior); })) return "Already in this trail — use the return path above.";
+    if (seen.some(function (prior) { return matchesSource(target, prior); })) return "Already in this trail. Use the return path.";
     if (trail.length >= 10) return "10-step limit reached. Return to an earlier step to explore another source.";
     return "";
   }
@@ -93,17 +93,15 @@
     page.setAttribute("aria-label", context.document ? "Document table inspector" : "Selected cell inspector");
     page.tabIndex = -1;
     var head = el("div", "wi-heading");
-    head.appendChild(el("span", "wi-eyebrow", tracing ? "SOURCE EVIDENCE" : context.document ? "DOCUMENT TABLE" : "SELECTED CELL"));
     head.appendChild(el("span", "wi-readonly", "Read-only"));
     page.appendChild(head);
     if (context.document && !context.target) {
       page.appendChild(el("h2", "wi-doc-heading", "Inspect a report table"));
-      page.appendChild(el("p", "wi-description", "Choose a table in this section and enter a cell address. Krow does not detect or move your selection in the document."));
       var catalog = state.catalog;
       var load = el("button", "wm-btn wi-doc-load" + (catalog ? "" : " primary"), state.loading ? "Reading tables…" : catalog ? "Reload tables" : "Read section tables");
       load.type = "button"; load.disabled = !!state.loading; load.onclick = documentActions.load;
       page.appendChild(load);
-      var status = el("p", "wi-description", state.error || (state.loading ? "Reading table identities only. No document changes." : ""));
+      var status = el("p", "wi-description", state.error || (state.loading ? "Reading tables…" : ""));
       status.setAttribute("role", "status"); page.appendChild(status);
       if (state.loading) {
         var stop = el("button", "wm-btn wi-doc-change", "Stop waiting");
@@ -111,8 +109,8 @@
       }
       if (catalog) {
         page.appendChild(el("p", "wi-sheet", catalog.sectionName || "Current section"));
-        page.appendChild(el("p", "wi-description", "Read at " + new Date(catalog.observedAt).toLocaleTimeString() + ". Reload tables after edits."));
-        if (!catalog.tables.length) page.appendChild(el("p", "wi-description", "No body tables in this section. Header, footer and inline text inspection are not supported."));
+        page.appendChild(el("p", "wi-description", "Read at " + new Date(catalog.observedAt).toLocaleTimeString()));
+        if (!catalog.tables.length) page.appendChild(el("p", "wi-description", "No body tables in this section."));
         else {
           var form = el("form", "wi-doc-form");
           var tableLabel = el("label", null, "Table"), select = el("select", "wi-doc-table");
@@ -135,7 +133,6 @@
           workbook.oninput = function () { workbook.setCustomValidity(""); };
           workbook.oninvalid = function () { companion.open = true; };
           workbookLabel.appendChild(workbook); companion.appendChild(workbookLabel);
-          companion.appendChild(el("p", "wi-description", "Use a current sheet URL from this workspace. Krow verifies source-table membership at the recorded revision before offering a sheet link."));
           form.appendChild(companion);
           var submit = el("button", "wm-btn primary", "Inspect cell & direct sources"); submit.type = "submit"; form.appendChild(submit);
           form.onsubmit = function (event) {
@@ -143,7 +140,7 @@
             var hint = sourceWorkbookHint(root.location.href, workbook.value);
             if (workbook.value.trim() && !hint) {
               companion.open = true;
-              workbook.setCustomValidity("Use a current Workiva sheet URL on the same site and in the same workspace as this report.");
+              workbook.setCustomValidity("Use a sheet URL from this site and workspace.");
               workbook.reportValidity();
               return;
             }
@@ -196,11 +193,11 @@
     page.appendChild(el("p", "wi-sheet", tracing ? data.tableName || "Source table" : context.document
       ? data && data.tableName || "Chosen document table" : data && data.sheetName ? data.sheetName : "Sheet " + target.sheetId));
     if (context.document) {
-      page.appendChild(el("p", "wi-description", "Explicit table-cell choice, not the document's native selection. Recorded revision: " + context.target.revision + "."));
+      page.appendChild(el("p", "wi-description", "Recorded revision: " + context.target.revision));
       var change = el("button", "wm-btn wi-doc-change", state.loading ? "Stop waiting / change cell" : "Choose another table cell");
       change.type = "button"; change.onclick = function () { documentActions.choose(null); }; page.appendChild(change);
     }
-    if (tracing) page.appendChild(el("p", "wi-description", "Recorded revision: " + target.revision + ". Your Workiva selection has not moved."));
+    if (tracing) page.appendChild(el("p", "wi-description", "Recorded revision: " + target.revision));
     var button = el("button", "wm-btn primary wi-inspect", tracing ? context.document ? "Return to chosen cell" : "Return to selected cell"
       : state.loading ? "Reading cell…" : context.document ? "Reread chosen revision" : "Inspect selected cell");
     button.type = "button";
@@ -210,17 +207,17 @@
     var feedback = el("p", "wi-description");
     feedback.setAttribute("role", "status");
     feedback.textContent = state.error || (state.loading ? (state.sources
-      ? "Refreshing " + target.addr + " and reading direct sources. Up to 100 cells / 10 ranges; no changes."
-      : "Reading " + target.addr + " and its link metadata. No workbook scan or changes.")
+      ? "Refreshing " + target.addr + " and its direct sources…"
+      : "Reading " + target.addr + "…")
       : data && data.status === "unavailable" ? "No cell evidence returned. Inspect again to retry."
       : data && data.status === "changed" ? "Cell or content revision changed while reading. Inspect again."
       : data ? "Read at " + new Date(data.observedAt).toLocaleTimeString() + (tracing
-        ? ". Saved evidence, not a live update." : context.document ? ". Reload tables to read newer revisions." : ". Inspect again after edits.")
-        : "See the content, result and format separately. No changes will be made.");
+        ? " · saved evidence" : "")
+        : "");
     page.appendChild(feedback);
     if (state.traceLoading || state.traceError) {
       var traceFeedback = el("p", "wi-warning wi-trace-status", state.traceError ||
-        "Reading " + state.traceLoading.addr + " at its recorded revision and up to 100 direct source cells / 10 ranges…");
+        "Reading " + state.traceLoading.addr + " at its recorded revision…");
       traceFeedback.setAttribute("role", "status");
       page.appendChild(traceFeedback);
       if (state.traceLoading) {
@@ -247,28 +244,27 @@
         page.appendChild(evidence);
         var sourceUrl = tracing && sourceSheetUrl(root.location.href, data);
         if (sourceUrl) {
-          var openSheet = el("a", "wm-btn wi-open-source", "Open source sheet ↗");
+          var openSheet = el("a", "wm-btn wi-open-source", "Open source sheet");
           openSheet.href = sourceUrl;
           openSheet.target = "_blank";
           openSheet.rel = "noopener noreferrer";
           openSheet.setAttribute("aria-describedby", "wi-open-source-note");
           page.appendChild(openSheet);
-          var openNote = el("p", "wi-description", "Opens today's sheet in a new tab, not cell " + target.addr +
-            ". Values may differ from this saved revision. Switch back to this tab for the trail.");
+          var openNote = el("p", "wi-description", "Opens the current sheet in a new tab.");
           openNote.id = "wi-open-source-note";
           page.appendChild(openNote);
         }
         var explanations = {
           formula: "",
-          number: "This cell stores a number. Without its source policy, Krow cannot say whether it should be a formula or an approved frozen value.",
-          text: "This cell stores text. No formatting change is proposed.",
-          blank: "The stored content is blank. This alone does not establish a broken link.",
-          boolean: "This cell stores a boolean value, not a financial amount.",
-          raw_value: "Workiva returns this raw content as text. That does not establish its numeric type or whether it should be a formula.",
-          linked_value: "Workiva identifies a cell-level linked value. Follow available source cells below, one step at a time.",
+          number: "Stored number. Source policy unknown.",
+          text: "Stored text.",
+          blank: "Blank.",
+          boolean: "Stored boolean.",
+          raw_value: "Raw content returned as text.",
+          linked_value: "Cell-level linked value.",
         };
         var explanation = explanations[data.content && data.content.kind];
-        if (explanation === undefined) explanation = "Stored content could not be classified. No hardcode or formula judgment is made.";
+        if (explanation === undefined) explanation = "Unclassified content.";
         if (explanation) page.appendChild(el("p", "wi-description", explanation));
       }
       if (data.content || data.calculated) {
@@ -307,12 +303,12 @@
           if (formula.unresolved.length) row(refs, "Not resolved", formula.unresolved.join("\n"), true);
           sources.appendChild(refs);
           sources.appendChild(el("p", "wi-description", sourceValues
-            ? "Addresses extracted from formula text. Literal numbers are not automatically errors."
-            : "Formula text only. Referenced cells were not read; literal numbers are not automatically errors."));
+            ? "Addresses extracted from formula text."
+            : "Formula text only. Referenced cells not read."));
         } else {
           sources.appendChild(el("p", "wi-description", formula.status === "not_formula"
-            ? "No stored formula. Workiva links are checked separately."
-            : "Formula references could not be inspected."));
+            ? "No stored formula."
+            : "Formula references not inspected."));
         }
         if (cellLink && cellLink.status !== "not_present") {
           var cellDetail = el("details", "wi-details wi-cell-link");
@@ -339,10 +335,9 @@
           sourceButton.type = "button";
           sourceButton.onclick = function () { inspect(true); };
           sources.appendChild(sourceButton);
-          sources.appendChild(el("p", "wi-description", "Up to 100 cells / 10 ranges. Formula references use the selected content revision; incoming links use their recorded source revisions."));
         }
         if (sourceValues) {
-          if (sourceValues.status !== "observed") sources.appendChild(el("p", "wi-warning", "Direct source reads are incomplete. Unresolved references or unavailable links remain above and below."));
+          if (sourceValues.status !== "observed") sources.appendChild(el("p", "wi-warning", "Direct source reads incomplete."));
           sourceValues.groups.forEach(function (group) {
             var block = el("details", "wi-details wi-source-values");
             block.open = sourceValues.groups.length === 1 || group.basis === "cell_link_revision";
@@ -391,14 +386,13 @@
             block.appendChild(identity);
             sources.appendChild(block);
           });
-          sources.appendChild(el("p", "wi-description", "Inspect a source to read that cell and its direct evidence at the recorded revision. Up to 10 steps per trail; return without rereading. Raw values are not presentation-formatted or reconciled."));
         } else if (data.sourceValuesRequested) {
-          sources.appendChild(el("p", "wi-warning", "Source values were not retained because the selected content could not be rechecked. Inspect again."));
+          sources.appendChild(el("p", "wi-warning", "Source values not kept: the selection could not be rechecked. Inspect again."));
         }
         var linkStatus = links.status === "observed"
           ? (items.length ? "Range-link metadata read for this cell." : "No range link covers this cell in the returned table metadata.")
           : links.status === "partial" ? "Range-link list incomplete. Only the evidence below was returned."
-          : links.status === "unavailable" ? "Range links unavailable. This does not mean the cell is unlinked."
+          : links.status === "unavailable" ? "Range links unavailable."
           : "Range links not inspected.";
         sources.appendChild(el("p", links.status === "partial" || links.status === "unavailable" ? "wi-warning" : "wi-description", linkStatus));
         items.forEach(function (link) {
@@ -415,14 +409,13 @@
             row(fields, "Reported source revision", link.source.revision, true);
             row(fields, "Source range lookup", link.resolution === "observed"
               ? "Range metadata read at the reported revision"
-              : "Not available at the reported revision; no latest-revision substitute");
+              : "Not available at the reported revision");
           } else {
             row(fields, "Last published revision", link.revision || "Not provided", true);
           }
           linkDetail.appendChild(fields);
           sources.appendChild(linkDetail);
         });
-        sources.appendChild(el("p", "wi-description", "Only requested steps are traced. Inline text links and the full source chain are not inspected. Connected does not mean a report is correct or up to date."));
         page.appendChild(sources);
       }
       (data.warnings || []).forEach(function (warning) {
@@ -436,8 +429,8 @@
         if (data.location && data.location.status === "observed") {
           row(metadata, "Workbook ID", data.location.spreadsheetId, true);
           row(metadata, "Sheet ID", data.location.sheetId, true);
-          row(metadata, "Source workbook location", "Matched at the recorded revision. Workiva selection has not moved.");
-        } else row(metadata, "Source workbook location", "Not established; no workbook navigation offered");
+          row(metadata, "Source workbook location", "Matched at the recorded revision");
+        } else row(metadata, "Source workbook location", "Not established");
       } else if (context.document) {
         row(metadata, "Page workspace", target.workspaceId);
         row(metadata, "Document ID", target.documentId, true);
@@ -447,12 +440,11 @@
         row(metadata, "Page workspace", target.workspaceId || "Not supplied by this page");
         row(metadata, "Workbook ID", target.spreadsheetId, true);
         row(metadata, "Sheet ID", target.sheetId, true);
-        row(metadata, "Metadata revision", data.revision || "Not provided; not a pinned snapshot", true);
+        row(metadata, "Metadata revision", data.revision || "Not provided", true);
       }
       row(metadata, "Content revision", data.contentRevision || "Not available", true);
       row(metadata, "Format fields", valueText(data.nativeFormat), true);
       detail.appendChild(metadata);
-      detail.appendChild(el("p", "wi-description", "Page identity is not proof of client, fiscal period, or working-copy authority. Rendered document text is not inspected."));
     }
     var scope = el("dl", "wi-scope");
     row(scope, "Full source chain", "Not traced");

@@ -106,7 +106,7 @@
     if (path !== "/fix" && path !== "/apply") return;
     var text = (path === "/fix" ? "Preview" : "Apply") + " · " + (data.addr || "") + " · " + data.status + " · " + new Date().toLocaleTimeString();
     if (data.status === "dry-run") text += " · no write: " + JSON.stringify(data.before) + " → " + JSON.stringify(data.after);
-    if (data.status === "mismatch-reverted") text += " · mismatch detected; restore requested. Inspect the simulator's writes below.";
+    if (data.status === "mismatch-reverted") text += " · mismatch detected; restore requested";
     if (data.warning || data.reason) text += " · " + (data.warning || data.reason);
     document.getElementById("outcome").textContent = text;
   }
@@ -135,7 +135,11 @@
     set: function (obj, cb) { Object.assign(storage, obj); if (cb) cb(); },
   } };
   function panelRoot() { return document.getElementById("__wk_krow__").shadowRoot; }
-  function togglePanel() { listeners.forEach(function (fn) { fn({ type: "WM_TOGGLE" }, {}, function () {}); }); }
+  function syncPanelLabel() {
+    var open = !!panelRoot().querySelector(".wm-panel");
+    document.getElementById("open-panel").textContent = open ? "Hide panel" : "Show panel";
+  }
+  function togglePanel() { listeners.forEach(function (fn) { fn({ type: "WM_TOGGLE" }, {}, function () {}); }); syncPanelLabel(); }
   function action(id, path, after) {
     document.getElementById(id).onclick = function () {
       setBusy(1);
@@ -152,6 +156,7 @@
     panelRoot().appendChild(style);
     // Keep unavailable controls visible and explicitly disabled in this demo only.
     new MutationObserver(function () {
+      syncPanelLabel();
       panelRoot().querySelectorAll('.wm-tab[data-tab="checks"], .wm-btn.toggle').forEach(function (button) {
         if (!button.disabled) {
           button.disabled = true;
@@ -160,22 +165,22 @@
       });
     }).observe(panelRoot(), { childList: true, subtree: true });
     document.getElementById("open-panel").onclick = togglePanel;
-    action("failure", "/demo/failure", function () { message("Armed. Preview a safe fix, then Apply. Only the next write will mismatch; its restore is allowed to succeed."); });
+    action("failure", "/demo/failure", function () { message("Next write will mismatch."); });
     action("reset", "/demo/reset", function () { location.reload(); });
     document.getElementById("report").onclick = function () {
       setBusy(1);
       api("/api/review-packet?spreadsheetId=de00").then(function (data) {
-        var blob = new Blob(["SIMULATION — fictional Riverton workbook; not audit evidence.\n\n" + data.markdown], { type: "text/markdown" });
+        var blob = new Blob(["SIMULATION: fictional Riverton workbook, not audit evidence.\n\n" + data.markdown], { type: "text/markdown" });
         var url = URL.createObjectURL(blob), link = node("a");
         link.href = url; link.download = "krow-riverton-demo-review.md";
         document.body.appendChild(link); link.click(); link.remove();
         setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-        message("Downloaded a fresh, scan-derived review packet. Unresolved findings still need human review.");
+        message("Review packet downloaded.");
         return refresh();
       }).catch(function (err) { message(err.message); }).finally(function () { setBusy(-1); });
     };
     refresh().then(function () {
-      message("Your fictional workbook is ready. Reset affects only this browser session.");
+      message("Workbook ready.");
       togglePanel();
     }).catch(function (err) { message(err.message); });
   });

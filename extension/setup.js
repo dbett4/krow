@@ -13,7 +13,7 @@
       navigator.clipboard.writeText(text).then(function () {
         document.getElementById("copy-status").textContent = "Redacted diagnostics copied.";
       }, function () {
-        document.getElementById("copy-status").textContent = "Clipboard unavailable. Keep this page open to review the connection details.";
+        document.getElementById("copy-status").textContent = "Clipboard unavailable.";
       });
     });
   }

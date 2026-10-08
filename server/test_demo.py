@@ -57,7 +57,7 @@ class Browser:
         self.cookies = http.cookiejar.CookieJar()
         self.opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(self.cookies))
         with self.opener.open(url + "/", timeout=5) as response:
-            assert "THE ACTUAL EXTENSION PANEL" in response.read().decode()
+            assert 'id="panel-slot"' in response.read().decode()
 
     def request(self, path, body=None, *, headers=None, method=None):
         request = urllib.request.Request(

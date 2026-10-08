@@ -18,19 +18,19 @@
       else code = data.workivaCredentials === "present" ? "connected" : "credentials";
     }
     var copy = {
-      unchecked: ["Not checked", "Check the extension-to-service connection. This does not read a workbook or test Workiva access."],
-      checking: ["Checking connection…", "Waiting for the service. No workbook is being read. You can stop waiting at any time."],
-      cancelled: ["Check stopped", "Stopped waiting. Any late response will be ignored. No workbook action was sent."],
-      setup: ["Extension setup needed", "This extension has no service token. Install the paired extension configuration from your approved setup, then reload the extension and reopen Krow. Refresh any open Workiva tabs. Do not paste Workiva credentials here."],
-      offline: ["Service unreachable", "The configured connection could not be reached. Check the approved connection on this device and that the backend is running. Retry when the route is available."],
-      timeout: ["Connection timed out", "The service did not respond within 8 seconds. Check the connection route and retry. No workbook action was sent."],
-      denied: ["Service access rejected", "The service rejected this extension's request. Verify that the installed extension configuration is paired with the intended backend. This is not a Workiva workbook permission result."],
-      failed: ["Connection check failed", "The service check did not complete. Retry; if it persists, copy the redacted diagnostics for your operator."],
-      incompatible: ["Service update needed", "The response does not match this extension's connection protocol. Verify the backend and extension are a compatible pair. No access claim can be made."],
-      reloaded: ["Extension reloaded", "Reload this page, then reopen Krow. Refresh any open Workiva tabs too. A response from the old extension cannot be used."],
-      credentials: ["Workiva setup incomplete", "The extension reached Krow and its service token was accepted. Workiva credentials are missing on the backend; complete the approved backend setup, then check again."],
-      connected: ["Service connected", "The service accepted this extension's token. Workiva credentials are configured, but their validity and access to this workbook have not been tested."],
-      demo: ["Demo connection", "The fictional demo responded. Extension authorization and live Workiva access are not tested in this simulation."],
+      unchecked: ["Not checked", ""],
+      checking: ["Checking connection…", ""],
+      cancelled: ["Check stopped", ""],
+      setup: ["Extension setup needed", "No service token. Install the paired configuration, then reload the extension."],
+      offline: ["Service unreachable", "Check the connection on this device and that the backend is running."],
+      timeout: ["Connection timed out", "No response in 8 seconds. Check the connection and retry."],
+      denied: ["Service access rejected", "Check that this extension is paired with the intended backend."],
+      failed: ["Connection check failed", "Retry. If it fails again, copy diagnostics for your operator."],
+      incompatible: ["Service update needed", "The extension and backend versions do not match."],
+      reloaded: ["Extension reloaded", "Reload this page and any open Workiva tabs, then reopen Krow."],
+      credentials: ["Workiva setup incomplete", ""],
+      connected: ["Service connected", ""],
+      demo: ["Demo connection", ""],
     }[code];
     return { code: code, title: copy[0], message: copy[1] };
   }
@@ -42,9 +42,9 @@
       ["Service authorization", reached ? "Accepted" : code === "demo" ? "Simulated, not tested" : "Not established"],
       ["Workiva credentials", code === "connected" ? "Configured, not validated" : code === "credentials" ? "Missing on backend" : "Not checked"],
       ["Workbook access", "Not tested"],
-      ["Workbook changes", "None — connection check only"],
+      ["Workbook changes", "None"],
     ];
-    if (reached && state.data.serviceMode === "read-only") rows.unshift(["Service mode", "Read-only — repairs disabled"]);
+    if (reached && state.data.serviceMode === "read-only") rows.unshift(["Service mode", "Read-only"]);
     return rows;
   }
 
@@ -68,41 +68,29 @@
     var page = el("section", "wc-page"); page.tabIndex = -1;
     var heading = el("h2", null, "Connection"); heading.id = "wc-heading";
     page.appendChild(heading);
-    page.appendChild(el("p", "wc-readonly", "Read-only diagnostic · no workbook access"));
     var status = el("div", "wc-status"); status.setAttribute("role", "status");
     status.appendChild(el("h3", null, result.title));
-    status.appendChild(el("p", null, result.message));
+    if (result.message) status.appendChild(el("p", null, result.message));
     page.appendChild(status);
     var button = el("button", "wm-btn primary wc-check", state.loading ? "Stop waiting" : "Check connection");
     button.type = "button";
     button.disabled = result.code === "reloaded";
     button.onclick = state.loading ? cancel : check;
     page.appendChild(button);
-    if (state.checkedAt) page.appendChild(el("p", "wc-time", "Checked at " + new Date(state.checkedAt).toLocaleString() + ". Check again after setup changes."));
+    if (state.checkedAt) page.appendChild(el("p", "wc-time", "Checked at " + new Date(state.checkedAt).toLocaleString()));
     var evidence = el("dl", "wc-facts");
     facts(state, demo).forEach(function (row) {
       var item = el("div"); item.appendChild(el("dt", null, row[0])); item.appendChild(el("dd", null, row[1])); evidence.appendChild(item);
     });
     page.appendChild(evidence);
     var detail = el("details", "wc-route");
-    detail.appendChild(el("summary", null, "Connection route & setup"));
-    detail.appendChild(el("p", null, demo ? "This demo uses a fictional service on the same origin. It needs no Workiva credentials."
-      : "This build connects to http://127.0.0.1:8770. That address alone does not identify where the backend runs."));
-    if (!demo) {
-      detail.appendChild(el("p", null, "For the VPS setup, an approved encrypted forward can connect this device to the backend without running a second service here. Remote setup has not been validated by this check."));
-      var steps = el("ol");
-      ["Use the approved backend and connection route for this installation.",
-        "Load the paired extension package. Workiva credentials remain on the backend.",
-        "Reload the extension and Workiva tab after changing setup, then check again."]
-        .forEach(function (text) { steps.appendChild(el("li", null, text)); });
-      detail.appendChild(steps);
-    }
+    detail.appendChild(el("summary", null, "Connection route"));
+    detail.appendChild(el("p", null, demo ? "Demo service on this page's origin" : "http://127.0.0.1:8770"));
     page.appendChild(detail);
     var copyButton = el("button", "wm-btn wc-copy", "Copy diagnostics"); copyButton.type = "button";
     copyButton.disabled = !!state.loading;
     copyButton.onclick = function () { copy(diagnostics(state, demo), copyButton); };
     page.appendChild(copyButton);
-    page.appendChild(el("p", "wc-note", "Diagnostics exclude credentials, workbook identifiers and cell content."));
     body.replaceChildren(page);
     if (hadFocus) (button.disabled ? page : button).focus();
   }
